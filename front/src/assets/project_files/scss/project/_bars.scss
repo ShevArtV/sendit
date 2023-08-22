@@ -1,0 +1,28 @@
+.bars{
+  height: 16px;
+  position: relative;
+}
+.bars__line, .bars:after, .bars:before{
+  content: '';
+  display: block;
+  width: 16px;
+  height: 2px;
+  background-color: var(--main);
+  transition: all #{$transition-duration}s;
+}
+.active .bars{
+  .bars__line{
+    opacity: 0;
+  }
+  &:after, &:before{
+    position: absolute;
+    top:calc(50% - 2px);
+    left: 0;
+  }
+  &:after{
+    transform: rotate(45deg);
+  }
+  &:before{
+    transform: rotate(-45deg);
+  }
+}

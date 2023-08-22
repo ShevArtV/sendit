@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="ru" class="">
+<head>
+    @@include("html/head.html", {"pagetitle" : 'Главная страница'})
+</head>
+
+<body>
+
+<div>
+    @@include("html/header.html")
+
+    <main>
+        <!-- TZ -->
+        <section id="tz" class="py-160-80 w-100 overflow_hidden">
+            <div class="container">
+                <div class="d_flex flex_wrap jc_center">
+                    <div class="flex__col_md-9 mb_md-0 mb-50">
+                        <form action="#" class="bs_big_shadow border-1 border_main radius_small p-30-15 bg_body" data-si-form="quizBig">
+                            <div class="progress border-1 border_main radius_pill mb-60" data-qf-progress>
+                                <div class="progress__value bg_success radius_pill ta_center color_main" data-qf-progress-value>0%</div>
+                            </div>
+
+                            <ul class="file-list list_unstyled d_flex flex_wrap gap_col-10 pt-20">
+                                <li class="file-list__item">
+                                    <button class="file-list__btn btn py-5 px-20 ta_center border-1 border_error hover_bg_error hover_color_light radius_pill">Space.jpg</button>
+                                </li>
+                                <li class="file-list__item">
+                                    <button class="file-list__btn btn py-5 px-20 ta_center border-1 border_error hover_bg_error hover_color_light radius_pill">Space.jpg</button>
+                                </li>
+                            </ul>
+
+                            <!-- Общие вопросы -->
+                            <div data-qf-item="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Сфера деятельности Вашей компании или название продукта?</p>
+                                <input type="hidden" name="question[1]" value="Сфера деятельности Вашей компании?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[1]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Продажа вантузов">
+                                    <p class="color_error error_answer_1 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="2" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Есть ли действующий сайт?</p>
+                                <input type="hidden" name="question[2]" value="Есть ли действующий сайт?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[2]" data-qf-next="" class="" id="answer-2-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-2-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[2]" data-qf-next="4" class="" id="answer-2-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-2-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="3" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите ссылку на действующий сайт и кратко опишите, что Вас в нём не устраивает?</p>
+                                <input type="hidden" name="question[3]" value="Что не так с действующим сайтом?">
+                                <label class="mb-15">
+                                    <textarea name="answer[3]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Причины заказа нового сайта"></textarea>
+                                    <p class="color_error error_answer_3 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="4" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите 2-3 ссылки на сайты, которые Вам НЕ нравятся и кратко опишите, что именно НЕ нравится?</p>
+                                <input type="hidden" name="question[4]" value="Какие сайты не нравятся?">
+                                <label class="mb-15">
+                                    <textarea name="answer[4]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="На сайте гугла мне не нравятся кнопки  - портят лаконичность"></textarea>
+                                    <p class="color_error error_answer_4 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="5" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите 2-3 ссылки на сайты, которые Вам нравятся и кратко опишите, что именно нравится?</p>
+                                <input type="hidden" name="question[5]" value="Какие сайты нравятся?">
+                                <label class="mb-15">
+                                    <textarea name="answer[5]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Мне нравится этот сайт возможностью изменить тему с темной на светлую и обратно"></textarea>
+                                    <p class="color_error error_answer_5 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="6" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">В каких цветах должен быть выполнен дизайн сайта?</p>
+                                <input type="hidden" name="question[6]" value="В каких цветах должен быть выполнен дизайн сайта?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[6]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Приглушенные тона серого, акцентный - жёлтый">
+                                    <p class="color_error error_answer_6 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="48" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">На какие регионы будет ориентирован сайт?</p>
+                                <input type="hidden" name="question[47]" value="На какие регионы будет ориентирован сайт?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[47]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Россия/СНГ/Москва и Санкт-Петербург">
+                                    <p class="color_error error_answer_47 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="49" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">На каких языках будет публиковаться контент сайта?</p>
+                                <input type="hidden" name="question[48]" value="На каких языках будет публиковаться контент сайта?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[48]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Русский">
+                                    <p class="color_error error_answer_48 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="7" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите в какую CRM отправлять данные?</p>
+                                <input type="hidden" name="question[29]" value="Выберите доступные способы доставки?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[29]" class="" data-qf-next="9" id="answer-29-1" value="Не нужно отправлять">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-29-1">Не нужно отправлять</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[29]" class="" data-qf-next="9" id="answer-29-2" value="Битрикс24/AmoCRM/RetailCRM">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-29-2">Битрикс24/AmoCRM/RetailCRM</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[29]" class="" data-qf-next="" id="answer-29-3" value="Другая CRM">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-29-3">Другая CRM</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="8" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите название используемой CRM?</p>
+                                <input type="hidden" name="question[30]" value="Укажите название используемой CRM?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[30]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Очень классная CRM">
+                                    <p class="color_error error_answer_30 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="9" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите какой сервис использовать для рассылок?</p>
+                                <input type="hidden" name="question[41]" value="Укажите какой сервис хотите использовать для рассылок?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[41]" class="" data-qf-next="11" id="answer-41-1" value="Никакой">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-41-1">Никакой</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[41]" class="" data-qf-next="11" id="answer-41-2" value="SendPulse/Unisender">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-41-2">SendPulse/Unisender</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[41]" class="" data-qf-next="" id="answer-41-3" value="Другой">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-41-3">Другой</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="10" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите название сервиса для рассылок?</p>
+                                <input type="hidden" name="question[42]" value="Укажите название сервиса для рассылок?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[42]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Очень классная сервис рассылок">
+                                    <p class="color_error error_answer_42 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="11" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Нужен ли функционал калькулятора/конфигуратора?</p>
+                                <input type="hidden" name="question[43]" value="Нужен ли функционал калькулятора/конфигуратора">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[43]" class="" data-qf-next="" id="answer-43-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-43-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[43]" class="" data-qf-next="13" id="answer-43-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-43-2">Нет</label>
+                                </div>                                
+                            </div>
+                            <div data-qf-item="12" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Опишите функционал калькулятора/конфигуратора?</p>
+                                <input type="hidden" name="question[44]" value="Опишите функционал калькулятора/конфигуратора?">
+                                <label class="mb-15">
+                                    <textarea name="answer[44]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Нужно вычислять площадь изделия и умножать на цену квадрата, результат показывать пользователю"></textarea>
+                                    <p class="color_error error_answer_3 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="13" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Сайт какого типа Вам нужен?</p>
+                                <input type="hidden" name="question[7]" value="Сайт какого типа Вам нужен?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[7]" data-qf-next="19" class="" id="answer-7-1" value="Интернет-магазин">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-7-1">Интернет-магазин</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[7]" data-qf-next="38" class="" id="answer-7-2" value="Многостраничный сайт">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-7-2">Многостраничный сайт</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[7]" data-qf-next="" class="" id="answer-7-3" value="Рекламная страница">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-7-3">Рекламная страница</label>
+                                </div>
+                            </div>
+                            <!-- Общие вопросы -->
+
+                            <!-- Вопросы по лэндингу -->
+                            <div data-qf-item="14" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Сформулируйте кратко предложение Вашему клиенту?</p>
+                                <input type="hidden" name="question[8]" value="Сформулируйте кратко предложение Вашему клиенту?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[8]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Красная икра по 500 руб. за кило">
+                                    <p class="color_error error_answer_8 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="15" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">В каком формате будет представлена информация о продукте?</p>
+                                <input type="hidden" name="question[9]" value="Формат информации о продукте?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[9][]" class="" id="answer-9-1" value="Текст">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-9-1">Текст</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[9][]" class="" id="answer-9-2" value="Картинки">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-9-2">Картинки</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[9][]" class="" id="answer-9-3" value="Видео">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-9-3">Видео</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="16" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Напишите не менее 3-х преимуществ вашего продукта?</p>
+                                <input type="hidden" name="question[10]" value="Напишите не менее 3-х преимуществ вашего продукта?">
+                                <label class="mb-15">
+                                    <textarea name="answer[10]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Старайтесь не использовать штампы вроде качественный, надёжный"></textarea>
+                                    <p class="color_error error_answer_10 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="17" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Опишите человека, которому подойдёт Ваш продукт?</p>
+                                <input type="hidden" name="question[11]" value="Опишите человека, которому подойдёт Ваш продукт?">
+                                <label class="mb-15">
+                                    <textarea name="answer[11]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Пол, возраст, увлечения"></textarea>
+                                    <p class="color_error error_answer_11 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="18" data-qf-next="45" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите дополнительные блоки?</p>
+                                <input type="hidden" name="question[12]" value="Выберите дополнительные блоки?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-1" value="Как работает продукт">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-1">Как работает продукт</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-2" value="Как получить продукт">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-2">Как получить продукт</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-3" value="Отзывы">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-3">Отзывы</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-4" value="Партнёры">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-4">Партнёры</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-5" value="FAQ">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-5">FAQ</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-6" value="Команда">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-6">Команда</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-7" value="Реквизиты и карта">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-7">Реквизиты и карта</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-8" value="Достижения и награды">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-8">Достижения и награды</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-9" value="Портфолио или кейсы">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-9">Портфолио или кейсы</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[12][]" class="" id="answer-12-10" value="Цены и тарифы">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-12-10">Цены и тарифы</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /Вопросы по лэндингу -->
+
+                            <!-- Вопросы по магазину -->
+                            <div data-qf-item="19" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Количество товаров?</p>
+                                <input type="hidden" name="question[13]" value="Количество товаров?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[13]" class="" id="answer-13-1" value="до 100">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-13-1">до 100</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[13]" class="" id="answer-13-2" value="от 100 до 1000">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-13-2">от 100 до 1 000</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[13]" class="" id="answer-13-3" value="от 1000 до 10000">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-13-3">от 1000 до 10 000</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[13]" class="" id="answer-13-4" value="от 1000 до 10000">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-13-4">от 10 000 до 100 000</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[13]" class="" id="answer-13-5" value="от 1000 до 10000">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-13-5">от 100 000</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="20" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Как будут добавляться товары на сайт?</p>
+                                <input type="hidden" name="question[14]" value="Как будут добавляться товары на сайт?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[14]" class="" data-qf-next="22" id="answer-14-1" value="Вручную силами заказчика">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-14-1">Вручную силами заказчика</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[14]" class="" data-qf-next="22" id="answer-14-2" value="Импортом из файла .xlsx или .csv">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-14-2">Импортом из файла .xlsx или .csv</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[14]" class="" data-qf-next="22" id="answer-14-3" value="Импортом из 1С">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-14-3">Импортом из 1С</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[14]" class="" data-qf-next="" id="answer-14-4" value="Импортом из другой системы учёта или сервиса">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-14-4">Импортом из другой системы учёта или сервиса</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="21" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите название системы учета или сервиса для импорта товаров?</p>
+                                <input type="hidden" name="question[15]" value="Укажите название системы учета или сервиса для импорта товаров?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[15]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="МойСклад или Битрикс24">
+                                    <p class="color_error error_answer_15 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="22" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Есть ли у товаров вариации, отличающиеся по цене?</p>
+                                <input type="hidden" name="question[16]" value="Как будут добавляться товары на сайт?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[16]" class="" data-qf-next="" id="answer-16-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-16-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[16]" class="" data-qf-next="" id="answer-16-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-16-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="23" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Есть ли у товаров платные опции?</p>
+                                <input type="hidden" name="question[17]" value="Как будут добавляться товары на сайт?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[17]" class="" data-qf-next="" id="answer-17-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-17-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[17]" class="" data-qf-next="" id="answer-17-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-17-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="24" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Нужно ли вести учёт остатков на сайте?</p>
+                                <input type="hidden" name="question[18]" value="Как будут добавляться товары на сайт?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[18]" class="" data-qf-next="" id="answer-18-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-18-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[18]" class="" data-qf-next="" id="answer-18-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-18-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="25" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите желаемые продуктовые разделы?</p>
+                                <input type="hidden" name="question[19]" value="Выберите желаемые продуктовые разделы?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-1" value="Популярные">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-16-1">Популярные</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-2" value="Новинки">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-2">Новинки</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-3" value="Рекомендуемые товары">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-3">Рекомендуемые товары</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-4" value="Избранное">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-4">Избранное</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-5" value="Сравнение">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-5">Сравнение</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-6" value="Похожие">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-6">Похожие товары</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-7" value="С этим товаром покупают">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-7">С этим товаром покупают</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[19][]" class="" id="answer-19-8" value="Просмотренные товары">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-19-7">Просмотренные товары</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="26" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Какие из функций, улучшающих пользовательский опыт, хотите внедрить?</p>
+                                <input type="hidden" name="question[20]" value="Какие из функций, улучшающих пользовательский опыт, хотите внедрить?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[20][]" class="" id="answer-20-1" value="Купить в один клик">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-20-1">Купить в один клик</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[20][]" class="" id="answer-20-2" value="Поиск и фильтры">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-20-2">Поиск и фильтры</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[20][]" class="" id="answer-20-3" value="Рейтинг товаров">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-20-3">Рейтинг товаров</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[20][]" class="" id="answer-20-4" value="Просмотр содержимого корзины на любой странице">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-20-4">Просмотр содержимого корзины на любой странице</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="27" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Нужна ли возможность формировать комплекты товаров?</p>
+                                <input type="hidden" name="question[21]" value="Нужна ли возможность формировать комплекты товаров?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[21]" class="" data-qf-next="" id="answer-21-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-21-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[21]" class="" data-qf-next="" id="answer-21-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-21-2">Нет</label>
+                                </div>
+                            </div>
+
+                            <div data-qf-item="28" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Тип продаж?</p>
+                                <input type="hidden" name="question[22]" value="Тип продаж?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[22][]" class="" id="answer-22-1" value="Розница">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-22-1">Розница</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[22][]" class="" id="answer-22-2" value="Опт">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-22-2">Опт</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="29" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите мотивационные инструменты для покупателей?</p>
+                                <input type="hidden" name="question[23]" value="Выберите мотивационные инструменты для покупателей?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[23][]" class="" id="answer-23-1" value="Промокоды">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-23-1">Промокоды</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[23][]" class="" id="answer-23-2" value="Система бонусов">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-23-2">Система бонусов</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[23][]" class="" id="answer-23-3" value="Акции и скидки">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-23-3">Акции и скидки</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[23][]" class="" id="answer-23-4" value="Реферальная программа">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-23-4">Реферальная программа</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="30" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите валюты для цен на сайте?</p>
+                                <input type="hidden" name="question[24]" value="Выберите валюты для цен на сайте?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[24][]" class="" id="answer-24-1" value="Российский Рубль">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-24-1">Российский Рубль</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[24][]" class="" id="answer-24-2" value="Доллар США">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-24-2">Доллар США</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[24][]" class="" id="answer-24-3" value="Евро">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-24-3">Евро</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[24][]" class="" id="answer-24-4" value="Другие валюты">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-24-4">Другие валюты</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="31" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Будут ли цены зависеть от региона покупки?</p>
+                                <input type="hidden" name="question[25]" value="Выберите валюты для цен на сайте?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[25]" class="" data-qf-next="" id="answer-25-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-25-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[25]" class="" data-qf-next="" id="answer-25-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-25-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="32" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите доступные способы доставки?</p>
+                                <input type="hidden" name="question[26]" value="Выберите доступные способы доставки?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[26][]" class="" id="answer-26-1" value="Почта России">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-24-1">Почта России</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[26][]" class="" id="answer-26-2" value="СДЭК">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-26-2">СДЭК</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[26][]" class="" id="answer-26-3" value="ПЭК">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-26-3">ПЭК</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[26][]" class="" id="answer-26-4" value="Деловые линии">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-26-4">Деловые линии</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[26][]" class="" id="answer-26-5" value="Самовывоз">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-26-5">Самовывоз</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[26][]" class="" id="answer-26-6" value="Своя служба доставки">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-26-6">Своя служба доставки</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="33" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите провайдера оплаты?</p>
+                                <input type="hidden" name="question[27]" value="Выберите провайдера оплаты?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[27]" class="" data-qf-next="35" id="answer-27-1" value="Сбер">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-27-1">Сбер</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[27]" class="" data-qf-next="35" id="answer-27-2" value="Тинькофф">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-27-2">Тинькофф</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[27]" class="" data-qf-next="35" id="answer-27-3" value="ЮКасса">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-27-3">ЮКасса</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[27]" class="" data-qf-next="" id="answer-27-4" value="Другой">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-27-4">Другой</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="34" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Укажите название провайдера оплаты?</p>
+                                <input type="hidden" name="question[28]" value="Укажите название провайдера оплаты?">
+                                <label class="mb-15">
+                                    <input type="text" name="answer[28]"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Альфа-Банк">
+                                    <p class="color_error error_answer_28 px-15 fs-16-12"></p>
+                                </label>
+                            </div>                            
+                            <div data-qf-item="35" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Нужна ли интеграция с маркетплейсами?</p>
+                                <input type="hidden" name="question[31]" value="Нужна ли интеграция с маркетплейсами?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[31]" class="" data-qf-next="" id="answer-31-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-31-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[31]" class="" data-qf-next="38" id="answer-31-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-31-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="36" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите маркетплейсы для интеграции?</p>
+                                <input type="hidden" name="question[32]" value="Выберите маркетплейсы для интеграции?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[32][]" class="" id="answer-32-1" value="Яндекс.Маркет">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-32-1">Яндекс.Маркет</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[32][]" class="" id="answer-32-2" value="Wildberries">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-32-2">Wildberries</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[32][]" class="" id="answer-32-3" value="Озон">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-32-3">Озон</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[32][]" class="" id="answer-32-4" value="Другой">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-32-4">Другой</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="37" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите варианты обмена с маркетами?</p>
+                                <input type="hidden" name="question[33]" value="Выберите варианты обмена с маркетами?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[33][]" class="" id="answer-33-1" value="Экспорт товаров">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-33-1">Экспорт товаров</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[33][]" class="" id="answer-33-2" value="Экспорт заказов">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-33-2">Экспорт заказов</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[33][]" class="" id="answer-33-3" value="Импорт товаров">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-33-3">Импорт товаров</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[33][]" class="" id="answer-33-4" value="Импорт заказов">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-33-4">Импорт заказов</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /Вопросы по магазину -->
+
+                            <!-- Вопросы по многостраничнику -->
+                            <div data-qf-item="38" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите внутренние страницы сайта?</p>
+                                <input type="hidden" name="question[34]" value="Выберите внутренние страницы сайта?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-1" value="О компании">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-1">О компании</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-2" value="Контакты">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-2">Контакты</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-3" value="Блог">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-3">Блог</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-4" value="Статья">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-4">Статья</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-5" value="Новости">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-5">Новости</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-6" value="Новость">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-6">Новость</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-7" value="Оплата и доставка">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-7">Оплата и доставка</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[34][]" class="" id="answer-34-8" value="Кейсы/портфолио/гелерея">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-34-8">Кейсы/портфолио/гелерея</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="39" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Хотите добавить другие страницы?</p>
+                                <input type="hidden" name="question[35]" value="Хотите добавить другие страницы?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[35]" class="" data-qf-next="" id="answer-35-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-35-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[35]" class="" data-qf-next="41" id="answer-35-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-35-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="40" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Перечислите недостающие страницы?</p>
+                                <input type="hidden" name="question[36]" value="Перечислите недостающие страницы?">
+                                <label class="mb-15">
+                                    <textarea name="answer[36]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Наши достижения, Вакансии"></textarea>
+                                    <p class="color_error error_answer_3 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="41" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Нужен ли личный кабинет пользователя?</p>
+                                <input type="hidden" name="question[37]" value="Нужен ли личный кабинет пользователя?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[37]" class="" data-qf-next="" id="answer-37-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-37-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[37]" class="" data-qf-next="45" id="answer-37-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-37-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="42" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Опишите функционал личного кабинета?</p>
+                                <input type="hidden" name="question[38]" value="Опишите функционал личного кабинета?">
+                                <label class="mb-15">
+                                    <textarea name="answer[38]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Редактирование личных данных, Управление заказами, Просмотр количества бонусов, загрузка файлов"></textarea>
+                                    <p class="color_error error_answer_3 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-item="43" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите варианты регистрации?</p>
+                                <input type="hidden" name="question[39]" value="Выберите варианты регистрации?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[39][]" class="" id="answer-39-1" value="По электронной почте">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-39-1">По электронной почте</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[39][]" class="" id="answer-39-2" value="По телефону с подтверждением через SMS или звонок">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-39-2">По телефону с подтверждением через SMS или звонок</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[39][]" class="" id="answer-39-3" value="Через Госуслуги">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-39-3">Через Госуслуги</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[39][]" class="" id="answer-39-4" value="Через соц.сети">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-33-4">Через соц.сети</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[39][]" class="" id="answer-39-5" value="Через Telegram">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-39-5">Через Telegram</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[39][]" class="" id="answer-39-6" value="Другое">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-39-6">Другое</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-qf-item="44" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Выберите варианты авторизации?</p>
+                                <input type="hidden" name="question[40]" value="Выберите варианты авторизации?">
+                                <div class="grid-2-1 gap-15">
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[40][]" class="" id="answer-40-1" value="По электронной почте">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-40-1">По электронной почте</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[40][]" class="" id="answer-40-2" value="По телефону с подтверждением через SMS или звонок">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-40-2">По телефону с подтверждением через SMS или звонок</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[40][]" class="" id="answer-40-3" value="Через Госуслуги">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-40-3">Через Госуслуги</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[40][]" class="" id="answer-40-4" value="Через соц.сети">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-33-4">Через соц.сети</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[40][]" class="" id="answer-40-5" value="Через Telegram">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-40-5">Через Telegram</label>
+                                    </div>
+                                    <div class="form__input_checkbox mb-15">
+                                        <input type="checkbox" name="answer[40][]" class="" id="answer-40-6" value="Другое">
+                                        <label class="fs-20-16 hover_color_primary" for="answer-40-6">Другое</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /Вопросы по многостраничнику -->
+                            
+                            <!-- Дополнительная информация от заказчика -->
+                            <div data-qf-item="45" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Хотите ли оставить дополнительные пояснения к проекту?</p>
+                                <input type="hidden" name="question[45]" value="Хотите ли оставить дополнительные пояснения к проекту?">
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[45]" class="" data-qf-next="" id="answer-45-1" value="Да">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-45-1">Да</label>
+                                </div>
+                                <div class="form__input_radio mb-15">
+                                    <input type="radio" name="answer[45]" class="" data-qf-next="47" id="answer-45-2" value="Нет">
+                                    <label class="fs-20-16 hover_color_primary" for="answer-45-2">Нет</label>
+                                </div>
+                            </div>
+                            <div data-qf-item="46" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">Дополнительные пояснения к проекту?</p>
+                                <input type="hidden" name="question[46]" value="Дополнительные пояснения к проекту?">
+                                <label class="mb-15">
+                                    <textarea name="answer[46]"
+                                              class="form__textarea radius_middle border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                              placeholder="Любая важная на Ваш взгляд информация о проекте"></textarea>
+                                    <p class="color_error error_answer_46 px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <!-- /Дополнительная информация от заказчика -->
+
+                            <!-- Финальные блоки -->
+                            <div data-qf-item="47" data-qf-auto="1" class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default">
+                                    <span class="color_primary">Отлично!</span> Остался всего один шаг <br>
+                                    и мы <span class="color_primary">подготовим</span> Вам предварительный <span class="color_primary">расчет.</span>
+                                </p>
+                                <label class="mb-30">
+                                    <input type="text" name="name"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="Ваше имя">
+                                    <p class="color_error px-15 fs-16-12"></p>
+                                </label>
+                                <label class="">
+                                    <input type="tel" name="phone"
+                                           class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                                           placeholder="+7(">
+                                    <p class="color_error px-15 fs-16-12"></p>
+                                </label>
+                            </div>
+                            <div data-qf-finish class="mb-100 d_flex flex_column">
+                                <p class="mb-30 fs-24-18 ts_default ta_center">
+                                    <span class="color_primary">Спасибо за потраченное время!</span><br>
+                                    Ваш подарок: скидка 10% на первый заказ!
+                                </p>
+                            </div>
+                            <!-- /Финальные блоки -->
+
+                            <!-- Кнопки управления и пагинация -->
+                            <div class="d_flex jc_between ai_center">
+                                <button data-qf-btn="prev" type="button"
+                                        class="btn btn_md bs_small_shadow radius_pill fs-18-12 color_main bg_placeholder hover_bg_placeholder_w hover_shadow_main">Назад
+                                </button>
+                                <p class="fs-20-16 ts_default" data-qf-pages>
+                                    <span data-qf-page></span>/<span data-qf-total></span>
+                                </p>
+                                <button data-qf-btn="next" type="button"
+                                        class="btn btn_md bs_small_shadow radius_pill fs-18-12 color_main-alt bg_secondary hover_bg_secondary_w hover_shadow_secondary">Вперед
+                                </button>
+                                <div data-qf-btn="reset" class="d_flex jc_center ai_center w-100">
+                                    <button type="reset"
+                                            class="btn btn_md bs_small_shadow radius_pill fs-18-12 color_main-alt bg_secondary hover_bg_secondary_w hover_shadow_secondary">
+                                        Начать с начала
+                                    </button>
+                                </div>
+                                <button data-qf-btn="send" type="button"
+                                        class="btn btn_md bs_small_shadow radius_pill fs-18-12 color_main bg_success hover_bg_success_w hover_shadow_success">Отправить
+                                </button>
+                            </div>
+                            <!-- /Кнопки управления и пагинация -->
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- /TZ -->
+    </main>
+
+    @@include("html/footer.html", {})
+    @@include("html/scripts.html", {})
+</div>
+
+</body>
+</html>

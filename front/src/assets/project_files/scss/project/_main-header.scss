@@ -1,0 +1,25 @@
+.main-header{
+  box-shadow: 6px 0 6px 6px var(--shadow-op-80);
+  padding: clamp(10px,#{math.div(15, $layout-width)}vw,15px) 0;
+  border-top: 2px solid var(--primary);
+  background-color: var(--body);
+  border-bottom: 0;
+  position: fixed;
+  bottom: 0;
+  left:0;
+  width: 100%;
+  max-height: max-content;
+  z-index: 3;
+  .container{
+    position: static;
+  }
+}
+
+@media (min-width: #{map-get($breakpoints, 'sm')}){
+  .main-header{
+    top: 0;
+    box-shadow: 0 6px 6px 6px var(--shadow-op-80);
+    border-bottom: 2px solid var(--primary);
+    border-top: 0;
+  }
+}

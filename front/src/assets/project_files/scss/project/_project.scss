@@ -1,0 +1,25 @@
+.project{
+  gap: 4px;
+  border: 2px solid var(--primary);
+  transition: all #{$transition-duration}s;
+}
+.project__img{
+  transition: all #{$transition-duration}s;
+}
+.project:hover{
+  box-shadow: 0 0 6px 4px var(--primary-op-20);
+  .project__img{
+    transform: scale(1.3);
+  }
+  .project__actions{
+    opacity: 1;
+    pointer-events: all;
+  }
+}
+.project__actions {
+  color:var(--light);
+  background-color: var(--dark-op-20);
+  opacity: 0;
+  pointer-events: none;
+  transition: all #{$transition-duration}s;
+}

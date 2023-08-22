@@ -1,0 +1,46 @@
+.main-nav{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all #{$transition-duration}s;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  background-color: var(--primary);
+  padding: 15px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  .main-nav__link{
+    transition: all #{$transition-duration}s;
+    color: var(--main-alt);
+    &:hover{
+      color: var(--body);
+    }
+  }
+}
+.main-nav.active {
+  bottom: 100%;
+  pointer-events: all;
+  opacity: 1;
+}
+
+@media (min-width: #{map-get($breakpoints, 'md')}) {
+  .main-nav, .main-nav.active{
+    position: static;
+    background-color: transparent;
+    padding: 0;
+    opacity: 1;
+    z-index: 1;
+    pointer-events: all;
+    width: auto;
+    .main-nav__link{
+      color: var(--main);
+      &:hover{
+        color: var(--primary);
+      }
+    }
+  }
+}
+

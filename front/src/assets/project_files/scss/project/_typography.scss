@@ -1,0 +1,64 @@
+.typography {
+  h1, h2, h3, h4, h5, h6, strong {
+    font-family: 'Exo 2', sans-serif;
+    color: var(--primary);
+    margin-bottom: .7em;
+    margin-top: 1em;
+    &:first-child{
+      margin-top: 0;
+    }
+  }
+
+  h1 {
+    font-size: clamp(28px, #{math.div(4800, $layout-width)}vw, 44px);
+  }
+
+  h2 {
+    font-size: clamp(26px, #{math.div(4000, $layout-width)}vw, 40px);
+  }
+
+  h3 {
+    font-size: clamp(24px, #{math.div(3400, $layout-width)}vw, 34px);
+  }
+
+  h4 {
+    font-size: clamp(22px, #{math.div(3000, $layout-width)}vw, 30px);
+  }
+
+  h5 {
+    font-size: clamp(20px, #{math.div(2800, $layout-width)}vw, 28px);
+  }
+
+  h6 {
+    font-size: clamp(18px, #{math.div(2600, $layout-width)}vw, 26px);
+  }
+
+  strong {
+    font-size: clamp(16px, #{math.div(2200, $layout-width)}vw, 20px);
+  }
+
+  p {
+    font-size: clamp(14px, #{math.div(1600, $layout-width)}vw, 16px);
+    margin-bottom: 20px;
+  }
+
+  small {
+    font-size: clamp(10px, #{math.div(1200, $layout-width)}vw, 12px);
+    margin-bottom: 10px;
+  }
+
+  ul, ol {
+    padding-left: 25px;
+    margin-bottom: 20px;
+  }
+
+  a {
+    color: var(--main);
+    transition: all #{$transition-duration}s;
+
+    &:hover {
+      color: var(--primary);
+      text-decoration: none;
+    }
+  }
+}

@@ -1,0 +1,15 @@
+.decor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+
+.decor_grid {
+  width: 100%;
+  background-image: url("../img/common/bg-grid.png");
+}
+.decor_bg {
+  width: 70%;
+  background-color: var(--body);
+}

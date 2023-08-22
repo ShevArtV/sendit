@@ -1,0 +1,30 @@
+.stroke-text{
+  position: absolute;
+  z-index: 0;
+  color: var(--body);
+  font-size: clamp(75px,#{math.div(15000,$layout-width)}vw,150px);
+  font-weight: 900;
+  text-shadow: 0 0 4px var(--secondary);
+  opacity: .5;
+  min-width: max-content;
+  line-height: 200%;
+  text-transform: uppercase;
+  top: 0;
+}
+.section:first-child .stroke-text.left-0{
+  left: -75%;
+}
+.section:first-child .stroke-text.right-0{
+  right: -75%;
+}
+@media (min-width: #{map-get($breakpoints, 'sm')}){
+  .stroke-text{
+    line-height: 170%;
+  }
+  .section:first-child .stroke-text.left-0{
+    left: 0;
+  }
+  .section:first-child .stroke-text.right-0{
+    right: 0;
+  }
+}
