@@ -23,4 +23,4 @@ SendIt - компонент для работы с формами на сайт�
 5. Отправка возможна на события change и input.
 
 --------------------
-GitHub: https://github.com/ShevArtV/ajaxformitlogin/issues
+GitHub: https://github.com/ShevArtV/sendit

@@ -1,1 +1,6 @@
 /front/node_modules/
+/front/dist/
+/temp/
+/back/.htaccess
+.idea/
+/back/core/elements/

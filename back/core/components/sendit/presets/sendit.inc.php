@@ -6,7 +6,7 @@ return [
     ],
     'onestepform' => [
         'extends' => 'default',
-        'redirectTo' => 1,
+        'redirectTo' => 0,
         'redirectTimeout' => 3000,
         'clearFieldsOnSuccess' => 1,
         'fieldNames' => 'age==Возраст',

@@ -1,5 +1,5 @@
 <?php
-// php7.4 public_html/_build/build.php
+// /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/_build/build.php
 if (!defined('MODX_CORE_PATH')) {
     $path = dirname(__FILE__);
     while (!file_exists($path . '/core/config/config.inc.php') && (strlen($path) > 1)) {
@@ -11,7 +11,7 @@ if (!defined('MODX_CORE_PATH')) {
 return [
     'name' => 'SendIt',
     'name_lower' => 'sendit',
-    'version' => '1.0.1',
+    'version' => '1.0.0',
     'release' => 'beta',
     // Install package to site right after build
     'install' => false,
