@@ -39,22 +39,29 @@
             document.dispatchEvent(new CustomEvent(this.events.init, {}));
         }
 
-        getCookie(name) {
-            let cookies = this.getSenditCookie('SendIt');
+        getSenditCookie(name) {
+            let cookies = this.getCookie('SendIt');
             cookies = cookies ? JSON.parse(cookies) : {};
             return cookies[name];
         }
 
-        setCookie(name, value) {
-            let cookies = this.getSenditCookie('SendIt');
+        setSenditCookie(name, value) {
+            let cookies = this.getCookie('SendIt');
             cookies = cookies ? JSON.parse(cookies) : {};
             cookies[name] = value;
             //console.log(cookies)
-            this.setSenditCookie('SendIt', JSON.stringify(cookies));
+            this.setCookie('SendIt', JSON.stringify(cookies));
 
         }
 
-        setSenditCookie(name, value, options = {}) {
+        removeSenditCookie(name) {
+            let cookies = this.getCookie('SendIt');
+            cookies = cookies ? JSON.parse(cookies) : {};
+            delete cookies[name];
+            this.setSenditCookie('SendIt', JSON.stringify(cookies));
+        }
+
+        setCookie(name, value, options = {}) {
             options = {
                 path: '/',
                 ...options
@@ -77,7 +84,7 @@
             document.cookie = updatedCookie;
         }
 
-        getSenditCookie(name) {
+        getCookie(name) {
             let matches = document.cookie.match(new RegExp(
                 "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
             ));
@@ -85,10 +92,9 @@
         }
 
         removeCookie(name) {
-            let cookies = this.getSenditCookie('SendIt');
-            cookies = cookies ? JSON.parse(cookies) : {};
-            delete cookies[name];
-            this.setSenditCookie('SendIt', JSON.stringify(cookies));
+            setCookie(name, "", {
+                'max-age': -1
+            })
         }
 
         static create() {

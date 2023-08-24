@@ -158,7 +158,7 @@ export default class FileUploader {
             'Content-Type': 'application/x-binary; charset=x-user-defined',
             'X-SIACTION': 'upload',
             'X-SIPRESET': this.preset,
-            'X-SITOKEN': SendIt?.getCookie('sitoken')
+            'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
         }
 
         SendIt?.Sending?.send(root, this.config.actionUrl, headers, blob);
@@ -219,7 +219,7 @@ export default class FileUploader {
         const headers = {
             'X-SIACTION': 'removeFile',
             'X-SIPRESET': this.preset,
-            'X-SITOKEN': SendIt?.getCookie('sitoken')
+            'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
         }
 
         SendIt?.Sending?.send(root, this.config.actionUrl, headers, params);
@@ -240,7 +240,7 @@ export default class FileUploader {
         const headers = {
             'X-SIACTION': 'removeDir',
             'X-SIPRESET': this.preset,
-            'X-SITOKEN': SendIt?.getCookie('sitoken')
+            'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
         }
 
         SendIt?.Sending?.send(root, this.config.actionUrl, headers, '');
@@ -250,7 +250,7 @@ export default class FileUploader {
         const headers = {
             'X-SIACTION': 'preset',
             'X-SIPRESET': this.preset,
-            'X-SITOKEN': SendIt?.getCookie('sitoken')
+            'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
         }
 
         SendIt?.Sending?.send(root, this.config.actionUrl, headers, '');

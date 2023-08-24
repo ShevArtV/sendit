@@ -28,11 +28,12 @@ export default class Sending {
     initialize() {
         document.addEventListener(this.config.antiSpamEvent, (e) => {
             if (e.isTrusted) {
-                SendIt?.setCookie('sitrusted', '1');
+                SendIt?.setSenditCookie('sitrusted', '1');
             }
         });
 
         document.addEventListener('submit', (e) => {
+            if(!e.isTrusted) return;
             const root = e.target.closest(this.config.rootSelector);
 
             if (root) {
@@ -68,14 +69,14 @@ export default class Sending {
             'X-SIFORM': root.dataset[this.config.rootKey],
             'X-SIACTION': action,
             'X-SIPRESET': preset,
-            'X-SITOKEN': SendIt?.getCookie('sitoken')
+            'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
         }
 
         this.send(root, this.config.actionUrl, headers, params);
     }
 
     async send(target, url, headers, params, method = 'POST') {
-        if (SendIt?.getCookie('sitrusted') === '0') return;
+        if (SendIt?.getSenditCookie('sitrusted') === '0') return;
         console.log(headers);
         if (!document.dispatchEvent(new CustomEvent(this.events.before, {
             bubbles: true,
@@ -186,8 +187,8 @@ export default class Sending {
 
     error(result, root) {
         if (!result.data.errors) {
-            if (SendIt?.getCookie('sitrusted') === '0'){
-                SendIt?.Notify?.info(SendIt?.getCookie('simsgantispam'));
+            if (SendIt?.getSenditCookie('sitrusted') === '0'){
+                SendIt?.Notify?.info(SendIt?.getSenditCookie('simsgantispam'));
             }else{
                 SendIt?.Notify?.error(result.message);
             }

@@ -42,8 +42,8 @@ export default class QuizForm {
                 const root = roots[i];
                 const items = root.querySelectorAll(this.config.itemSelector);
                 if (items.length < 2) continue;
-                const currentIndex = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Current');
-                const prev = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',');
+                const currentIndex = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Current');
+                const prev = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',');
 
                 this.reset(root);
 
@@ -78,15 +78,15 @@ export default class QuizForm {
                         }
                         break;
                     case 'prev':
-                        const prevRaw = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Prev');
+                        const prevRaw = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev');
                         if (prevRaw) {
                             const prev = prevRaw.split(',').reverse();
                             const nextIndex = Number(prev[0]);
                             prev.shift();
                             if (prev.length) {
-                                SendIt?.setCookie(root.dataset[this.config.rootKey] + 'Prev', prev.reverse().join(','));
+                                SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Prev', prev.reverse().join(','));
                             } else {
-                                SendIt?.removeCookie(root.dataset[this.config.rootKey] + 'Prev');
+                                SendIt?.removeSenditCookie(root.dataset[this.config.rootKey] + 'Prev');
                             }
 
                             root ? this.change(root, nextIndex, 1) : '';
@@ -126,7 +126,7 @@ export default class QuizForm {
     errorHandler(root) {
         const errorField = root?.querySelector('.' + SendIt?.Sending?.config?.errorClass);
         const item = errorField?.closest(this.config.itemSelector);
-        const prevRaw = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Prev');
+        const prevRaw = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev');
 
         if (item) {
             if (prevRaw) {
@@ -141,7 +141,7 @@ export default class QuizForm {
                 }
 
                 if (newPrev.length) {
-                    SendIt?.setCookie(root.dataset[this.config.rootKey] + 'Prev', newPrev.join(','));
+                    SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Prev', newPrev.join(','));
                 }
             }
 
@@ -169,7 +169,7 @@ export default class QuizForm {
         items.map((item, i, items) => {
             item.dataset.qfComplete = '0';
             if (i === 0) {
-                SendIt?.setCookie(root.dataset[this.config.rootKey] + 'Current', item.dataset.qfItem);
+                SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', item.dataset.qfItem);
                 item.classList.remove(this.config.visabilityClass);
             } else {
                 item.classList.add(this.config.visabilityClass);
@@ -249,14 +249,14 @@ export default class QuizForm {
     changeItem(root, current, next) {
         if (next) {
             current.classList.add(this.config.visabilityClass);
-            SendIt?.setCookie(root.dataset[this.config.rootKey] + 'Current', next.dataset.qfItem);
+            SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', next.dataset.qfItem);
             next.classList.remove(this.config.visabilityClass);
         }
     }
 
     changeBtnsState(root, prevIndex, nextIndex, dir) {
         const {items, btnSend, btnPrev, btnNext,} = this.getElements(root);
-        const prev = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',') || [];
+        const prev = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',') || [];
         const lastIndex = items[items.length - 1].dataset.qfItem;
 
         switch (dir) {
@@ -265,7 +265,7 @@ export default class QuizForm {
                 if (!prev.includes(prevIndex) && Number(prevIndex) !== Number(lastIndex)) {
                     prev.push(prevIndex);
                 }
-                SendIt?.setCookie(root.dataset[this.config.rootKey] + 'Prev', prev.join(','));
+                SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Prev', prev.join(','));
                 break;
             case 'prev':
                 if (!prev.length) {
@@ -329,7 +329,7 @@ export default class QuizForm {
     setProgress(progress, progressValue, root, current, btnPrev, items) {
         const itemsComplete = Array.from(root.querySelectorAll(this.config.itemCompleteSelector));
         const currentIndex = items.indexOf(current);
-        const prevRaw = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Prev') || '';
+        const prevRaw = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev') || '';
         const prev = prevRaw.split(',').reverse();
 
         let total = items.length
@@ -379,13 +379,13 @@ export default class QuizForm {
         finishItem.classList.remove(this.config.visabilityClass);
         pages.classList.add(this.config.visabilityClass);
         localStorage.removeItem(root.dataset[this.config.rootKey]);
-        SendIt?.removeCookie(root.dataset[this.config.rootKey] + 'Current');
-        SendIt?.removeCookie(root.dataset[this.config.rootKey] + 'Prev');
+        SendIt?.removeSenditCookie(root.dataset[this.config.rootKey] + 'Current');
+        SendIt?.removeSenditCookie(root.dataset[this.config.rootKey] + 'Prev');
         this.resetProgress(progress, 1);
     }
 
     getElements(root) {
-        const currentIndex = SendIt?.getCookie(root.dataset[this.config.rootKey] + 'Current');
+        const currentIndex = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Current');
 
         return {
             items: Array.from(root.querySelectorAll(this.config.itemSelector)),
