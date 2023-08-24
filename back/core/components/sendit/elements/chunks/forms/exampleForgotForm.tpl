@@ -16,7 +16,7 @@
 
     <!-- Кнопки управления и пагинация -->
     <div class="d_flex jc_between ai_center">
-        <button
+        <button type="submit"
                 class="btn btn_md bs_small_shadow radius_pill fs-18-12 color_main bg_success hover_bg_success_w hover_shadow_success">Отправить
         </button>
     </div>

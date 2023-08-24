@@ -1,5 +1,6 @@
 <?php
-
+$_lang['setting_si_frontend_css'] = 'Путь к основным стилям';
+$_lang['setting_si_frontend_css_desc'] = 'поддерживает плейсхолдер [[+assetsUrl]]';
 $_lang['setting_si_frontend_js'] = 'Путь к основным JS скриптам';
 $_lang['setting_si_frontend_js_desc'] = 'поддерживает плейсхолдер [[+assetsUrl]]';
 $_lang['setting_si_js_config_path'] = 'Путь к файлу JS конфигурации';

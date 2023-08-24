@@ -67,7 +67,9 @@ class AjaxIdentification
             $this->values['blocked'] = 1;
         }
 
-        $this->values['extended'] = $this->prepareExtended();
+        $extended = str_replace('&quot;', '"', $this->values['extended']);
+        $extended = $extended ? json_decode($extended,1) : [];
+        $this->values['extended'] = $extended;
 
         $response = $this->modx->runProcessor('/security/user/create', $this->values);
 
@@ -84,7 +86,6 @@ class AjaxIdentification
 
         $this->modx->user = $this->modx->getObject('modUser', $response->response['object']['id']);
 
-        /* получаем ссылку для подтверждения почты */
         if ($activation && !empty($email) && !empty($activationResourceId)) {
             $confirmUrl = $this->getConfirmUrl($activationResourceId);
             $this->hook->setValue('confirmUrl', $confirmUrl);
@@ -158,7 +159,8 @@ class AjaxIdentification
         if ($this->modx->user->isAuthenticated($this->modx->context->get('key'))) {
             $profile = $user->getOne('Profile');
             $profileData = $profile->toArray();
-            $extended = $this->prepareExtended() ?: array();
+            $extended = str_replace('&quot;', '"', $this->values['extended']);
+            $extended = $extended ? json_decode($extended,1) : [];
             $this->values['extended'] = array_merge($profileData['extended'], $extended);
             $this->values['dob'] = $this->values['dob'] ? strtotime($this->values['dob']) : $profile->get('dob');
             $userData = $user->toArray();
@@ -271,19 +273,6 @@ class AjaxIdentification
         }
 
         return $password;
-    }
-
-    public function prepareExtended()
-    {
-        $extended = array();
-        $extendedFieldPrefix = $this->config['extendedFieldPrefix'] ?: 'extended_';
-
-        foreach ($this->values as $k => $v) {
-            if (strpos($k, $extendedFieldPrefix) !== false) {
-                $extended[str_replace($extendedFieldPrefix, '', $k)] = $v;
-            }
-        }
-        return $extended;
     }
 
     /**

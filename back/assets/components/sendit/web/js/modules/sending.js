@@ -58,7 +58,7 @@ export default class Sending {
         }
     }
 
-    prepareSendParams(root, preset = 'default', action = 'send') {
+    prepareSendParams(root, preset = '', action = 'send') {
         const params = root.tagName === 'FORM' ? new FormData(root) : new FormData();
         if (root.name && root.tagName !== 'FORM') {
             params.append(root.name, root.value);

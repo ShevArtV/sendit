@@ -36,7 +36,7 @@ class SendIt
      * @param string $presetName
      * @param string $formName
      */
-    public function __construct(modX $modx, $presetName = 'default', $formName = '')
+    public function __construct(modX $modx, $presetName = '', $formName = '')
     {
         $this->modx = $modx;
         $this->formName = $formName;
@@ -117,9 +117,9 @@ class SendIt
         if(empty($this->params)){
             $profile = $this->modx->getObject('modUserProfile', ['internalKey' => 1]);
             $email = $this->modx->getOption('si_default_email');
-            $emailTpl = $this->modx->getOption('si_default_emailtpl', '', 'defaultEmail');
+            $emailTpl = $this->modx->getOption('si_default_emailtpl', '', 'siDefaultEmail');
             $email = $email ? $this->modx->getOption('ms2_email_manager') : $profile->get('email');
-            $hooks = $email ? 'email,FormItSaveForm' : 'FormItSaveForm';
+            $hooks = $email ? 'FormItSaveForm,email' : 'FormItSaveForm';
             $this->params = [
                 'successMessage' => $this->modx->lexicon('si_msg_success'),
                 'hooks' => $hooks,

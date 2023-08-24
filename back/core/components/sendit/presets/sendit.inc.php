@@ -41,8 +41,6 @@ return [
         'hooks' => 'AjaxIdentification,FormItSaveForm,FormItAutoResponder',
         'method' => 'register',
         'successMessage' => 'Вы успешно зарегистрированы. Подтвердите email для активации учётной записи.',
-        'customValidators' => 'checkPassLength,passwordConfirm',
-        'emailSubject' => 'Регистрация по email',
 
         'fiarSubject' => 'Активация пользователя',
         'fiarFrom' => 'email@domain.ru',
@@ -59,7 +57,6 @@ return [
         'redirectTimeout' => 3000,
         'usergroups' => 2,
         'activationResourceId' => 1,
-        'extendedFieldPrefix' => 'extended_',
         'activationUrlTime' => 10800,
         'validate' => 'email:required,password:checkPassLength=^8^,password_confirm:passwordConfirm=^password^,politics:checkbox:required',
         'politics.vTextRequired' => 'Примите наши условия.',
@@ -69,7 +66,6 @@ return [
     'auth' => [
         'successMessage' => 'Вы успешно авторизованы и будете перенаправлены в личный кабинет.',
         'validate' => 'email:required,password:required',
-        'validationErrorMessage' => 'Исправьте, пожалуйста, ошибки!',
         'hooks' => 'AjaxIdentification',
 
         'method' => 'login',
@@ -113,12 +109,9 @@ return [
         'hooks' => 'AjaxIdentification,FormItSaveForm,FormItAutoResponder',
         'method' => 'forgot',
         'successMessage' => 'Новый пароль отправлен на ваш email',
-        'customValidators' => 'userNotExists',
-        'emailSubject' => 'Забыли пароль',
 
         'usernameField' => 'email',
         'validate' => 'email:required:userNotExists',
-        'validationErrorMessage' => 'Исправьте, пожалуйста, ошибки!',
 
         'fiarSubject' => 'Восстановление пароля',
         'fiarFrom' => 'email@domain.ru',

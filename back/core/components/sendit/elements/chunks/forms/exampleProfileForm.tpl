@@ -31,6 +31,12 @@
                    placeholder="+7(">
             <p class="color_error px-15 fs-16-12" data-si-error="phone"></p>
         </label>
+        <label class="mb-30">
+            <input type="text" name="extended[inn]" value="{$_modx->user.extended['inn']}"
+                   class="form__input radius_pill border-1 border_primary focus_shadow_primary px-15 py-15 color_primary fs-18-16 w-100 bs_small_shadow"
+                   placeholder="ИНН">
+            <p class="color_error px-15 fs-16-12" data-si-error="extended[inn]"></p>
+        </label>
     </div>
     <!-- /Финальные блоки -->
 

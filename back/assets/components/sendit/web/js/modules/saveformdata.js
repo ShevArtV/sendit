@@ -38,6 +38,7 @@ export default class SaveFormData {
 
     saveData(field) {
         const root = field.closest(this.config.rootSelector);
+        if(!root.closest(this.config.rootSelector)) return;
         const savedData = localStorage.getItem(root.dataset[this.config.rootKey]) ? JSON.parse(localStorage.getItem(root.dataset[this.config.rootKey])) : {};
         let type = field.type;
         switch (field.tagName) {
@@ -146,8 +147,9 @@ export default class SaveFormData {
     }
 
     removeValues(root) {
+        if(!root.closest(this.config.rootSelector)) return;
         const formName = root.dataset[this.config.rootKey] || root.closest(this.config.rootSelector).dataset[this.config.rootKey];
-
+        if(!formName) return;
         if (!document.dispatchEvent(new CustomEvent(this.events.remove, {
             bubbles: true,
             cancelable: true,
