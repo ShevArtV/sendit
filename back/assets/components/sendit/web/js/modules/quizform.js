@@ -2,19 +2,24 @@ export default class QuizForm {
 
     constructor(config) {
         const defaults = {
+            pathToScripts: './modules/quizform.js',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
-            itemKey: 'qfItem',
+            autoKey: 'qfAuto',
             itemSelector: '[data-qf-item]',
+            itemKey: 'qfItem',
             itemCompleteSelector: '[data-qf-complete="1"]',
+            itemCompleteKey: 'qfComplete',
             finishSelector: '[data-qf-finish]',
             itemCurrentSelector: '[data-qf-item="${currentIndex}"]',
             btnSelector: '[data-qf-btn]',
+            btnKey: 'qfBtn',
             btnNextSelector: '[data-qf-btn="next"]',
             btnPrevSelector: '[data-qf-btn="prev"]',
             btnSendSelector: '[data-qf-btn="send"]',
             btnResetSelector: '[data-qf-btn="reset"]',
             nextIndexSelector: '[data-qf-next]',
+            nextIndexKey: 'qfNext',
             progressSelector: '[data-qf-progress]',
             currentQuestionSelector: '[data-qf-page]',
             totalQuestionSelector: '[data-qf-total]',
@@ -47,12 +52,7 @@ export default class QuizForm {
 
                 this.reset(root);
 
-                if (prev && prev.length) {
-                    prev.forEach(index => {
-                        const item = root.querySelector(this.config.itemCurrentSelector.replace('${currentIndex}', index));
-                        item.dataset.qfComplete = '1';
-                    });
-                }
+                items.forEach(item => this.prepareProgress(root, item));
 
                 if (currentIndex) {
                     this.change(root, currentIndex, 1);
@@ -63,7 +63,7 @@ export default class QuizForm {
                 if (!e.isTrusted) return;
                 const btn = e.target.closest(this.config.btnSelector);
                 const root = btn?.closest(this.config.rootSelector);
-                const dir = btn?.dataset.qfBtn;
+                const dir = btn?.dataset[this.config.btnKey];
                 if (!root) return;
                 const {items, current} = this.getElements(root);
                 if (items.length < 2) return;
@@ -104,7 +104,8 @@ export default class QuizForm {
                     const {items} = this.getElements(root);
                     if (items.length < 2) return;
                     const nextIndex = this.getNextIndex(current, items);
-                    this.change(root, nextIndex, current.dataset.qfAuto);
+                    this.prepareProgress(root, current);
+                    this.change(root, nextIndex, current.dataset[this.config.autoKey]);
                 }
             });
 
@@ -165,11 +166,11 @@ export default class QuizForm {
     }
 
     resetItems(root, items, finishItem) {
-        finishItem.classList.add(this.config.visabilityClass);
+        finishItem?.classList.add(this.config.visabilityClass);
         items.map((item, i, items) => {
-            item.dataset.qfComplete = '0';
+            item.dataset[this.config.itemCompleteKey] = '0';
             if (i === 0) {
-                SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', item.dataset.qfItem);
+                SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', item.dataset[this.config.itemKey]);
                 item.classList.remove(this.config.visabilityClass);
             } else {
                 item.classList.add(this.config.visabilityClass);
@@ -179,7 +180,7 @@ export default class QuizForm {
 
     resetBtns(btns) {
         btns.map((btn) => {
-            switch (btn.dataset.qfBtn) {
+            switch (btn.dataset[this.config.btnKey]) {
                 case 'prev':
                     btn.disabled = true;
                     btn.classList.add(this.config.disabledClass);
@@ -187,7 +188,7 @@ export default class QuizForm {
                     break;
                 case 'next':
                     btn.classList.remove(this.config.visabilityClass);
-                    btn.dataset.qfNext = '2';
+                    btn.dataset[this.config.nextIndexKey] = '2';
                     break;
                 case 'send':
                 case 'reset':
@@ -208,7 +209,7 @@ export default class QuizForm {
 
     change(root, nextIndex, isAuto = false) {
         const {items, current, currentQuestion, totalQuestions} = this.getElements(root);
-        const prevIndex = current.dataset.qfItem;
+        const prevIndex = current.dataset[this.config.itemKey];
         const nextItem = root.querySelector(`[data-qf-item="${nextIndex}"]`);
         const dir = (nextItem && items.indexOf(nextItem) > items.indexOf(current)) ? 'next' : 'prev';
 
@@ -232,8 +233,6 @@ export default class QuizForm {
             return;
         }
 
-        this.prepareProgress(root);
-
         if (isAuto) {
 
             this.changeItem(root, current, nextItem);
@@ -241,23 +240,23 @@ export default class QuizForm {
             this.changeBtnsState(root, prevIndex, nextIndex, dir);
 
             this.setPagination(currentQuestion, totalQuestions, items, nextIndex);
-
         }
+
 
     }
 
     changeItem(root, current, next) {
         if (next) {
             current.classList.add(this.config.visabilityClass);
-            SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', next.dataset.qfItem);
+            SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', next.dataset[this.config.itemKey]);
             next.classList.remove(this.config.visabilityClass);
         }
     }
 
     changeBtnsState(root, prevIndex, nextIndex, dir) {
-        const {items, btnSend, btnPrev, btnNext,} = this.getElements(root);
+        const {items, btnSend, btnPrev, btnNext} = this.getElements(root);
         const prev = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',') || [];
-        const lastIndex = items[items.length - 1].dataset.qfItem;
+        const lastIndex = items[items.length - 1].dataset[this.config.itemKey];
 
         switch (dir) {
             case 'next':
@@ -266,6 +265,7 @@ export default class QuizForm {
                     prev.push(prevIndex);
                 }
                 SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Prev', prev.join(','));
+
                 break;
             case 'prev':
                 if (!prev.length) {
@@ -283,8 +283,9 @@ export default class QuizForm {
     }
 
     setPagination(currentQuestion, totalQuestions, items, index) {
+        if(!currentQuestion) return;
         const total = items.length;
-        const nextItem = items.filter(el => Number(el.dataset.qfItem) === Number(index));
+        const nextItem = items.filter(el => Number(el.dataset[this.config.itemKey]) === Number(index));
         if (!nextItem[0]) {
             index = total;
         } else {
@@ -294,9 +295,8 @@ export default class QuizForm {
         currentQuestion.textContent = Number(index) < total ? index : total;
     }
 
-    prepareProgress(root) {
-        const {items, current, progress, progressValue, btnPrev} = this.getElements(root);
-        const inputs = current.querySelectorAll('input, select, textarea');
+    prepareProgress(root, item) {
+        const inputs = item.querySelectorAll('input, select, textarea');
         const inputNames = [];
         let countInputs = 0;
         let countValues = 0;
@@ -317,27 +317,21 @@ export default class QuizForm {
             }
         });
 
-        if (countValues >= countInputs) {
-            current.dataset.qfComplete = '1';
+        if (countValues >= countInputs && countValues > 0) {
+            item.dataset[this.config.itemCompleteKey] = '1';
         } else {
-            current.dataset.qfComplete = '0';
+            item.dataset[this.config.itemCompleteKey] = '0';
         }
 
-        this.setProgress(progress, progressValue, root, current, btnPrev, items);
+        this.setProgress(root);
     }
 
-    setProgress(progress, progressValue, root, current, btnPrev, items) {
+    setProgress(root) {
+        const {items, progress, progressValue} = this.getElements(root);
+        if(!progress) return;
         const itemsComplete = Array.from(root.querySelectorAll(this.config.itemCompleteSelector));
-        const currentIndex = items.indexOf(current);
-        const prevRaw = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev') || '';
-        const prev = prevRaw.split(',').reverse();
-
         let total = items.length
         let complete = itemsComplete.length;
-
-        if ((total - 1) === Number(currentIndex) && items[currentIndex].dataset.qfComplete === '1') {
-            total = prev.length;
-        }
 
         if (complete > total) complete = total;
 
@@ -354,13 +348,13 @@ export default class QuizForm {
         const nextItemIndex = items.indexOf(item) + 1;
         const nextItem = items[nextItemIndex];
 
-        if (!nextItem) return items[items.length - 1].dataset.qfItem;
+        if (!nextItem) return items[items.length - 1].dataset[this.config.itemKey];
 
-        let nextIndex = nextItem.dataset.qfItem;
-        if (radio && radio.dataset.qfNext) {
-            nextIndex = radio.dataset.qfNext;
-        } else if (item.dataset.qfNext) {
-            nextIndex = item.dataset.qfNext;
+        let nextIndex = nextItem.dataset[this.config.itemKey];
+        if (radio && radio.dataset[this.config.nextIndexKey]) {
+            nextIndex = radio.dataset[this.config.nextIndexKey];
+        } else if (item.dataset[this.config.nextIndexKey]) {
+            nextIndex = item.dataset[this.config.nextIndexKey];
         }
         return nextIndex;
     }
@@ -370,18 +364,23 @@ export default class QuizForm {
         if (items.length < 2) return;
         items.map(item => item.classList.add(this.config.visabilityClass));
         btns.map(btn => {
-            if (btn.dataset.qfBtn !== 'reset') {
+            if (btn.dataset[this.config.btnKey] !== 'reset') {
                 btn.classList.add(this.config.visabilityClass);
             } else {
                 btn.classList.remove(this.config.visabilityClass);
             }
         });
-        finishItem.classList.remove(this.config.visabilityClass);
+
         pages.classList.add(this.config.visabilityClass);
         localStorage.removeItem(root.dataset[this.config.rootKey]);
         SendIt?.removeSenditCookie(root.dataset[this.config.rootKey] + 'Current');
         SendIt?.removeSenditCookie(root.dataset[this.config.rootKey] + 'Prev');
-        this.resetProgress(progress, 1);
+        if(finishItem){
+            this.resetProgress(progress, 1);
+            finishItem.classList.remove(this.config.visabilityClass);
+        }else{
+            this.reset(root);
+        }
     }
 
     getElements(root) {

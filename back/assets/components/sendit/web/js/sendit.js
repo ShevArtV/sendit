@@ -5,7 +5,7 @@
     class SendIt {
 
         constructor(pathToConfigs) {
-            this.pathToConfigs = this.getCookie('sijsconfigpath');
+            this.pathToConfigs = this.getSenditCookie('sijsconfigpath');
             this.events = {
                 init: 'si:init',
             }
@@ -42,6 +42,7 @@
         getSenditCookie(name) {
             let cookies = this.getCookie('SendIt');
             cookies = cookies ? JSON.parse(cookies) : {};
+            //console.log(cookies)
             return cookies[name];
         }
 
