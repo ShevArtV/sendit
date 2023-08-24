@@ -13,7 +13,7 @@ $buildConfig = array(
     //name for folder
     "package_name" => "sendit",
     "package_version" => "1.0.0",
-    "package_release" => "beta3",
+    "package_release" => "beta4",
     "package_table_prefix" => "si_",
     "package_class_prefix" => "si",
 
