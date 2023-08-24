@@ -1,7 +1,7 @@
 export default function returnConfigs() {
     return {
         QuizForm: {
-            pathToScripts: './modules/quizform.js?v=43r7h7ddff536rggrefg458jdf',
+            pathToScripts: './modules/quizform.js',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             itemSelector: '[data-qf-item]',
@@ -25,7 +25,7 @@ export default function returnConfigs() {
             sendEvent: 'si:send:finish',
         },
         Sending: {
-            pathToScripts: './modules/sending.js?v=5f656345efs',
+            pathToScripts: './modules/sending.js',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             presetKey: 'siPreset',
@@ -35,13 +35,13 @@ export default function returnConfigs() {
             errorClass: 'si-error'
         },
         SaveFormData: {
-            pathToScripts: './modules/saveformdata.js?v=34443dfdsf5635',
+            pathToScripts: './modules/saveformdata.js',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             resetEvent: 'si:send:reset'
         },
         Notify: {
-            pathToScripts: './modules/notify.js?v=65gsgf45sfsdf',
+            pathToScripts: './modules/notify.js',
             jsPath: 'assets/components/sendit/web/js/lib/izitoast/iziToast.min.js',
             cssPath: 'assets/components/sendit/web/css/lib/izitoast/iziToast.min.css',
             handlerClassName: 'iziToast',
@@ -59,7 +59,44 @@ export default function returnConfigs() {
             }
         },
         FileUploader:{
-            pathToScripts: './modules/fileuploader.js?v=5i67hdfgdfgt76t',
+            pathToScripts: './modules/fileuploader.js',
+            formSelector: '[data-si-form]',
+            rootSelector: '[data-fu-wrap]',
+            fieldSelector: '[data-fu-field]',
+            rootKey: 'fuWrap',
+            presetKey: 'siPreset',
+            sendEvent: 'si:send:after',
+            pathKey: 'fuPath',
+            pathAttr: 'data-fu-path',
+            actionUrl: 'assets/components/sendit/web/action.php',
+            layout: {
+                list: {
+                    tagName: 'ul',
+                    classNames: ['file-list', 'list_unslyled', 'd_flex', 'flex_wrap', 'gap_col-10', 'pt-20'],
+                    parentSelector: '[data-fu-wrap]',
+                    selector: '.file-list'
+                },
+                item: {
+                    tagName: 'li',
+                    classNames: ['file-list__item'],
+                    parentSelector: '.file-list',
+                    selector: '.file-list__item'
+                },
+                btn: {
+                    tagName: 'button',
+                    classNames: ['file-list__btn', 'btn', 'py-5', 'px-20', 'ta_center', 'border-1', 'border_error', 'hover_bg_error', 'radius_pill', 'hover_color_light'],
+                    parentSelector: '.file-list__item',
+                    selector: '[data-fu-path="${filepath}"]',
+                    type: 'button',
+                    text: '${filename}&nbsp;X'
+                },
+                input: {
+                    classNames: ['file-list__input'],
+                    tagName: 'input',
+                    type: 'hidden',
+                    selector: '.file-list__input'
+                }
+            }
         }
     }
 }
