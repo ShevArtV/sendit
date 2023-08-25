@@ -77,8 +77,7 @@ export default function returnConfigs() {
             layout: {
                 list: {
                     tagName: 'ul',
-                    classNames: ['file-list', 'list_unslyled', 'd_flex', 'flex_wrap', 'gap_col-10', 'pt-20'],
-                    parentSelector: '[data-fu-wrap]',
+                    classNames: ['file-list', 'list_unstyled', 'd_flex', 'flex_wrap', 'gap_col-10', 'pt-20'],
                     selector: '.file-list'
                 },
                 item: {

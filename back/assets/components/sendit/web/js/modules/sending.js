@@ -31,7 +31,6 @@ export default class Sending {
                 SendIt?.setSenditCookie('sitrusted', '1');
             }
         });
-
         document.addEventListener('submit', (e) => {
             if(!e.isTrusted) return;
             const root = e.target.closest(this.config.rootSelector);
@@ -41,9 +40,15 @@ export default class Sending {
                 this.prepareSendParams(root, root.dataset[this.config.presetKey]);
             }
         });
-
         document.addEventListener('change', this.sendField.bind(this));
         document.addEventListener('input', this.sendField.bind(this));
+        document.addEventListener('click', (e) => {
+            const root = e.target.closest(this.config.rootSelector);
+            if(e.target.type === 'reset' && root){
+                this.resetForm(root);
+                this.resetAllErrors(root);
+            }
+        });
     }
 
     sendField(e) {
@@ -82,7 +87,7 @@ export default class Sending {
             bubbles: true,
             cancelable: true,
             detail: {
-                url: url,
+                action: headers['X-SIACTION'],
                 target: target,
                 params: params,
                 headers: headers,
@@ -110,6 +115,7 @@ export default class Sending {
             cancelable: true,
             detail: {
                 action: headers['X-SIACTION'],
+                headers: headers,
                 target: target,
                 result: result,
                 Sending: this
@@ -124,6 +130,7 @@ export default class Sending {
                 cancelable: true,
                 detail: {
                     action: headers['X-SIACTION'],
+                    headers: headers,
                     target: target,
                     result: result,
                     Sending: this
@@ -140,6 +147,7 @@ export default class Sending {
                 cancelable: true,
                 detail: {
                     action: headers['X-SIACTION'],
+                    headers: headers,
                     target: target,
                     result: result,
                     Sending: this
@@ -156,6 +164,7 @@ export default class Sending {
             cancelable: false,
             detail: {
                 action: headers['X-SIACTION'],
+                headers:headers,
                 target: target,
                 result: result,
                 Sending: this
@@ -212,22 +221,22 @@ export default class Sending {
         }
     }
 
-    resetForm(root) {
+    resetForm(target) {
         if (!document.dispatchEvent(new CustomEvent(this.events.reset, {
             bubbles: true,
             cancelable: true,
             detail: {
-                target: root,
+                target: target,
                 Sending: this
             }
         }))) {
             return
         }
 
-        if (root.tagName === 'FORM') {
-            root.reset();
+        if (target.tagName === 'FORM') {
+            target.reset();
         } else {
-            root.value = '';
+            target.value = '';
         }
     }
 

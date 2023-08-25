@@ -48,14 +48,13 @@ export default class QuizForm {
                 const items = root.querySelectorAll(this.config.itemSelector);
                 if (items.length < 2) continue;
                 const currentIndex = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Current');
-                const prev = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',');
 
                 this.reset(root);
 
                 items.forEach(item => this.prepareProgress(root, item));
 
                 if (currentIndex) {
-                    this.change(root, currentIndex, 1);
+                    this.change(root, currentIndex);
                 }
             }
 
@@ -74,7 +73,7 @@ export default class QuizForm {
                     case 'next':
                         if (root) {
                             const nextIndex = this.getNextIndex(current, items);
-                            root ? this.change(root, nextIndex, 1) : '';
+                            root ? this.change(root, nextIndex) : '';
                         }
                         break;
                     case 'prev':
@@ -89,7 +88,7 @@ export default class QuizForm {
                                 SendIt?.removeSenditCookie(root.dataset[this.config.rootKey] + 'Prev');
                             }
 
-                            root ? this.change(root, nextIndex, 1) : '';
+                            root ? this.change(root, nextIndex) : '';
                         }
                         break;
                 }
@@ -105,7 +104,9 @@ export default class QuizForm {
                     if (items.length < 2) return;
                     const nextIndex = this.getNextIndex(current, items);
                     this.prepareProgress(root, current);
-                    this.change(root, nextIndex, current.dataset[this.config.autoKey]);
+                    if(current.dataset[this.config.autoKey]){
+                        this.change(root, nextIndex);
+                    }
                 }
             });
 
@@ -146,7 +147,7 @@ export default class QuizForm {
                 }
             }
 
-            this.change(root, item.dataset[this.config.itemKey], 1);
+            this.change(root, item.dataset[this.config.itemKey]);
         }
     }
 
@@ -207,7 +208,7 @@ export default class QuizForm {
         }
     }
 
-    change(root, nextIndex, isAuto = false) {
+    change(root, nextIndex) {
         const {items, current, currentQuestion, totalQuestions} = this.getElements(root);
         const prevIndex = current.dataset[this.config.itemKey];
         const nextItem = root.querySelector(`[data-qf-item="${nextIndex}"]`);
@@ -219,7 +220,6 @@ export default class QuizForm {
             detail: {
                 root: root,
                 nextIndex: nextIndex,
-                isAuto: isAuto,
                 items: items,
                 current: current,
                 currentQuestion: currentQuestion,
@@ -233,19 +233,18 @@ export default class QuizForm {
             return;
         }
 
-        if (isAuto) {
+        this.changeItem(root, current, nextItem, items);
 
-            this.changeItem(root, current, nextItem);
+        this.changeBtnsState(root, prevIndex, nextIndex, dir);
 
-            this.changeBtnsState(root, prevIndex, nextIndex, dir);
+        this.setPagination(currentQuestion, totalQuestions, items, nextIndex);
 
-            this.setPagination(currentQuestion, totalQuestions, items, nextIndex);
+        if(nextItem === items[items.length-1]){
+            this.prepareProgress(root, nextItem);
         }
-
-
     }
 
-    changeItem(root, current, next) {
+    changeItem(root, current, next, items) {
         if (next) {
             current.classList.add(this.config.visabilityClass);
             SendIt?.setSenditCookie(root.dataset[this.config.rootKey] + 'Current', next.dataset[this.config.itemKey]);
@@ -332,6 +331,16 @@ export default class QuizForm {
         const itemsComplete = Array.from(root.querySelectorAll(this.config.itemCompleteSelector));
         let total = items.length
         let complete = itemsComplete.length;
+
+        if(!items[items.length-1].classList.contains(this.config.visabilityClass)){
+            const prev = SendIt?.getSenditCookie(root.dataset[this.config.rootKey] + 'Prev')?.split(',');
+            if(prev && prev.length){
+                if(prev.length + 1 === itemsComplete.length){
+                    total = complete
+                }
+            }
+        }
+
 
         if (complete > total) complete = total;
 

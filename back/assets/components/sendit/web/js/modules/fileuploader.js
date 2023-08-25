@@ -13,8 +13,7 @@ export default class FileUploader {
             layout: {
                 list: {
                     tagName: 'ul',
-                    classNames: ['file-list', 'list_unslyled', 'd_flex', 'flex_wrap', 'gap_col-10', 'pt-20'],
-                    parentSelector: '[data-fu-wrap]',
+                    classNames: ['file-list', 'list_unstyled', 'd_flex', 'flex_wrap', 'gap_col-10', 'pt-20'],
                     selector: '.file-list'
                 },
                 item: {
@@ -42,7 +41,9 @@ export default class FileUploader {
         this.position = 0;
         this.multiplier = 1024 * 1024;
         this.events = {
-            before: 'fu:before:add'
+            before: 'fu:before:add',
+            uploading: 'fu:uploading',
+            remove: 'fu:remove',
         }
         this.config = Object.assign(defaults, config);
 
@@ -78,6 +79,19 @@ export default class FileUploader {
                     break;
 
                 case 'upload':
+                    if (!document.dispatchEvent(new CustomEvent(this.events.uploading, {
+                        bubbles: true,
+                        cancelable: true,
+                        detail: {
+                            result: result,
+                            form: form,
+                            root: root,
+                            field: field,
+                            FileUploader: this
+                        }
+                    }))) {
+                        return;
+                    }
                     if (result.success) {
                         this.position = result.data.position;
                         const file = field.files[result.data.currentIndex];
@@ -176,7 +190,6 @@ export default class FileUploader {
     }
 
     addFileToList(data, root, form) {
-        const layout = this.config.layout;
         if (!document.dispatchEvent(new CustomEvent(this.events.before, {
             bubbles: true,
             cancelable: true,
@@ -184,13 +197,13 @@ export default class FileUploader {
                 form: form,
                 data: data,
                 root: root,
-                layout: layout,
                 FileUploader: this
             }
         }))) {
             return;
         }
 
+        const layout = this.config.layout;
         let fileList = root.querySelector(layout.list.selector);
         let input = root.querySelector(layout.input.selector);
         if (!fileList) {
@@ -200,6 +213,7 @@ export default class FileUploader {
             input = this.createElement(layout.input, root);
         }
         const list = input.value ? input.value.split(',') : [];
+        if (list.includes(data.path)) return;
         const item = this.createElement(layout.item, fileList);
         const btn = this.createElement(layout.btn, item);
         btn.innerHTML = layout.btn.text.replace('${filename}', data.filename);
@@ -207,9 +221,7 @@ export default class FileUploader {
         btn.addEventListener('click', (e) => {
             this.removeFile(root, btn);
         });
-        if (!list.includes(data.path)) {
-            list.push(data.path);
-        }
+        list.push(data.path);
         input.value = list.join(',');
     }
 
@@ -220,6 +232,20 @@ export default class FileUploader {
             'X-SIACTION': 'removeFile',
             'X-SIPRESET': this.preset,
             'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
+        }
+
+        if (!document.dispatchEvent(new CustomEvent(this.events.remove, {
+            bubbles: true,
+            cancelable: true,
+            detail: {
+                btn: btn,
+                params: params,
+                root: root,
+                headers: headers,
+                FileUploader: this
+            }
+        }))) {
+            return;
         }
 
         SendIt?.Sending?.send(root, this.config.actionUrl, headers, params);

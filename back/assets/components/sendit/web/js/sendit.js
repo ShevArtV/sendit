@@ -42,7 +42,7 @@
         getSenditCookie(name) {
             let cookies = this.getCookie('SendIt');
             cookies = cookies ? JSON.parse(cookies) : {};
-            //console.log(cookies)
+            //console.log('get',cookies)
             return cookies[name];
         }
 
@@ -50,7 +50,7 @@
             let cookies = this.getCookie('SendIt');
             cookies = cookies ? JSON.parse(cookies) : {};
             cookies[name] = value;
-            //console.log(cookies)
+            //console.log('set',cookies)
             this.setCookie('SendIt', JSON.stringify(cookies));
 
         }
@@ -59,7 +59,8 @@
             let cookies = this.getCookie('SendIt');
             cookies = cookies ? JSON.parse(cookies) : {};
             delete cookies[name];
-            this.setSenditCookie('SendIt', JSON.stringify(cookies));
+            //console.log('rem', cookies);
+            this.setCookie('SendIt', JSON.stringify(cookies));
         }
 
         setCookie(name, value, options = {}) {

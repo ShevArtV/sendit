@@ -90,7 +90,7 @@ class SendIt
 
         foreach ($_POST as $k => $v) {
             $this->setValue($v, $k);
-            if(is_array($v)){
+            if (is_array($v)) {
                 $_POST[$k] = json_encode($v);
             }
             $_POST['fields'] = json_encode($_POST);
@@ -102,7 +102,7 @@ class SendIt
             $this->setFieldsAliases();
         }
 
-        if($this->params['attachFilesToEmail'] && $this->params['allowFiles']){
+        if ($this->params['attachFilesToEmail'] && $this->params['allowFiles']) {
             $this->attachFiles();
         }
 
@@ -112,9 +112,10 @@ class SendIt
         $this->setValidate();
     }
 
-    private function setParams(){
+    private function setParams()
+    {
         $this->params = array_merge($this->extendsPreset, $this->preset, $this->formParams);
-        if(empty($this->params)){
+        if (empty($this->params)) {
             $profile = $this->modx->getObject('modUserProfile', ['internalKey' => 1]);
             $email = $this->modx->getOption('si_default_email');
             $emailTpl = $this->modx->getOption('si_default_emailtpl', '', 'siDefaultEmail');
@@ -131,18 +132,19 @@ class SendIt
         }
     }
 
-    public function loadCssJs(){
+    public function loadCssJs()
+    {
         $frontend_js = $this->modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/web/js/sendit.js');
         $frontend_css = $this->modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/web/css/index.min.css');
         $assetsUrl = str_replace($this->basePath, '', $this->modx->getOption('assets_path'));
 
-        if($frontend_js){
+        if ($frontend_js) {
             $scriptPath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_js);
             $this->modx->regClientScript(
                 '<script type="module" src="' . $scriptPath . '"></script>', true
             );
         }
-        if($frontend_css){
+        if ($frontend_css) {
             $stylePath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_css);
             $this->modx->regClientCSS($stylePath);
         }
@@ -156,14 +158,14 @@ class SendIt
         $fileList = $_POST[$this->params['allowFiles']];
         $fieldKey = $this->params['attachFilesToEmail'];
 
-        if($fileList){
+        if ($fileList && $fieldKey) {
             $fileList = explode(',', $fileList);
             $_FILES[$fieldKey]['name'] = [];
             $_FILES[$fieldKey]['type'] = [];
             $_FILES[$fieldKey]['tmp_name'] = [];
             $_FILES[$fieldKey]['error'] = [];
             $_FILES[$fieldKey]['size'] = [];
-            foreach($fileList as $path){
+            foreach ($fileList as $path) {
                 $fullpath = $this->basePath . $path;
                 $_FILES[$fieldKey]['name'][] = basename($path);
                 $_FILES[$fieldKey]['type'][] = filetype($fullpath);
@@ -205,9 +207,9 @@ class SendIt
     {
         if (!empty($allValidators)) {
             $output = [];
-            foreach($allValidators as $validator){
+            foreach ($allValidators as $validator) {
                 $items = explode('=', $validator);
-                if(!in_array($items[0], $this->defaltValidators)){
+                if (!in_array($items[0], $this->defaltValidators)) {
                     $output[] = $items[0];
                 }
             }
@@ -254,8 +256,8 @@ class SendIt
             if ($this->validates[$k] && !$this->validates[$key]) {
                 $this->validates[$key] = $this->validates[$k];
             }
-        }else{
-            $_POST[$key. '[]'] = implode(', ', $value);
+        } else {
+            $_POST[$key . '[]'] = implode(', ', $value);
             foreach ($value as $k => $v) {
                 $this->setValue($v, $key . '[' . $k . ']');
             }
@@ -298,7 +300,7 @@ class SendIt
      */
     private function getFormParams(): array
     {
-        $this->modx->invokeEvent('OnGetFormParams',[
+        $this->modx->invokeEvent('OnGetFormParams', [
             'formName' => $this->formName,
         ]);
 
@@ -321,7 +323,7 @@ class SendIt
                 }
             }
             return $this->runSnippet($snippet);
-        }else{
+        } else {
             $this->modx->runSnippet('FormIt', $this->params);
             $result = $this->handleFormIt();
             $status = $result['success'] ? 'success' : 'error';
@@ -480,7 +482,7 @@ class SendIt
                     if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . DIRECTORY_SEPARATOR . $object))
                         $this->removeDir($dir . DIRECTORY_SEPARATOR . $object);
                     else
-                        unlink($dir . DIRECTORY_SEPARATOR . $object);
+                        if (file_exists($dir . DIRECTORY_SEPARATOR . $object)) unlink($dir . DIRECTORY_SEPARATOR . $object);
                 }
             }
             if (file_exists($dir) && is_dir($dir)) {
@@ -525,7 +527,8 @@ class SendIt
      *
      * @return array|string
      */
-    private function getResponse(bool $status, $message = '' , $data = [], $placeholders = []){
+    private function getResponse(bool $status, $message = '', $data = [], $placeholders = [])
+    {
         $response = [
             'success' => $status,
             'message' => $this->modx->lexicon($message, $placeholders),
