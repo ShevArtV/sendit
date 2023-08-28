@@ -1,5 +1,6 @@
 export default class FileUploader {
     constructor(config) {
+        if(window.SendIt && window.SendIt.FileUploader) return window.SendIt.FileUploader;
         const defaults = {
             formSelector: '[data-si-form]',
             rootSelector: '[data-fu-wrap]',

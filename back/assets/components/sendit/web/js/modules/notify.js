@@ -1,5 +1,6 @@
 export default class Notify {
     constructor(config) {
+        if(window.SendIt && window.SendIt.Notify) return window.SendIt.Notify;
         const defaults = {
             jsPath: 'assets/components/sendit/web/js/lib/izitoast/iziToast.min.js',
             cssPath: 'assets/components/sendit/web/css/lib/izitoast/iziToast.min.css',

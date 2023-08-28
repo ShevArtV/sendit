@@ -1,5 +1,6 @@
 export default class SaveFormData {
     constructor(config) {
+        if(window.SendIt && window.SendIt.SaveFormData) return window.SendIt.SaveFormData;
         const defaults = {
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',

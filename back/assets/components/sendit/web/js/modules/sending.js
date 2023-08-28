@@ -1,5 +1,6 @@
 export default class Sending {
     constructor(config) {
+        if(window.SendIt && window.SendIt.Sending) return window.SendIt.Sending;
         const defaults = {
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',

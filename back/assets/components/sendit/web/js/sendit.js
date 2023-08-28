@@ -3,14 +3,18 @@
 
 
     class SendIt {
-
-        constructor(pathToConfigs) {
+        constructor() {
+            if(window.SendIt) return window.SendIt;
             this.pathToConfigs = this.getSenditCookie('sijsconfigpath');
             this.events = {
                 init: 'si:init',
             }
+
             this.config = {};
-            this.loadConfigs()
+            this.loadConfigs().then(() => {
+                window.SendIt = this;
+                document.dispatchEvent(new CustomEvent(this.events.init, {}));
+            });
         }
 
         async loadConfigs() {
@@ -35,8 +39,6 @@
             for (let k in this.config) {
                 await this.importModule(this.config[k]['pathToScripts'], k);
             }
-            window.SendIt = this;
-            document.dispatchEvent(new CustomEvent(this.events.init, {}));
         }
 
         getSenditCookie(name) {
@@ -98,12 +100,7 @@
                 'max-age': -1
             })
         }
-
-        static create() {
-            new this();
-        }
     }
 
     new SendIt();
-
 })();

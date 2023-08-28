@@ -1,6 +1,7 @@
 export default class QuizForm {
 
     constructor(config) {
+        if(window.SendIt && window.SendIt.QuizForm) return window.SendIt.QuizForm;
         const defaults = {
             pathToScripts: './modules/quizform.js',
             rootSelector: '[data-si-form]',
