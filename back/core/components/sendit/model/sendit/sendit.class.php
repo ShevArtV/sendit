@@ -93,8 +93,8 @@ class SendIt
             if (is_array($v)) {
                 $_POST[$k] = json_encode($v);
             }
-            $_POST['fields'] = json_encode($_POST);
         }
+        $_POST['fields'] = json_encode($_POST);
 
         $this->removeUselessField();
 
@@ -250,6 +250,7 @@ class SendIt
      */
     private function setValue($value, $key): void
     {
+        if($key === 'fields') return;
         if (!is_array($value)) {
             $_POST[$key] = $value;
             $k = preg_replace('/\[\d*?\]/', '[*]', $key);
@@ -340,7 +341,7 @@ class SendIt
         $this->params['SendIt'] = $this;
         $pdo = $this->modx->getService('pdoTools');
         if ($pdo) {
-            return $this->pdo->runSnippet($snippet, $this->params);
+            return $pdo->runSnippet($snippet, $this->params);
         } else {
             return $this->modx->runSnippet($snippet, $this->params);
         }

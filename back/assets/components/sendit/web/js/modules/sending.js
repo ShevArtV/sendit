@@ -62,6 +62,10 @@ export default class Sending {
         if (field) {
             if(!field.value) return;
             this.prepareSendParams(field, field.dataset[this.config.presetKey]);
+        }else{
+            if(root){
+                this.prepareSendParams(root, root.dataset[this.config.presetKey]);
+            }
         }
     }
 

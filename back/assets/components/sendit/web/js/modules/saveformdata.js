@@ -9,7 +9,9 @@ export default class SaveFormData {
         this.config = Object.assign(defaults, config);
         this.events = {
             save: 'sf:save',
-            set: 'sf:set',
+            setBefore: 'sf:set:before',
+            setAfter: 'sf:set:after',
+            change: 'sf:change',
             remove: 'sf:remove',
         }
         document.addEventListener('si:init', (e) => {
@@ -134,7 +136,9 @@ export default class SaveFormData {
                     savedData[field.name] = savedData[field.name] || [];
                     for (let i = 0; i < savedData[field.name].length; i++) {
                         const option = Array.from(field.options).filter(el => el.value === savedData[field.name][i].value);
-                        option[0].selected = savedData[field.name][i].selected;
+                        if(option[0]){
+                            option[0].selected = savedData[field.name][i].selected;
+                        }
                     }
                     break;
                 default:
@@ -144,8 +148,26 @@ export default class SaveFormData {
                     break;
             }
 
-            field.dispatchEvent(new Event('change', {bubbles: true, composed: true}))
+            field.dispatchEvent(new CustomEvent(this.events.change, {
+                bubbles: true,
+                composed: true,
+                cancelable: false,
+                detail: {
+                    SaveFormData: this
+                }
+            }));
         })
+
+        document.dispatchEvent(new CustomEvent(this.events.setAfter, {
+            bubbles: true,
+            cancelable: false,
+            detail: {
+                root: root,
+                formFields: formFields,
+                savedData: savedData,
+                SaveFormData: this
+            }
+        }))
     }
 
     removeValues(root) {
