@@ -1,6 +1,6 @@
 <?php
 
-$headers = getallheaders();
+$headers = array_change_key_case(getallheaders());
 $token = $headers['x-sitoken'] ?: $headers['X-SITOKEN'];
 $cookie = $_COOKIE['SendIt'] ? json_decode($_COOKIE['SendIt'],1): [];
 $res = [

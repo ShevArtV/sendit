@@ -5,6 +5,7 @@ export default class Sending {
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             presetKey: 'siPreset',
+            eventKey: 'siEvent',
             actionUrl: 'assets/components/sendit/web/action.php',
             antiSpamEvent: 'click',
             errorBlockSelector: '[data-si-error="${fieldName}"]',
@@ -63,7 +64,7 @@ export default class Sending {
             if(!field.value) return;
             this.prepareSendParams(field, field.dataset[this.config.presetKey]);
         }else{
-            if(root){
+            if(root && root.dataset[this.config.eventKey] === e.type){
                 this.prepareSendParams(root, root.dataset[this.config.presetKey]);
             }
         }
