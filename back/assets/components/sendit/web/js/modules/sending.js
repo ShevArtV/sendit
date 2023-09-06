@@ -182,7 +182,9 @@ export default class Sending {
         const redirectUrl = result.data.redirectUrl;
         const redirectTimeout = Number(result.data.redirectTimeout) || 0;
 
-        SendIt?.Notify?.success(result.message);
+        if(result.message){
+            SendIt?.Notify?.success(result.message);
+        }
 
         if (result.data.goalName && result.data.counterId && result.data.sendGoal && typeof window.ym !== 'undefined') {
             ym(result.data.counterId, 'reachGoal', result.data.goalName);
@@ -223,6 +225,9 @@ export default class Sending {
                         SendIt?.Notify?.error(`${result.data.errors[k]}`);
                     }
                 }
+            }
+            if(result.message){
+                SendIt?.Notify?.error(result.message);
             }
         }
     }

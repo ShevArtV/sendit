@@ -11,6 +11,7 @@ return [
         'clearFieldsOnSuccess' => 1,
         'fieldNames' => 'age==Возраст',
         'successMessage' => 'Форма отправлена!',
+        'validationErrorMessage' => 'Исправьте ошибки!'
     ],
     'testchangesubmit' => [
         'validate' => 'email:email',
