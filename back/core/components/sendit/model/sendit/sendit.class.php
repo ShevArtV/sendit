@@ -46,7 +46,7 @@ class SendIt
         $this->uploaddir = $modx->getOption('si_uploaddir', '', '/assets/components/sendit/uploaded_files/');
         $pathToPresets = $modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
         $this->pathToPresets = $this->corePath . $pathToPresets;
-        $this->presets = include $this->pathToPresets;
+        $this->presets = file_exists($this->pathToPresets) ? include $this->pathToPresets : [];
         $this->preset = $this->presets[$presetName] ?: [];
         $this->extendsPreset = $this->presets[$this->preset['extends']] ?: [];
         $this->formParams = $this->getFormParams();
@@ -71,7 +71,9 @@ class SendIt
             'regexp',
             'checkbox'
         ];
-
+        if(empty($this->presets)){
+            $this->modx->log(1, 'Путь к пресетам не задан или задан не корректно!');
+        }
         $this->initialize();
     }
 
