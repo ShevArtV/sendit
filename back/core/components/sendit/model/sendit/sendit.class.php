@@ -41,10 +41,11 @@ class SendIt
         $this->modx = $modx;
         $this->formName = $formName;
         $this->basePath = $modx->getOption('base_path');
+        $this->corePath = $modx->getOption('core_path');
         $this->jsConfigPath = $modx->getOption('si_js_config_path', '', './sendit.inc.js');
         $this->uploaddir = $modx->getOption('si_uploaddir', '', '/assets/components/sendit/uploaded_files/');
-        $pathToPresets = $modx->getOption('si_path_to_presets', '', '/core/components/sendit/presets/sendit.inc.php');
-        $this->pathToPresets = $this->basePath . $pathToPresets;
+        $pathToPresets = $modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
+        $this->pathToPresets = $this->corePath . $pathToPresets;
         $this->presets = include $this->pathToPresets;
         $this->preset = $this->presets[$presetName] ?: [];
         $this->extendsPreset = $this->presets[$this->preset['extends']] ?: [];

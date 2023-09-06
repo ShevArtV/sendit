@@ -112,6 +112,11 @@ export default class FileUploader {
                     } else {
                         this.uploadFinished(field, result, root, form);
                     }
+                    addEventListener('beforeunload', (e) => {
+                        if(root){
+                            this.removeDir(root);
+                        }
+                    });
                     break;
                 case 'removeFile':
                     this.removeFromList(form, result.data.path);
@@ -122,10 +127,6 @@ export default class FileUploader {
                     }
                     break;
             }
-
-            addEventListener('beforeunload', (e) => {
-                this.removeDir(root);
-            });
         });
 
     }
