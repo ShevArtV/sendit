@@ -6,7 +6,7 @@ export default class Sending {
             rootKey: 'siForm',
             presetKey: 'siPreset',
             eventKey: 'siEvent',
-            actionUrl: 'assets/components/sendit/web/action.php',
+            actionUrl: 'assets/components/sendit/action.php',
             antiSpamEvent: 'click',
             errorBlockSelector: '[data-si-error="${fieldName}"]',
             eventSelector: '[data-si-event="${eventName}"]',
@@ -29,12 +29,10 @@ export default class Sending {
 
     initialize() {
         document.addEventListener(this.config.antiSpamEvent, (e) => {
-            if (e.isTrusted) {
-                SendIt?.setSenditCookie('sitrusted', '1');
-            }
+            if(e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
         });
         document.addEventListener('submit', (e) => {
-            if(!e.isTrusted) return;
+            if(e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
             const root = e.target.closest(this.config.rootSelector);
 
             if (root) {
@@ -54,41 +52,49 @@ export default class Sending {
     }
 
     sendField(e) {
-        if(!e.isTrusted) return;
+        if(e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
         const field = e.target.closest(this.config.eventSelector.replace('${eventName}', e.type));
         const root = e.target.closest(this.config.rootSelector);
+        if(!field && !root) return;
+        const preset = (field && field.dataset[this.config.presetKey]) ? field.dataset[this.config.presetKey] : root.dataset[this.config.presetKey];
         if (root) {
             this.resetError(e.target.name, root);
         }
-        if (field) {
+        if (field && field.tagName !== 'FORM') {
             if(!field.value) return;
-            this.prepareSendParams(field, field.dataset[this.config.presetKey]);
+            this.prepareSendParams(field, preset);
         }else{
             if(root && root.dataset[this.config.eventKey] === e.type){
-                this.prepareSendParams(root, root.dataset[this.config.presetKey]);
+                this.prepareSendParams(root, preset);
             }
         }
     }
 
     prepareSendParams(root, preset = '', action = 'send') {
-        const params = root.tagName === 'FORM' ? new FormData(root) : new FormData();
+        let params = root.tagName === 'FORM' ? new FormData(root) : new FormData();
+        let formName = root.dataset[this.config.rootKey];
         if (root.name && root.tagName !== 'FORM') {
-            params.append(root.name, root.value);
+            const form = root.closest(this.config.rootSelector);
+            if(form){
+                formName = form.dataset[this.config.rootKey];
+                params = new FormData(form);
+            }else{
+                params.append(root.name, root.value);
+            }
         }
 
         const headers = {
-            'X-SIFORM': root.dataset[this.config.rootKey],
-            'X-SIACTION': action,
-            'X-SIPRESET': preset,
-            'X-SITOKEN': SendIt?.getSenditCookie('sitoken')
+            'X-SIFORM': formName || '',
+            'X-SIACTION': action || '',
+            'X-SIPRESET': preset || '',
+            'X-SIEVENT': root.dataset[this.config.eventKey] || 'submit',
+            'X-SITOKEN': SendIt?.getComponentCookie('sitoken') || ''
         }
 
         this.send(root, this.config.actionUrl, headers, params);
     }
 
     async send(target, url, headers, params, method = 'POST') {
-        if (SendIt?.getSenditCookie('sitrusted') === '0') return;
-        console.log(headers);
         if (!document.dispatchEvent(new CustomEvent(this.events.before, {
             bubbles: true,
             cancelable: true,
@@ -104,6 +110,8 @@ export default class Sending {
             return;
         }
 
+        if (SendIt?.getComponentCookie('sitrusted') === '0') return;
+
         this.resetAllErrors(target);
 
         const response = await fetch(this.config.actionUrl, {
@@ -113,8 +121,6 @@ export default class Sending {
         });
 
         const result = await response.json();
-
-        console.log(result);
 
         if (!document.dispatchEvent(new CustomEvent(this.events.after, {
             bubbles: true,
@@ -182,9 +188,7 @@ export default class Sending {
         const redirectUrl = result.data.redirectUrl;
         const redirectTimeout = Number(result.data.redirectTimeout) || 0;
 
-        if(result.message){
-            SendIt?.Notify?.success(result.message);
-        }
+        SendIt?.Notify?.success(result.message);
 
         if (result.data.goalName && result.data.counterId && result.data.sendGoal && typeof window.ym !== 'undefined') {
             ym(result.data.counterId, 'reachGoal', result.data.goalName);
@@ -203,9 +207,9 @@ export default class Sending {
     }
 
     error(result, root) {
-        if (!result.data.errors) {
-            if (SendIt?.getSenditCookie('sitrusted') === '0'){
-                SendIt?.Notify?.info(SendIt?.getSenditCookie('simsgantispam'));
+        if (!result.data || !result.data.errors) {
+            if (SendIt?.getComponentCookie('sitrusted') === '0'){
+                SendIt?.Notify?.info(SendIt?.getComponentCookie('simsgantispam'));
             }else{
                 SendIt?.Notify?.error(result.message);
             }
@@ -225,9 +229,6 @@ export default class Sending {
                         SendIt?.Notify?.error(`${result.data.errors[k]}`);
                     }
                 }
-            }
-            if(result.message){
-                SendIt?.Notify?.error(result.message);
             }
         }
     }

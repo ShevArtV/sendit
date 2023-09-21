@@ -5,7 +5,7 @@
     class SendIt {
         constructor() {
             if(window.SendIt) return window.SendIt;
-            this.pathToConfigs = this.getSenditCookie('sijsconfigpath');
+            this.pathToConfigs = this.getComponentCookie('sijsconfigpath');
             this.events = {
                 init: 'si:init',
             }
@@ -22,6 +22,12 @@
             await this.initialize();
         }
 
+        async initialize() {
+            for (let k in this.config) {
+                await this.importModule(this.config[k]['pathToScripts'], k);
+            }
+        }
+
         async importModule(pathToModule, property) {
             try {
                 const {default: moduleName} = await import(pathToModule);
@@ -35,34 +41,28 @@
             }
         }
 
-        async initialize() {
-            for (let k in this.config) {
-                await this.importModule(this.config[k]['pathToScripts'], k);
-            }
-        }
-
-        getSenditCookie(name) {
-            let cookies = this.getCookie('SendIt');
+        getComponentCookie(name, className = 'SendIt') {
+            let cookies = this.getCookie(className);
             cookies = cookies ? JSON.parse(cookies) : {};
             //console.log('get',cookies)
             return cookies[name];
         }
 
-        setSenditCookie(name, value) {
-            let cookies = this.getCookie('SendIt');
+        setComponentCookie(name, value, className = 'SendIt') {
+            let cookies = this.getCookie(className);
             cookies = cookies ? JSON.parse(cookies) : {};
             cookies[name] = value;
             //console.log('set',cookies)
-            this.setCookie('SendIt', JSON.stringify(cookies));
+            this.setCookie(className, JSON.stringify(cookies));
 
         }
 
-        removeSenditCookie(name) {
-            let cookies = this.getCookie('SendIt');
+        removeComponentCookie(name, className = 'SendIt') {
+            let cookies = this.getCookie(className);
             cookies = cookies ? JSON.parse(cookies) : {};
             delete cookies[name];
             //console.log('rem', cookies);
-            this.setCookie('SendIt', JSON.stringify(cookies));
+            this.setCookie(className, JSON.stringify(cookies));
         }
 
         setCookie(name, value, options = {}) {

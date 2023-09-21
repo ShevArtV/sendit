@@ -15,6 +15,10 @@ class SendIt
     public string $uploaddir;
     /** @var string $pathToPresets */
     public string $pathToPresets;
+    /** @var string $event */
+    public string $event;
+    /** @var string $corePath */
+    public string $corePath;
     /** @var array $presets */
     public array $presets;
     /** @var array $preset */
@@ -36,10 +40,11 @@ class SendIt
      * @param string $presetName
      * @param string $formName
      */
-    public function __construct(modX $modx, $presetName = '', $formName = '')
+    public function __construct(modX $modx, $presetName = '', $formName = '', $event = 'submit')
     {
         $this->modx = $modx;
-        $this->formName = $formName;
+        $this->formName = $formName ?: $presetName;
+        $this->event = $event;
         $this->basePath = $modx->getOption('base_path');
         $this->corePath = $modx->getOption('core_path');
         $this->jsConfigPath = $modx->getOption('si_js_config_path', '', './sendit.inc.js');
@@ -71,7 +76,7 @@ class SendIt
             'regexp',
             'checkbox'
         ];
-        if(empty($this->presets)){
+        if (empty($this->presets)) {
             $this->modx->log(1, 'Путь к пресетам не задан или задан не корректно!');
         }
         $this->initialize();
@@ -117,39 +122,44 @@ class SendIt
 
     private function setParams()
     {
-        $this->params = array_merge($this->extendsPreset, $this->preset, $this->formParams);
-        if (empty($this->params)) {
-            $profile = $this->modx->getObject('modUserProfile', ['internalKey' => 1]);
-            $email = $this->modx->getOption('si_default_email');
-            $emailTpl = $this->modx->getOption('si_default_emailtpl', '', 'siDefaultEmail');
-            $email = $email ? $this->modx->getOption('ms2_email_manager') : $profile->get('email');
-            $hooks = $email ? 'FormItSaveForm,email' : 'FormItSaveForm';
-            $this->params = [
-                'successMessage' => $this->modx->lexicon('si_msg_success'),
-                'hooks' => $hooks,
-                'emailTpl' => $emailTpl,
-                'emailTo' => $email,
-                'formName' => $this->modx->lexicon('si_default_formname'),
-                'emailSubject' => $this->modx->lexicon('si_default_subject', ['host' => $this->modx->getOption('http_host')]),
-            ];
-        }
+        $adminID = $this->modx->getOption('si_default_admin', '', 1);
+        $http_host = $this->modx->getOption('http_host', '', 'domain.com');
+        $useSMTP = $this->modx->getOption('mail_use_smtp', '', false);
+        $emailFrom = $useSMTP ? $this->modx->getOption('emailsender') : "noreply@{$http_host}";
+        $profile = $this->modx->getObject('modUserProfile', ['internalKey' => $adminID]);
+        $email = $this->modx->getOption('si_default_email') ?: $profile->get('email');
+        $email = $email ?: $this->modx->getOption('ms2_email_manager');
+        $emailTpl = $this->modx->getOption('si_default_emailtpl', '', 'siDefaultEmail');
+        $hooks = $email ? 'FormItSaveForm,email' : 'FormItSaveForm';
+        $default = [
+            'successMessage' => $this->modx->lexicon('si_msg_success'),
+            'hooks' => $hooks,
+            'emailTpl' => $emailTpl,
+            'emailTo' => $email,
+            'emailFrom' => $emailFrom,
+            'formName' => $this->modx->lexicon('si_default_formname'),
+            'emailSubject' => $this->modx->lexicon('si_default_subject', ['host' => $this->modx->getOption('http_host')]),
+        ];
+
+        $this->params = array_merge($default, $this->extendsPreset, $this->preset, $this->formParams);
     }
 
-    public function loadCssJs()
+    public static function loadCssJs($modx)
     {
-        $frontend_js = $this->modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/web/js/sendit.js');
-        $frontend_css = $this->modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/web/css/index.min.css');
-        $assetsUrl = str_replace($this->basePath, '', $this->modx->getOption('assets_path'));
+        $frontend_js = $modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/web/js/sendit.js');
+        $frontend_css = $modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/web/css/index.min.css');
+        $basePath = $modx->getOption('base_path');
+        $assetsUrl = str_replace($basePath, '', $modx->getOption('assets_path'));
 
         if ($frontend_js) {
             $scriptPath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_js);
-            $this->modx->regClientScript(
+            $modx->regClientScript(
                 '<script type="module" src="' . $scriptPath . '"></script>', true
             );
         }
         if ($frontend_css) {
             $stylePath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_css);
-            $this->modx->regClientCSS($stylePath);
+            $modx->regClientCSS($stylePath);
         }
     }
 
@@ -230,9 +240,9 @@ class SendIt
     {
         $fields = explode(',', $this->params['fieldNames']);
         $result = [];
-        foreach ($fields as $key => $field) {
+        foreach ($fields as $field) {
             $f = explode('==', trim($field));
-            $result[$key] = $f[1];
+            $result[$f[0]] = $f[1];
         }
         $_POST['fieldsAliases'] = $this->modx->toJSON($result);
     }
@@ -253,7 +263,7 @@ class SendIt
      */
     private function setValue($value, $key): void
     {
-        if($key === 'fields') return;
+        if ($key === 'fields') return;
         if (!is_array($value)) {
             $_POST[$key] = $value;
             $k = preg_replace('/\[\d*?\]/', '[*]', $key);
@@ -316,23 +326,44 @@ class SendIt
      */
     public function process()
     {
-        $snippet = $this->params['snippet'] ?: 'FormIt';
+        $result = $this->checkPossibilityWork();
 
-        if ($snippet !== 'FormIt') {
-            if ($this->params['validate']) {
+        $this->modx->invokeEvent('OnCheckPossibilityWork', [
+            'formName' => $this->formName,
+            'result' => $result
+        ]);
+
+        $response = $this->modx->event->returnedValues['result'];
+        if(!empty($response)){
+            $result = $response;
+        }
+
+        if ($result['success']) {
+            if($this->event === 'submit'){
+                $_SESSION['SendIt']['sendingLimits'][$this->formName]['countSending'] = (int)$_SESSION['SendIt']['sendingLimits'][$this->formName]['countSending'] + 1;
+                $_SESSION['SendIt']['sendingLimits'][$this->formName]['lastSendingTime'] = time();
+            }
+
+            $snippet = $this->params['snippet'] ?: 'FormIt';
+
+            if ($snippet !== 'FormIt') {
+                if ($this->params['validate']) {
+                    $this->modx->runSnippet('FormIt', $this->params);
+                    $result = $this->handleFormIt();
+                    if (!$result['success']) {
+                        return $this->error($result['message'], $result['data']);
+                    }
+                }
+                return $this->runSnippet($snippet);
+            } else {
                 $this->modx->runSnippet('FormIt', $this->params);
                 $result = $this->handleFormIt();
-                if (!$result['success']) {
-                    return $this->error($result['message'], $result['data']);
-                }
+                $status = $result['success'] ? 'success' : 'error';
+                return $this->$status($result['message'], $result['data']);
             }
-            return $this->runSnippet($snippet);
-        } else {
-            $this->modx->runSnippet('FormIt', $this->params);
-            $result = $this->handleFormIt();
-            $status = $result['success'] ? 'success' : 'error';
-            return $this->$status($result['message'], $result['data']);
         }
+        return $result;
+
     }
 
     /**
@@ -344,9 +375,32 @@ class SendIt
         $this->params['SendIt'] = $this;
         $pdo = $this->modx->getService('pdoTools');
         if ($pdo) {
-            return $pdo->runSnippet($snippet, $this->params);
+            $result = $pdo->runSnippet($snippet, $this->params);
         } else {
-            return $this->modx->runSnippet($snippet, $this->params);
+            $result = $this->modx->runSnippet($snippet, $this->params);
+        }
+
+        return $result;
+    }
+
+    private function checkPossibilityWork()
+    {
+        if($this->event !== 'submit') return $this->success();
+
+        $pause = $this->modx->getOption('si_pause_between_sending', '', 30);
+        $maxSendingCount = $this->modx->getOption('si_max_sending_per_session', '', 2);
+        $now = time();
+        $countSending = (int)$_SESSION['SendIt']['sendingLimits'][$this->formName]['countSending'];
+        $lastSendingTime = (int)$_SESSION['SendIt']['sendingLimits'][$this->formName]['lastSendingTime'] ?: $now - $pause;
+        $timePassed = $now - $lastSendingTime;
+        if ($timePassed >= $pause && $countSending < $maxSendingCount) {
+            return $this->success();
+        }
+        if ($countSending >= $maxSendingCount) {
+            return $this->error('si_msg_count_sending_err', [], ['count' => $maxSendingCount]);
+        }
+        if ($timePassed < $pause) {
+            return $this->error('si_msg_pause_err', [], ['left' => $pause - $timePassed]);
         }
     }
 
@@ -477,14 +531,14 @@ class SendIt
      * @param string $dir
      * @return void
      */
-    public function removeDir(string $dir): void
+    public static function removeDir(string $dir): void
     {
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
                     if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . DIRECTORY_SEPARATOR . $object))
-                        $this->removeDir($dir . DIRECTORY_SEPARATOR . $object);
+                        SendIt::removeDir($dir . DIRECTORY_SEPARATOR . $object);
                     else
                         if (file_exists($dir . DIRECTORY_SEPARATOR . $object)) unlink($dir . DIRECTORY_SEPARATOR . $object);
                 }
@@ -539,6 +593,6 @@ class SendIt
             'data' => $data,
         ];
 
-        return $this->modx->toJSON($response);
+        return $response;
     }
 }

@@ -9,9 +9,9 @@ return [
         'redirectTo' => 0,
         'redirectTimeout' => 3000,
         'clearFieldsOnSuccess' => 1,
-        'fieldNames' => 'age==Возраст',
+        'fieldNames' => 'age==Возраст,name==Имя,phone==Телефон,email==Почта',
         'successMessage' => 'Форма отправлена!',
-        'validationErrorMessage' => 'Исправьте ошибки!'
+        'validationErrorMessage' => 'Исправьте ошибки!',
     ],
     'testchangesubmit' => [
         'validate' => 'email:email',
@@ -40,13 +40,13 @@ return [
         'fieldNames' => 'phone==Телефон,name==Имя',
     ],
     'register' => [
-        'hooks' => 'AjaxIdentification,FormItSaveForm,FormItAutoResponder',
+        'hooks' => 'Identification,FormItSaveForm,FormItAutoResponder',
         'method' => 'register',
         'successMessage' => 'Вы успешно зарегистрированы. Подтвердите email для активации учётной записи.',
 
         'fiarSubject' => 'Активация пользователя',
         'fiarFrom' => 'email@domain.ru',
-        'fiarTpl' => '@FILE chunks/emails/activateEmail.tpl',
+        'fiarTpl' => 'siActivateEmail',
 
         'activation' => 1,
         'autoLogin' => 0,
@@ -68,7 +68,7 @@ return [
     'auth' => [
         'successMessage' => 'Вы успешно авторизованы и будете перенаправлены в личный кабинет.',
         'validate' => 'email:required,password:required',
-        'hooks' => 'AjaxIdentification',
+        'hooks' => 'Identification',
 
         'method' => 'login',
 
@@ -81,7 +81,7 @@ return [
         'errorFieldName' => 'errorLogin'
     ],
     'editpass' => [
-        'hooks' => 'AjaxIdentification',
+        'hooks' => 'Identification',
         'method' => 'update',
         'successMessage' => 'Пароль изменён.',
 
@@ -92,7 +92,7 @@ return [
         'password.vTextMinLength' => 'Пароль должен быть не менее 8 символов.',
     ],
     'dataedit' => [
-        'hooks' => 'AjaxIdentification',
+        'hooks' => 'Identification',
         'method' => 'update',
         'successMessage' => 'Данные сохранены.',
         'clearFieldsOnSuccess' => 0,
@@ -101,14 +101,14 @@ return [
         'email.vTextRequired' => 'Укажите email.'
     ],
     'logout' => [
-        'hooks' => 'AjaxIdentification',
+        'hooks' => 'Identification',
         'method' => 'logout',
         'successMessage' => 'До новых встреч!',
         'redirectTo' => 1,
         'errorFieldName' => 'errorLogout'
     ],
     'forgot' => [
-        'hooks' => 'AjaxIdentification,FormItSaveForm,FormItAutoResponder',
+        'hooks' => 'Identification,FormItSaveForm,FormItAutoResponder',
         'method' => 'forgot',
         'successMessage' => 'Новый пароль отправлен на ваш email',
 
@@ -117,7 +117,7 @@ return [
 
         'fiarSubject' => 'Восстановление пароля',
         'fiarFrom' => 'email@domain.ru',
-        'fiarTpl' => '@FILE chunks/emails/resetPassEmail.tpl',
+        'fiarTpl' => 'siResetPassEmail',
 
         'email.vTextRequired' => 'Укажите email.',
         'email.vTextUserNotExists' => 'Пользователь не найден',

@@ -1,6 +1,6 @@
 <?php
 
-class AjaxIdentification
+class Identification
 {
 
     /**
@@ -316,7 +316,7 @@ class AjaxIdentification
     }
 
 
-    public static function activateUser($username, $modx)
+    public static function activateUser($username, $modx, $toPls = '')
     {
         $userData = false;
         if ($user = $modx->getObject('modUser', array('username' => $username))) {
@@ -343,7 +343,10 @@ class AjaxIdentification
                 'profile' => $profile,
                 'data' => $userData
             ));
-            return $userData;
+            if($toPls && $userData){
+                $modx->setPlaceholder($toPls, $userData);
+            }
+            return  $toPls ? (bool)$userData : $userData;
         }
     }
 }

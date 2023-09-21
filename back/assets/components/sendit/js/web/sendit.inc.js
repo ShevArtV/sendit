@@ -8,8 +8,8 @@ export default function returnConfigs() {
         },
         Notify: {
             pathToScripts: './modules/notify.js',
-            jsPath: 'assets/components/sendit/web/js/lib/izitoast/iziToast.min.js',
-            cssPath: 'assets/components/sendit/web/css/lib/izitoast/iziToast.min.css',
+            jsPath: 'assets/components/sendit/js/web/lib/izitoast/iziToast.min.js',
+            cssPath: 'assets/components/sendit/css/web/lib/izitoast/iziToast.min.css',
             handlerClassName: 'iziToast',
             toastSelector: '.iziToast',
             typeSelectors: {
@@ -59,8 +59,8 @@ export default function returnConfigs() {
             rootKey: 'siForm',
             presetKey: 'siPreset',
             eventKey: 'siEvent',
-            actionUrl: 'assets/components/sendit/web/action.php',
-            antiSpamEvent: 'click',
+            actionUrl: 'assets/components/sendit/action.php',
+            antiSpamEvent: 'keydown',
             errorBlockSelector: '[data-si-error="${fieldName}"]',
             eventSelector: '[data-si-event="${eventName}"]',
             errorClass: 'si-error'
@@ -75,7 +75,7 @@ export default function returnConfigs() {
             sendEvent: 'si:send:after',
             pathKey: 'fuPath',
             pathAttr: 'data-fu-path',
-            actionUrl: 'assets/components/sendit/web/action.php',
+            actionUrl: 'assets/components/sendit/action.php',
             layout: {
                 list: {
                     tagName: 'ul',
