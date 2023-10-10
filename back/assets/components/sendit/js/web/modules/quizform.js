@@ -113,6 +113,7 @@ export default class QuizForm {
 
 
             document.addEventListener(this.config.sendEvent, (e) => {
+                if(e.detail.target === document) return true;
                 const root = e.detail.target.closest(this.config.rootSelector);
                 const {items} = this.getElements(root);
                 if (items.length < 2) return;

@@ -64,6 +64,7 @@ export default class FileUploader {
         });
 
         document.addEventListener(this.config.sendEvent, (e) => {
+            if(e.detail.target === document) return true;
             const result = e.detail.result;
             const form = e.detail.target.closest(this.config.formSelector);
             const root = form.querySelector(this.config.rootSelector);

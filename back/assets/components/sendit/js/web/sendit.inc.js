@@ -25,7 +25,7 @@ export default function returnConfigs() {
             }
         },
         QuizForm: {
-            pathToScripts: './modules/quizform.js',
+            pathToScripts: './modules/quizform.js?v=rertewr2343445as',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             autoKey: 'qfAuto',
@@ -54,7 +54,7 @@ export default function returnConfigs() {
             sendEvent: 'si:send:finish',
         },
         Sending: {
-            pathToScripts: './modules/sending.js',
+            pathToScripts: './modules/sending.js?v=dfgdsf54645gdf354',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             presetKey: 'siPreset',
@@ -66,7 +66,7 @@ export default function returnConfigs() {
             errorClass: 'si-error'
         },
         FileUploader:{
-            pathToScripts: './modules/fileuploader.js',
+            pathToScripts: './modules/fileuploader.js?v=rertewr2343',
             formSelector: '[data-si-form]',
             rootSelector: '[data-fu-wrap]',
             fieldSelector: '[data-fu-field]',

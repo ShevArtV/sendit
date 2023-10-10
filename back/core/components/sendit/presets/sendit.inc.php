@@ -121,5 +121,11 @@ return [
 
         'email.vTextRequired' => 'Укажите email.',
         'email.vTextUserNotExists' => 'Пользователь не найден',
+    ],
+    'custom' => [
+        'extends' => 'onestepform',
+        'snippet' => '@FILE snippets/test.php',
+        'hooks' => '',
+        'validate' => ''
     ]
 ];

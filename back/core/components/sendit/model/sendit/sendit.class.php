@@ -53,7 +53,6 @@ class SendIt
         $this->pathToPresets = $this->corePath . $pathToPresets;
         $this->presets = file_exists($this->pathToPresets) ? include $this->pathToPresets : [];
         $this->preset = $this->presets[$presetName] ?: [];
-        $this->extendsPreset = $this->presets[$this->preset['extends']] ?: [];
         $this->formParams = $this->getFormParams();
         $this->params = [];
         $this->validates = [];
@@ -89,6 +88,8 @@ class SendIt
     {
         $this->modx->lexicon->load('sendit:default');
 
+        $this->extendsPreset = $this->getExtends($this->preset['extends'], []);
+
         $this->setParams();
 
         $this->params['sendGoal'] = $this->params['sendGoal'] ?: $this->modx->getOption('si_send_goal', '', false);
@@ -118,6 +119,16 @@ class SendIt
         //$this->modx->log(1, print_r($_POST, 1));
         //$this->modx->log(1, print_r($this->params, 1));
         $this->setValidate();
+    }
+
+    private function getExtends($preset, $extends){
+        if($preset && is_array($this->presets[$preset])){
+            $extends = array_merge($extends, $this->presets[$preset]);
+            if($this->presets[$preset]['extends']){
+                $extends = $this->getExtends($this->presets[$preset]['extends'], $extends);
+            }
+        }
+        return $extends;
     }
 
     private function setParams()

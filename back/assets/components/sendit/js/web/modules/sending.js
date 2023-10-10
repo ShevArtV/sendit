@@ -71,23 +71,29 @@ export default class Sending {
     }
 
     prepareSendParams(root, preset = '', action = 'send') {
-        let params = root.tagName === 'FORM' ? new FormData(root) : new FormData();
-        let formName = root.dataset[this.config.rootKey];
-        if (root.name && root.tagName !== 'FORM') {
-            const form = root.closest(this.config.rootSelector);
-            if(form){
-                formName = form.dataset[this.config.rootKey];
-                params = new FormData(form);
-            }else{
-                params.append(root.name, root.value);
+        let params =  new FormData();
+        let event = 'submit';
+        let formName = '';
+        if(root !== document){
+            event = root.dataset[this.config.eventKey];
+            params = root.tagName === 'FORM' ? new FormData(root) : params;
+            let formName = root.dataset[this.config.rootKey];
+            if (root.name && root.tagName !== 'FORM') {
+                const form = root.closest(this.config.rootSelector);
+                if(form){
+                    formName = form.dataset[this.config.rootKey];
+                    params = new FormData(form);
+                }else{
+                    params.append(root.name, root.value);
+                }
             }
         }
 
         const headers = {
-            'X-SIFORM': formName || '',
-            'X-SIACTION': action || '',
-            'X-SIPRESET': preset || '',
-            'X-SIEVENT': root.dataset[this.config.eventKey] || 'submit',
+            'X-SIFORM': formName,
+            'X-SIACTION': action,
+            'X-SIPRESET': preset,
+            'X-SIEVENT': event,
             'X-SITOKEN': SendIt?.getComponentCookie('sitoken') || ''
         }
 
@@ -253,6 +259,7 @@ export default class Sending {
     }
 
     resetAllErrors(target){
+        if(target === document) return;
         const root = target.closest(this.config.rootSelector);
         const errorBlocks = root?.querySelector(this.config.errorBlockSelector.replace('="${fieldName}"', ''));
         const fields = root?.querySelectorAll(`.${this.config.errorClass}`);
