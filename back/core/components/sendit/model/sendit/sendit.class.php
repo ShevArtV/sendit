@@ -421,10 +421,15 @@ class SendIt
     private function handleFormIt(): array
     {
         $plPrefix = $this->params['placeholderPrefix'] ?: 'fi.';
+        $plPrefix = $plPrefix . 'error.';
         $data = [];
-        foreach ($_POST as $k => $v) {
-            if (isset($this->modx->placeholders[$plPrefix . 'error.' . $k])) {
-                $data['errors'][$k] = strip_tags($this->modx->placeholders[$plPrefix . 'error.' . $k]);
+        foreach($this->modx->placeholders as $pls => $v){
+            if(strpos($pls, $plPrefix) === false) continue;
+            $v = strip_tags(trim($v));
+            preg_match('/[^\s]/', $v, $matches);
+            if(empty($matches)) continue;
+            if($k = str_replace($plPrefix, '', $pls)){
+                $data['errors'][$k] = $v;
             }
         }
 

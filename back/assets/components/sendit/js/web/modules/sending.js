@@ -75,7 +75,7 @@ export default class Sending {
         let event = 'submit';
         let formName = '';
         if(root !== document){
-            event = root.dataset[this.config.eventKey];
+            event = root.dataset[this.config.eventKey] || 'submit';
             params = root.tagName === 'FORM' ? new FormData(root) : params;
             let formName = root.dataset[this.config.rootKey];
             if (root.name && root.tagName !== 'FORM') {

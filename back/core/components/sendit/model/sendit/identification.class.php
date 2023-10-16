@@ -48,7 +48,7 @@ class Identification
             }
         }
         if (!$this->values[$passwordField]) {
-            $this->values[$passwordField] = $this->generateCode('pass', 10);
+            $this->values[$passwordField] = $this->generateCode($this->modx,'pass', 10);
         }
 
         $this->values['passwordgenmethod'] = 'none';
@@ -77,7 +77,7 @@ class Identification
             foreach ($errors as $error) {
                 $key = $error->getField();
                 if ($error->getField() === 'username') $key = $usernameField;
-                if ($error->getField() === 'password') $key = $passwordField;
+                if (in_array($error->getField(), ['password','specifiedpassword'])) $key = $passwordField;
                 $this->hook->addError($key, $error->getMessage());
             }
             $this->modx->user = null;
@@ -204,7 +204,7 @@ class Identification
 
         if (is_object($user)) {
             if (!$this->values['password']) {
-                $this->values['password'] = $this->generateCode();
+                $this->values['password'] = $this->generateCode($this->modx);
                 $this->hook->setValue('password', $this->values['password']);
             }
 
@@ -224,10 +224,10 @@ class Identification
      *
      * @return string
      */
-    public function generateCode($type = 'pass', $length = 0)
+    public static function generateCode($modx, $type = 'pass', $length = 0)
     {
         if (!$length) {
-            $length = $this->modx->getOption('password_min_length');
+            $length = $modx->getOption('password_min_length');
         }
 
         $password = "";
