@@ -1,11 +1,12 @@
 export default class Sending {
     constructor(config) {
-        if(window.SendIt && window.SendIt.Sending) return window.SendIt.Sending;
+        if (window.SendIt && window.SendIt.Sending) return window.SendIt.Sending;
         const defaults = {
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             presetKey: 'siPreset',
             eventKey: 'siEvent',
+            goalKey: 'siGoal',
             actionUrl: 'assets/components/sendit/action.php',
             antiSpamEvent: 'click',
             errorBlockSelector: '[data-si-error="${fieldName}"]',
@@ -29,10 +30,10 @@ export default class Sending {
 
     initialize() {
         document.addEventListener(this.config.antiSpamEvent, (e) => {
-            if(e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
+            if (e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
         });
         document.addEventListener('submit', (e) => {
-            if(e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
+            if (e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
             const root = e.target.closest(this.config.rootSelector);
 
             if (root) {
@@ -44,7 +45,7 @@ export default class Sending {
         document.addEventListener('input', this.sendField.bind(this));
         document.addEventListener('click', (e) => {
             const root = e.target.closest(this.config.rootSelector);
-            if(e.target.type === 'reset' && root){
+            if (e.target.type === 'reset' && root) {
                 this.resetForm(root);
                 this.resetAllErrors(root);
             }
@@ -52,38 +53,38 @@ export default class Sending {
     }
 
     sendField(e) {
-        if(e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
+        if (e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
         const field = e.target.closest(this.config.eventSelector.replace('${eventName}', e.type));
         const root = e.target.closest(this.config.rootSelector);
-        if(!field && !root) return;
+        if (!field && !root) return;
         const preset = (field && field.dataset[this.config.presetKey]) ? field.dataset[this.config.presetKey] : root.dataset[this.config.presetKey];
         if (root) {
             this.resetError(e.target.name, root);
         }
         if (field && field.tagName !== 'FORM') {
-            if(!field.value) return;
+            if (!field.value) return;
             this.prepareSendParams(field, preset);
-        }else{
-            if(root && root.dataset[this.config.eventKey] === e.type){
+        } else {
+            if (root && root.dataset[this.config.eventKey] === e.type) {
                 this.prepareSendParams(root, preset);
             }
         }
     }
 
     prepareSendParams(root, preset = '', action = 'send') {
-        let params =  new FormData();
+        let params = new FormData();
         let event = 'submit';
         let formName = '';
-        if(root !== document){
+        if (root !== document) {
             event = root.dataset[this.config.eventKey] || 'submit';
             params = root.tagName === 'FORM' ? new FormData(root) : params;
             let formName = root.dataset[this.config.rootKey];
             if (root.name && root.tagName !== 'FORM') {
                 const form = root.closest(this.config.rootSelector);
-                if(form){
+                if (form) {
                     formName = form.dataset[this.config.rootKey];
                     params = new FormData(form);
-                }else{
+                } else {
                     params.append(root.name, root.value);
                 }
             }
@@ -158,8 +159,7 @@ export default class Sending {
             }
 
             this.success(result, target)
-        }
-        else {
+        } else {
             if (!document.dispatchEvent(new CustomEvent(this.events.error, {
                 bubbles: true,
                 cancelable: true,
@@ -182,7 +182,7 @@ export default class Sending {
             cancelable: false,
             detail: {
                 action: headers['X-SIACTION'],
-                headers:headers,
+                headers: headers,
                 target: target,
                 result: result,
                 Sending: this
@@ -193,11 +193,14 @@ export default class Sending {
     success(result, root) {
         const redirectUrl = result.data.redirectUrl;
         const redirectTimeout = Number(result.data.redirectTimeout) || 0;
+        const defaultGoals = result.data.goalName.split(',') || [];
+        const layoutGoals = root.dataset[this.config.goalKey].split(',') || [];
+        const goals = [...defaultGoals, ...layoutGoals];
 
         SendIt?.Notify?.success(result.message);
 
         if (result.data.goalName && result.data.counterId && result.data.sendGoal && typeof window.ym !== 'undefined') {
-            ym(result.data.counterId, 'reachGoal', result.data.goalName);
+            goals.forEach(goal => ym(result.data.counterId, 'reachGoal', goal));
         }
 
         if (redirectUrl) {
@@ -214,24 +217,24 @@ export default class Sending {
 
     error(result, root) {
         if (!result.data || !result.data.errors) {
-            if (SendIt?.getComponentCookie('sitrusted') === '0'){
+            if (SendIt?.getComponentCookie('sitrusted') === '0') {
                 SendIt?.Notify?.info(SendIt?.getComponentCookie('simsgantispam'));
-            }else{
+            } else {
                 SendIt?.Notify?.error(result.message);
             }
         } else {
             for (let k in result.data.errors) {
                 const errorBlock = root.querySelector(this.config.errorBlockSelector.replace('${fieldName}', k));
                 const fields = root.querySelectorAll(`[name="${k}"]`);
-                if(fields.length){
+                if (fields.length) {
                     fields.forEach(field => field.classList.add(this.config.errorClass));
                 }
                 if (errorBlock) {
                     errorBlock.textContent = result.data.errors[k];
                 } else {
-                    if(result.data.aliases && result.data.aliases[k]){
+                    if (result.data.aliases && result.data.aliases[k]) {
                         SendIt?.Notify?.error(`${result.data.aliases[k]}: ${result.data.errors[k]}`);
-                    }else{
+                    } else {
                         SendIt?.Notify?.error(`${result.data.errors[k]}`);
                     }
                 }
@@ -258,15 +261,15 @@ export default class Sending {
         }
     }
 
-    resetAllErrors(target){
-        if(target === document) return;
+    resetAllErrors(target) {
+        if (target === document) return;
         const root = target.closest(this.config.rootSelector);
         const errorBlocks = root?.querySelector(this.config.errorBlockSelector.replace('="${fieldName}"', ''));
         const fields = root?.querySelectorAll(`.${this.config.errorClass}`);
-        if(fields && fields.length){
+        if (fields && fields.length) {
             fields.forEach(field => field.classList.remove(this.config.errorClass));
         }
-        if(errorBlocks && errorBlocks.length){
+        if (errorBlocks && errorBlocks.length) {
             errorBlocks.forEach(errorBlock => errorBlock.textContent = '');
         }
     }
@@ -274,7 +277,7 @@ export default class Sending {
     resetError(fieldName, root) {
         const errorBlock = root?.querySelector(this.config.errorBlockSelector.replace('${fieldName}', fieldName));
         const fields = root?.querySelectorAll(`[name="${fieldName}"]`);
-        if(fields.length){
+        if (fields.length) {
             fields.forEach(field => field.classList.remove(this.config.errorClass));
         }
         if (errorBlock) errorBlock.textContent = '';

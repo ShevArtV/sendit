@@ -59,6 +59,7 @@ export default function returnConfigs() {
             rootKey: 'siForm',
             presetKey: 'siPreset',
             eventKey: 'siEvent',
+            goalKey: 'siGoal',
             actionUrl: 'assets/components/sendit/action.php',
             antiSpamEvent: 'keydown',
             errorBlockSelector: '[data-si-error="${fieldName}"]',
