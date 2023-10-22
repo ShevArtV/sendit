@@ -54,7 +54,7 @@ export default function returnConfigs() {
             sendEvent: 'si:send:finish',
         },
         Sending: {
-            pathToScripts: './modules/sending.js',
+            pathToScripts: './modules/sending.js?v=3255345435',
             rootSelector: '[data-si-form]',
             rootKey: 'siForm',
             presetKey: 'siPreset',

@@ -127,5 +127,41 @@ return [
         'snippet' => '@FILE snippets/test.php',
         'hooks' => '',
         'validate' => ''
-    ]
+    ],
+    'sendcode' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/smsauth/snippet.sendcode.php',
+        'successMessage' => 'Код отправлен на номер {$phone}',
+        'validate' => 'phone:required',
+        'phone.vTextRequired' => 'Укажите телефон.'
+    ],
+    'checkcode' => [
+        'hooks' => '',
+        'successMessage' => '',
+        'validate' => 'code:CheckCode',
+        'validationErrorMessage' => 'Неверный код.',
+    ],
+    'sms_auth' => [
+        'extends' => 'checkcode',
+        'successMessage' => 'Вы успешно авторизованы.',
+        'hooks' => 'SetUserFields,Identification',
+        'method' => 'login',
+        'redirectTo' => 5,
+        'user_exist' => 1,
+        'redirectTimeout' => 3000,
+        'clearFieldsOnSuccess' => 1,
+    ],
+    'sms_register' => [
+        'hooks' => 'SetUserFields,Identification',
+        'method' => 'register',
+        'successMessage' => 'Вы успешно зарегистрированы.',
+        'activation' => 0,
+        'autoLogin' => 1,
+        'redirectTo' => 5,
+        'redirectTimeout' => 3000,
+        'usergroups' => 2,
+        'validate' => 'fullname:required,phone:required,code:CheckCode',
+        'fullname.vTextRequired' => 'Укажите ваше имя.',
+        'clearFieldsOnSuccess' => 1,
+    ],
 ];
