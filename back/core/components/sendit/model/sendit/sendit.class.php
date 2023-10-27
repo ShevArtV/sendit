@@ -48,7 +48,7 @@ class SendIt
         $this->basePath = $modx->getOption('base_path');
         $this->corePath = $modx->getOption('core_path');
         $this->jsConfigPath = $modx->getOption('si_js_config_path', '', './sendit.inc.js');
-        $this->uploaddir = $modx->getOption('si_uploaddir', '', '/assets/components/sendit/uploaded_files/');
+        $this->uploaddir = $modx->getOption('si_uploaddir', '', 'assets/components/sendit/uploaded_files/');
         $pathToPresets = $modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
         $this->pathToPresets = $this->corePath . $pathToPresets;
         $this->presets = file_exists($this->pathToPresets) ? include $this->pathToPresets : [];
@@ -261,7 +261,7 @@ class SendIt
     /**
      * @return array
      */
-    public function getPreset(): string
+    public function getPreset(): array
     {
         return $this->success('', $this->params);
     }
@@ -477,7 +477,7 @@ class SendIt
         $percent = round(($from + $portionSize) * 100 / $filesize);
         $loadingMsg = $this->modx->lexicon('si_msg_loading', ['filename' => $filename, 'percent' => ($percent < 100 ? $percent : 100)]);
         if (!is_dir($uploaddir)) {
-            mkdir($uploaddir);
+            mkdir($uploaddir, 0775,1);
         }
 
         if ($size < $filesize) {
