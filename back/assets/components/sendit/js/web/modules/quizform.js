@@ -211,7 +211,7 @@ export default class QuizForm {
     }
 
     change(root, nextIndex) {
-        const {items, current, currentQuestion, totalQuestions} = this.getElements(root);
+        const {items, current, currentQuestion, totalQuestions, btnReset, btnSend, btnNext, btnPrev} = this.getElements(root);
         const prevIndex = current.dataset[this.config.itemKey];
         const nextItem = root.querySelector(`[data-qf-item="${nextIndex}"]`);
         const dir = (nextItem && items.indexOf(nextItem) > items.indexOf(current)) ? 'next' : 'prev';
@@ -220,6 +220,10 @@ export default class QuizForm {
             bubbles: true,
             cancelable: true,
             detail: {
+                btnReset: btnReset,
+                btnSend: btnSend,
+                btnNext: btnNext,
+                btnPrev: btnPrev,
                 root: root,
                 nextIndex: nextIndex,
                 items: items,

@@ -7,6 +7,8 @@ class SendIt
     public modX $modx;
     /** @var string $formName */
     public string $formName;
+    /** @var string $presetName */
+    public string $presetName;
     /** @var string $basePath */
     public string $basePath;
     /** @var string $jsConfigPath */
@@ -44,6 +46,7 @@ class SendIt
     {
         $this->modx = $modx;
         $this->formName = $formName ?: $presetName;
+        $this->presetName = $presetName ?: '';
         $this->event = $event;
         $this->basePath = $modx->getOption('base_path');
         $this->corePath = $modx->getOption('core_path');
@@ -327,6 +330,7 @@ class SendIt
     {
         $this->modx->invokeEvent('OnGetFormParams', [
             'formName' => $this->formName,
+            'presetName' => $this->presetName,
         ]);
 
         return is_array($this->modx->event->returnedValues) ? $this->modx->event->returnedValues : [];

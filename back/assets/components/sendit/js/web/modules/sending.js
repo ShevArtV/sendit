@@ -72,17 +72,16 @@ export default class Sending {
     }
 
     prepareSendParams(root, preset = '', action = 'send') {
-        let params = new FormData();
         let event = 'submit';
         let formName = '';
+        let params = new FormData();
         if (root !== document) {
             event = root.dataset[this.config.eventKey] || 'submit';
             params = root.tagName === 'FORM' ? new FormData(root) : params;
-            let formName = root.dataset[this.config.rootKey];
+            formName = root.dataset[this.config.rootKey];
             if (root.name && root.tagName !== 'FORM') {
                 const form = root.closest(this.config.rootSelector);
                 if (form) {
-                    formName = form.dataset[this.config.rootKey];
                     params = new FormData(form);
                 } else {
                     params.append(root.name, root.value);
@@ -97,17 +96,23 @@ export default class Sending {
             'X-SIEVENT': event,
             'X-SITOKEN': SendIt?.getComponentCookie('sitoken') || ''
         }
-
         this.send(root, this.config.actionUrl, headers, params);
     }
 
     async send(target, url, headers, params, method = 'POST') {
+        url = url || this.config.actionUrl
+        const fetchOptions = {
+            method: method,
+            body: params,
+            headers: headers
+        }
         if (!document.dispatchEvent(new CustomEvent(this.events.before, {
             bubbles: true,
             cancelable: true,
             detail: {
                 action: headers['X-SIACTION'],
                 target: target,
+                fetchOptions: fetchOptions,
                 params: params,
                 headers: headers,
                 method: method,
@@ -121,11 +126,7 @@ export default class Sending {
 
         this.resetAllErrors(target);
 
-        const response = await fetch(this.config.actionUrl, {
-            method: method,
-            body: params,
-            headers: headers
-        });
+        const response = await fetch(url, fetchOptions);
 
         const result = await response.json();
 
@@ -194,7 +195,7 @@ export default class Sending {
         const redirectUrl = result.data.redirectUrl;
         const redirectTimeout = Number(result.data.redirectTimeout) || 0;
         const defaultGoals = result.data.goalName?.split(',') || [];
-        const layoutGoals = root.dataset[this.config.goalKey]?.split(',') || [];
+        const layoutGoals = root.dataset ? root.dataset[this.config.goalKey]?.split(',') : [];
         const goals = [...defaultGoals, ...layoutGoals];
 
         SendIt?.Notify?.success(result.message);
