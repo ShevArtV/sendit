@@ -195,7 +195,7 @@ export default class Sending {
         const redirectUrl = result.data.redirectUrl;
         const redirectTimeout = Number(result.data.redirectTimeout) || 0;
         const defaultGoals = result.data.goalName?.split(',') || [];
-        const layoutGoals = root.dataset ? root.dataset[this.config.goalKey]?.split(',') : [];
+        const layoutGoals = (root.dataset && root.dataset[this.config.goalKey]) ? root.dataset[this.config.goalKey]?.split(',') : [];
         const goals = [...defaultGoals, ...layoutGoals];
 
         SendIt?.Notify?.success(result.message);
