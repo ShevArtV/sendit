@@ -18,6 +18,11 @@ return [
         'successMessage' => 'Код отправлен!',
         'formName' => 'testChange',
     ],
+    'testclicksubmit' => [
+        'hooks' => '',
+        'successMessage' => 'Отправлено по клику!',
+        'formName' => 'testClick',
+    ],
     'testinputsubmit' => [
         'hooks' => 'FormItSaveForm',
         'successMessage' => 'Тут должны быть подсказки',

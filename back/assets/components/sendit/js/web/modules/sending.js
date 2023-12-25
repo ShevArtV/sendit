@@ -49,6 +49,10 @@ export default class Sending {
                 this.resetForm(root);
                 this.resetAllErrors(root);
             }
+
+            if (e.target.dataset[this.config.eventKey] === 'click' && root) {
+                this.sendField(e);
+            }
         });
     }
 
@@ -62,29 +66,31 @@ export default class Sending {
             this.resetError(e.target.name, root);
         }
         if (field && field.tagName !== 'FORM') {
-            if (!field.value) return;
-            this.prepareSendParams(field, preset);
+            if (!field.value && e.type !== 'click') return;
+            if(field.dataset[this.config.eventKey] === e.type){
+                field.tagName !== 'BUTTON' ? this.prepareSendParams(field, preset, e.type) : this.prepareSendParams(root, preset, e.type);
+            }
         } else {
             if (root && root.dataset[this.config.eventKey] === e.type) {
-                this.prepareSendParams(root, preset);
+                this.prepareSendParams(root, preset, e.type);
             }
         }
     }
 
-    prepareSendParams(root, preset = '', action = 'send') {
-        let event = 'submit';
+    prepareSendParams(root, preset = '', event = 'submit', action = 'send') {
         let formName = '';
         let params = new FormData();
         if (root !== document) {
-            event = root.dataset[this.config.eventKey] || 'submit';
-            params = root.tagName === 'FORM' ? new FormData(root) : params;
             formName = root.dataset[this.config.rootKey];
-            if (root.name && root.tagName !== 'FORM') {
-                const form = root.closest(this.config.rootSelector);
-                if (form) {
-                    params = new FormData(form);
-                } else {
-                    params.append(root.name, root.value);
+            if(root.tagName === 'FORM'){
+                params = new FormData(root);
+            }
+            else if(root.name){
+                params.append(root.name, root.value);
+            }else{
+                const fields = root.querySelectorAll('input, select, textarea, button');
+                if(fields.length){
+                    fields.forEach(field => field.name && params.append(field.name, field.value))
                 }
             }
         }
