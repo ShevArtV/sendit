@@ -35,9 +35,13 @@ export default class Sending {
         document.addEventListener('submit', (e) => {
             if (e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
             const root = e.target.closest(this.config.rootSelector);
+            const field = e.target.closest(this.config.eventSelector.replace('="${eventName}"', ''));
 
             if (root) {
                 e.preventDefault();
+                if(field && field.dataset[this.config.eventKey] !== e.type){
+                    return false;
+                }
                 this.prepareSendParams(root, root.dataset[this.config.presetKey]);
             }
         });
@@ -50,7 +54,7 @@ export default class Sending {
                 this.resetAllErrors(root);
             }
 
-            if (e.target.dataset[this.config.eventKey] === 'click' && root) {
+            if (e.target.closest(this.config.eventSelector.replace('${eventName}', e.type)) && root) {
                 this.sendField(e);
             }
         });
