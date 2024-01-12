@@ -6,7 +6,7 @@ switch($modx->event->name){
         SendIt::loadCssJs($modx);
         break;
     case 'OnHandleRequest':
-        unset($_SESSION['SendIt']['sendingLimits']);
+        unset($_SESSION['SendIt']['sendingLimits'], $_SESSION['sitoken']);
         $basePath = $modx->getOption('base_path');
         $uploaddir = $modx->getOption('si_uploaddir', '', '/assets/components/sendit/uploaded_files/');
         $jsConfigPath = $modx->getOption('si_js_config_path', '', './sendit.inc.js');
@@ -21,6 +21,9 @@ switch($modx->event->name){
             'simsgantispam' => $modx->lexicon('si_msg_antispam'),
             'sijsconfigpath' => $jsConfigPath
         ];
+
+        $_SESSION['sitoken'] = $data['sitoken'];
+
         $data = array_merge($cookies, $data);
         setcookie('SendIt', json_encode($data), 0, '/');
         break;

@@ -1,29 +1,31 @@
 <?php
 
-$headers = array_change_key_case(getallheaders());
-$token = $headers['x-sitoken'];
-$cookie = $_COOKIE['SendIt'] ? json_decode($_COOKIE['SendIt'],1): [];
-$res = [
-    'success' => false,
-    'msg' => '',
-    'data' => []
-];
-
-if (!$token || $token !== $cookie['sitoken']) die(json_encode($res));
-if (!$cookie['sitrusted']) die(json_encode($res));
-
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 4) . '/index.php';
 require_once MODX_CORE_PATH . 'components/sendit/model/sendit/sendit.class.php';
 
 $modx->getService('error', 'error.modError');
 $modx->setLogLevel(modX::LOG_LEVEL_ERROR);
+
+$headers = array_change_key_case(getallheaders());
+$token = $headers['x-sitoken'];
+$cookie = $_COOKIE['SendIt'] ? json_decode($_COOKIE['SendIt'],1): [];
+
 $preset = $headers['x-sipreset'];
 $formName = $headers['x-siform'];
 $action = $headers['x-siaction'];
 $event = $headers['x-sievent'];
 
 $sendit = new SendIt($modx, (string)$preset, (string)$formName, (string)$event);
+
+$res = [
+    'success' => false,
+    'msg' => '',
+    'data' => []
+];
+
+if (!isset($_SESSION['sitoken']) || !$token || $token !== $_SESSION['sitoken']) die(json_encode($sendit->error('si_msg_token_err')));
+if (!$cookie['sitrusted']) die(json_encode($sendit->error('si_msg_trusted_err')));
 
 switch ($action) {
     case 'send':
@@ -64,7 +66,7 @@ switch ($action) {
         if(file_exists($path) && strpos($path, session_id()) !== false){
             unlink($path);
         }
-        $res = $sendit->success('Файл удалён.', ['path' => $_POST['path']]);
+        $res = $sendit->success('si_msg_file_remove_success', ['path' => $_POST['path']]);
         break;
 }
 

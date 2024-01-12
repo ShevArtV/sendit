@@ -55,7 +55,7 @@ class SendIt
         $pathToPresets = $modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
         $this->pathToPresets = $this->corePath . $pathToPresets;
         $this->presets = file_exists($this->pathToPresets) ? include $this->pathToPresets : [];
-        $this->preset = $this->presets[$presetName] ?: [];
+        $this->preset = $this->presets[$presetName] ?: ($_SESSION['SendIt']['presets'][$presetName] ?: []);
         $this->formParams = $this->getFormParams();
         $this->params = [];
         $this->validates = [];
