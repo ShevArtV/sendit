@@ -95,7 +95,7 @@ export default class SaveFormData {
     setValues(root) {
         const savedData = JSON.parse(localStorage.getItem(root.dataset[this.config.rootKey]));
         const formFields = root.querySelectorAll('input,select,textarea');
-        if (!savedData || !formFields) return;
+        if (!savedData || !formFields || root.closest(this.config.noSaveSelector)) return;
 
         if (!document.dispatchEvent(new CustomEvent(this.events.set, {
             bubbles: true,

@@ -70,7 +70,6 @@ export default class Sending {
             this.resetError(e.target.name, root);
         }
         if (field && field.tagName !== 'FORM') {
-            if (!field.value && e.type !== 'click') return;
             if(field.dataset[this.config.eventKey] === e.type){
                 field.tagName !== 'BUTTON' ? this.prepareSendParams(field, preset, e.type) : this.prepareSendParams(root, preset, e.type);
             }

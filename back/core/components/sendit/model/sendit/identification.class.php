@@ -69,6 +69,15 @@ class Identification
 
         $extended = str_replace('&quot;', '"', $this->values['extended']);
         $extended = $extended ? json_decode($extended,1) : [];
+
+        if($this->config['autoLogin']){
+            $extended['autologin'] = [
+                'rememberme' => $this->config['rememberme'] ?: 1,
+                'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
+                'afterLoginRedirectId' => $this->config['afterLoginRedirectId'] ?: 0
+            ];
+        }
+
         $this->values['extended'] = $extended;
 
         $response = $this->modx->runProcessor('/security/user/create', $this->values);
@@ -97,28 +106,41 @@ class Identification
         return true;
     }
 
-    public function loginWithoutPass()
+    public static function loginWithoutPass($username, $modx, $properties = [])
     {
-        $contexts = $this->config['authenticateContexts'] ? explode(',', $this->config['authenticateContexts']) : ['web'];
-        $usernameField = $this->config['usernameField'] ?: 'username';
-        $user = $this->modx->getObject('modUser', ['username' => $this->values[$usernameField]]);
+        $contexts = $properties['authenticateContexts'] ? explode(',', $properties['authenticateContexts']) : ['web'];
+        $q = $modx->newQuery('modUser');
+        $q->leftJoin('modUserProfile', 'Profile');
+        $q->select($modx->getSelectColumns('modUser','modUser','',array('id','username', 'active')));
+        $q->select($modx->getSelectColumns('modUserProfile','Profile','',array('blocked')));
+        $q->where(['modUser.username' => $username, 'modUser.active' => 1, 'Profile.blocked' => 0]);
+        $user = $modx->getObject('modUser', $q);
+
         if (!$user) {
-            $this->register();
-            return true;
+            $modx->log(1, "[Sendit|Identification::loginWithoutPass] Пользователь $username не существует, не активирован или заблокирован.");
+            return false;
         }
         $session_id = session_id();
         foreach ($contexts as $ctx) {
             $user->addSessionContext($ctx);
         }
-        $this->modx->user = $user;
-        $this->modx->invokeEvent('OnWebLogin', array(
+        $modx->user = $user;
+        $modx->invokeEvent('OnWebLogin', array(
             'user' => $user,
-            'attributes' => $this->values['rememberme'],
-            'lifetime' => $this->modx->getOption('session_gc_maxlifetime'),
-            'loginContext' => $this->modx->context->key,
-            'addContexts' => $this->config['authenticateContexts'],
+            'attributes' => $properties['rememberme'],
+            'lifetime' => $modx->getOption('session_gc_maxlifetime'),
+            'loginContext' => $modx->context->key,
+            'addContexts' => $properties['authenticateContexts'],
             'session_id' => $session_id
         ));
+
+        $user = $modx->getObject('modUser', $q);
+        $profile = $user->getOne('Profile');
+        $extended = $profile->get('extended');
+        unset($extended['autologin']);
+        $profile->set('extended', $extended);
+        $profile->save();
+
         return true;
     }
 
@@ -346,7 +368,7 @@ class Identification
             if($toPls && $userData){
                 $modx->setPlaceholder($toPls, $userData);
             }
-            return  $toPls ? (bool)$userData : $userData;
+            return $userData;
         }
     }
 }

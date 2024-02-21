@@ -66,44 +66,26 @@ export default function returnConfigs() {
             eventSelector: '[data-si-event="${eventName}"]',
             errorClass: 'si-error'
         },
-        FileUploader:{
+        FileUploaderFactory:{
             pathToScripts: './modules/fileuploader.js',
             formSelector: '[data-si-form]',
+            progressSelector: '[data-fu-progress]',
             rootSelector: '[data-fu-wrap]',
-            fieldSelector: '[data-fu-field]',
-            rootKey: 'fuWrap',
+            tplSelector: '[data-fu-tpl]',
+            dropzoneSelector: '[data-fu-dropzone]',
+            fileListSelector: '[data-fu-list]',
+            progressIdAttr: 'data-fu-id',
+            progressTextAttr: 'data-fu-text',
+            hideBlockSelector: '[data-fu-hide]',
+            presetSelector: '[data-si-preset]',
             presetKey: 'siPreset',
             sendEvent: 'si:send:after',
             pathKey: 'fuPath',
             pathAttr: 'data-fu-path',
             actionUrl: 'assets/components/sendit/action.php',
-            layout: {
-                list: {
-                    tagName: 'ul',
-                    classNames: ['file-list', 'list_unstyled', 'd_flex', 'flex_wrap', 'gap_col-10', 'pt-20'],
-                    selector: '.file-list'
-                },
-                item: {
-                    tagName: 'li',
-                    classNames: ['file-list__item'],
-                    parentSelector: '.file-list',
-                    selector: '.file-list__item'
-                },
-                btn: {
-                    tagName: 'button',
-                    classNames: ['file-list__btn', 'btn', 'py-5', 'px-20', 'ta_center', 'border-1', 'border_error', 'hover_bg_error', 'radius_pill', 'hover_color_light'],
-                    parentSelector: '.file-list__item',
-                    selector: '[data-fu-path="${filepath}"]',
-                    type: 'button',
-                    text: '${filename}&nbsp;X'
-                },
-                input: {
-                    classNames: ['file-list__input'],
-                    tagName: 'input',
-                    type: 'hidden',
-                    selector: '.file-list__input'
-                }
-            }
+            hiddenClass: 'v_hidden',
+            progressClass: 'progress__line',
+            showTime: false
         }
     }
 }

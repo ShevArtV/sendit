@@ -3,41 +3,41 @@
 return [
     'default' => [
         'validate' => 'phone:required,age:required,name:required,email:email:required,politics:checkbox:required',
-    ],
-    'onestepform' => [
-        'extends' => 'default',
-        'redirectTo' => 0,
-        'redirectTimeout' => 3000,
-        'clearFieldsOnSuccess' => 1,
         'fieldNames' => 'age==Возраст,name==Имя,phone==Телефон,email==Почта',
-        'successMessage' => 'Форма отправлена!',
-        'validationErrorMessage' => 'Исправьте ошибки!',
     ],
-    'testchangesubmit' => [
-        'validate' => 'email:email',
-        'successMessage' => 'Код отправлен!',
-        'formName' => 'testChange',
+    'search_something' => [
+        'snippet' => 'searchSnippet'
     ],
-    'testclicksubmit' => [
+    'check_something' => [
+        'snippet' => 'checkSnippet'
+    ],
+    'check_code' => [
+        'snippet' => 'code'
+    ],
+    'upload_file' => [
         'hooks' => '',
-        'successMessage' => 'Отправлено по клику!',
-        'formName' => 'testClick',
+        'allowExt' => 'jpg,png,jpeg,webp,tiff,tif',
+        'portion' => 0.1,
+        'threadsQuantity' => 12,
     ],
-    'testinputsubmit' => [
-        'hooks' => 'FormItSaveForm',
-        'successMessage' => 'Тут должны быть подсказки',
-        'formName' => 'testInput',
+    'upload_simple_file' => [
+       'extends' => 'upload_file',
+        'maxSize' => 1,
+        'maxCount' => 2,
     ],
-    'fileupload' => [
+    'upload_drop_file' => [
+        'extends' => 'upload_file',
+        'maxSize' => 5,
+        'maxCount' => 10,
+    ],
+    'form_with_file' => [
+        'extends' => 'default',
+        'validate' => 'name:required',
         'attachFilesToEmail' => 'files',
         'allowFiles' => 'filelist',
-        'maxSize' => 6,
-        'maxCount' => 2,
-        'allowExt' => 'jpg,png',
-        'portion' => 0.1,
         'clearFieldsOnSuccess' => 1,
-        'successMessage' => 'Файлы отправлены!',
     ],
+
     'quiz' => [
         'validate' => 'phone:required,name:required,answers[*]:required,answers[7][]:checkbox:required,answers[3]:requiredIf=^answers[2]|Да^',
         'clearFieldsOnSuccess' => 0,
@@ -54,9 +54,11 @@ return [
         'fiarTpl' => 'siActivateEmail',
 
         'activation' => 1,
-        'autoLogin' => 0,
+        'rememberme' => 1,
+        'authenticateContexts' => 'web',
+        'afterLoginRedirectId' => 5,
+        'autoLogin' => 1,
         'redirectTo' => '',
-        'authenticateContexts' => '',
         'passwordField' => '',
         'usernameField' => 'email',
         'usergroupsField' => '',
@@ -68,7 +70,7 @@ return [
         'validate' => 'email:required,password:checkPassLength=^8^,password_confirm:passwordConfirm=^password^,politics:checkbox:required',
         'politics.vTextRequired' => 'Примите наши условия.',
         'password.vTextRequired' => 'Придумайте пароль.',
-        'password.vTextMinLength' => 'Пароль должен быть не менее 8 символов.',
+        'password.checkPassLength' => 'Пароль должен быть не менее 8 символов.',
     ],
     'auth' => [
         'successMessage' => 'Вы успешно авторизованы и будете перенаправлены в личный кабинет.',
