@@ -21,12 +21,13 @@ $_lang['setting_si_default_emailtpl'] = 'Чанк письма по умолча
 $_lang['setting_si_default_emailtpl_desc'] = 'будет использован только если для формы нет ни одного пресета.';
 $_lang['setting_si_max_sending_per_session'] = 'Максимальное количество отправок одной формы за сессию.';
 $_lang['setting_si_max_sending_per_session_desc'] = 'по умолчанию 2.';
-$_lang['setting_si_pause_between_sending'] = 'Пауза между отправками одной почты.';
+$_lang['setting_si_pause_between_sending'] = 'Пауза между отправками одной формы.';
 $_lang['setting_si_pause_between_sending_desc'] = 'указывается в секундах';
 $_lang['setting_si_default_admin'] = 'ID администратора по умолчанию.';
 $_lang['setting_si_default_admin_desc'] = 'ему будут отправляться письма если настройка si_default_email пуста';
 
 $_lang['si_msg_loading'] = '[[+filename]]: загружено [[+percent]]%';
+$_lang['si_msg_file_remove_session_err'] = '[[+filename]]: принадлежит другому пользователю.';
 $_lang['si_msg_file_loaded_err'] = 'Файл уже был загружен.';
 $_lang['si_msg_file_loading_err'] = 'Файл уже загружается.';
 $_lang['si_msg_file_size_err'] = 'Размер файла превышает максимально допустимый. ';
@@ -35,6 +36,7 @@ $_lang['si_msg_files_count_err'] = 'Можно загрузить ещё [[+left
 $_lang['si_msg_files_maxcount_err'] = 'Можно загрузить максимум [[+left]] [[+declension]].';
 $_lang['si_msg_files_loaded_err'] = 'Загружено максимальное количество файлов.';
 $_lang['si_msg_loaded'] = '[[+filename]]: файл загружен полностью.';
+
 $_lang['si_msg_antispam'] = 'Если вы не робот - перезагрузите страницу!';
 $_lang['si_msg_success'] = 'Форма отправлена!';
 $_lang['si_msg_file_remove_success'] = 'Файл удалён.';

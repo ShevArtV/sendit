@@ -141,7 +141,6 @@ class FileUploader {
                 }
                 break;
             case 'removeFile':
-
                 this.removeFromList(result.data.filename);
                 this.removePreview(result.data.path);
                 break;

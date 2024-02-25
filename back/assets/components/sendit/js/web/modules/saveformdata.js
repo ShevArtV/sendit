@@ -97,7 +97,7 @@ export default class SaveFormData {
         const formFields = root.querySelectorAll('input,select,textarea');
         if (!savedData || !formFields || root.closest(this.config.noSaveSelector)) return;
 
-        if (!document.dispatchEvent(new CustomEvent(this.events.set, {
+        if (!document.dispatchEvent(new CustomEvent(this.events.setBefore, {
             bubbles: true,
             cancelable: true,
             detail: {

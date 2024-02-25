@@ -122,9 +122,7 @@ export default class Sending {
                 action: headers['X-SIACTION'],
                 target: target,
                 fetchOptions: fetchOptions,
-                params: params,
                 headers: headers,
-                method: method,
                 Sending: this
             }
         }))) {
@@ -266,7 +264,7 @@ export default class Sending {
 
         if (target.tagName === 'FORM') {
             target.reset();
-        } else {
+        } else if(target.value){
             target.value = '';
         }
     }

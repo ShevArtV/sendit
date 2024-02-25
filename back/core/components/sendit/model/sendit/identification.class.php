@@ -74,7 +74,7 @@ class Identification
             $extended['autologin'] = [
                 'rememberme' => $this->config['rememberme'] ?: 1,
                 'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
-                'afterLoginRedirectId' => $this->config['afterLoginRedirectId'] ?: 0
+                'afterLoginRedirectId' => $this->config['afterLoginRedirectId']
             ];
         }
 

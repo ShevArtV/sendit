@@ -362,7 +362,7 @@ class SendIt
 
             if ($snippet !== 'FormIt') {
                 if ($this->params['validate']) {
-                    $this->modx->runSnippet('FormIt', $this->params);
+                    $this->runSnippet('FormIt');
                     $result = $this->handleFormIt();
                     if (!$result['success']) {
                         return $this->error($result['message'], $result['data']);
@@ -370,7 +370,7 @@ class SendIt
                 }
                 return $this->runSnippet($snippet);
             } else {
-                $this->modx->runSnippet('FormIt', $this->params);
+                $this->runSnippet('FormIt');
                 $result = $this->handleFormIt();
                 $status = $result['success'] ? 'success' : 'error';
                 return $this->$status($result['message'], $result['data']);

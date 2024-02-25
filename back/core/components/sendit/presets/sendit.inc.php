@@ -6,7 +6,7 @@ return [
         'fieldNames' => 'age==Возраст,name==Имя,phone==Телефон,email==Почта',
     ],
     'search_something' => [
-        'snippet' => 'searchSnippet'
+        'snippet' => '@FILE snippets/snippet.search.php'
     ],
     'check_something' => [
         'snippet' => 'checkSnippet'
