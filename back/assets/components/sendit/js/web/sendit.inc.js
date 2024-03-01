@@ -3,6 +3,7 @@ export default function returnConfigs() {
         SaveFormData: {
             pathToScripts: './modules/saveformdata.js',
             rootSelector: '[data-si-form]',
+            noSaveSelector: '[data-si-nosave]',
             rootKey: 'siForm',
             resetEvent: 'si:send:reset'
         },
