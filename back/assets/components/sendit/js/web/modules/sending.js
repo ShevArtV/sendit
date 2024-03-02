@@ -80,11 +80,8 @@ export default class Sending {
         }
     }
 
-    prepareSendParams(root, preset = '', event = 'submit', action = 'send') {
-        let formName = '';
-        let params = new FormData();
+    prepareSendParams(root, preset = '', event = 'submit', action = 'send', params = new FormData()) {
         if (root !== document) {
-            formName = root.dataset[this.config.rootKey];
             if(root.tagName === 'FORM'){
                 params = new FormData(root);
             }
@@ -99,13 +96,13 @@ export default class Sending {
         }
 
         const headers = {
-            'X-SIFORM': formName,
+            'X-SIFORM': (root !== document) ? root.dataset[this.config.rootKey] : '',
             'X-SIACTION': action,
             'X-SIPRESET': preset,
             'X-SIEVENT': event,
             'X-SITOKEN': SendIt?.getComponentCookie('sitoken') || ''
         }
-        this.send(root, this.config.actionUrl, headers, params);
+        return this.send(root, this.config.actionUrl, headers, params);
     }
 
     async send(target, url, headers, params, method = 'POST') {
@@ -196,6 +193,8 @@ export default class Sending {
                 Sending: this
             }
         }))
+
+        return result;
     }
 
     success(result, root) {
