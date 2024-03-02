@@ -5,7 +5,7 @@ switch ($modx->event->name) {
     case 'OnLoadWebDocument':
         SendIt::loadCssJs($modx);
         break;
-    case 'OnHandleRequest':
+    case 'OnWebPageInit':
         unset($_SESSION['SendIt']['sendingLimits'], $_SESSION['sitoken']);
         $basePath = $modx->getOption('base_path');
         $uploaddir = $modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');

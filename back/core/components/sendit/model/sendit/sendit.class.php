@@ -468,7 +468,7 @@ class SendIt
                 unset($data[$param]);
             }
         }
-
+        unset($data['SendIt']);
         return ['success' => $success, 'message' => $message, 'data' => $data];
     }
 
