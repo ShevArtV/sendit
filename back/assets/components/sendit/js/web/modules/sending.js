@@ -224,11 +224,7 @@ export default class Sending {
 
     error(result, root) {
         if (!result.data || !result.data.errors) {
-            if (SendIt?.getComponentCookie('sitrusted') === '0') {
-                SendIt?.Notify?.info(SendIt?.getComponentCookie('simsgantispam'));
-            } else {
-                SendIt?.Notify?.error(result.message);
-            }
+            SendIt?.Notify?.info(result.message);
         } else {
             for (let k in result.data.errors) {
                 const errorBlock = root.querySelector(this.config.errorBlockSelector.replace('${fieldName}', k));

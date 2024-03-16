@@ -41,7 +41,7 @@ return [
     'quiz' => [
         'validate' => 'phone:required,name:required,answers[*]:required,answers[7][]:checkbox:required,answers[3]:requiredIf=^answers[2]|Да^',
         'clearFieldsOnSuccess' => 0,
-        'hooks' => 'FormItSaveForm',
+        'hooks' => 'FormItSaveForm,email',
         'fieldNames' => 'phone==Телефон,name==Имя',
     ],
     'register' => [

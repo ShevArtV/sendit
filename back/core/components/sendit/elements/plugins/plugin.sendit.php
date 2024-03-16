@@ -18,8 +18,7 @@ switch ($modx->event->name) {
         }
         $data = [
             'sitoken' => md5($_SERVER['REMOTE_ADDR'] . time()),
-            'sitrusted' => '0',
-            'simsgantispam' => $modx->lexicon('si_msg_antispam'),
+            'sitrusted' => '0',           
             'sijsconfigpath' => $jsConfigPath
         ];
 

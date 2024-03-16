@@ -42,13 +42,14 @@ export default class FileUploaderFactory {
             document.addEventListener(this.sendEvent, async (e) => {
                 const {target, result} = e.detail;
                 if (target === document) return true;
+                if (!result.data) return true;
                 if (this.instances.has(target)) {
                     const fileUploader = this.instances.get(target);
                     await fileUploader.sendEventHandler(e.detail);
                 } else {
-                    if (result.data.allowFiles && result.data.clearFieldsOnSuccess) {
+                    if (result.data.clearFieldsOnSuccess) {
                         const fileWrap = target.querySelector(config.rootSelector);
-                        if (this.instances.has(fileWrap)) {
+                        if (fileWrap && this.instances.has(fileWrap)) {
                             const fileUploader = this.instances.get(fileWrap);
                             fileUploader.clearFields();
                         }
