@@ -48,11 +48,13 @@ export default class FileUploaderFactory {
                     await fileUploader.sendEventHandler(e.detail);
                 } else {
                     if (result.data.clearFieldsOnSuccess) {
-                        const fileWrap = target.querySelector(config.rootSelector);
-                        if (fileWrap && this.instances.has(fileWrap)) {
-                            const fileUploader = this.instances.get(fileWrap);
-                            fileUploader.clearFields();
-                        }
+                        const fileWraps = target.querySelectorAll(config.rootSelector);
+                        fileWraps.forEach(fileWrap => {
+                            if (fileWrap && this.instances.has(fileWrap)) {
+                                const fileUploader = this.instances.get(fileWrap);
+                                fileUploader.clearFields();
+                            }
+                        })
                     }
                 }
             });
