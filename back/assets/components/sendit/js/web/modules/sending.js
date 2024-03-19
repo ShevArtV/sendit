@@ -34,12 +34,12 @@ export default class Sending {
         });
         document.addEventListener('submit', (e) => {
             if (e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
-            const root = e.target.closest(this.config.rootSelector);
+            const root = this.getRoot(e.target);
             const field = e.target.closest(this.config.eventSelector.replace('="${eventName}"', ''));
 
             if (root) {
                 e.preventDefault();
-                if(field && field.dataset[this.config.eventKey] !== e.type){
+                if (field && field.dataset[this.config.eventKey] !== e.type) {
                     return false;
                 }
                 this.prepareSendParams(root, root.dataset[this.config.presetKey]);
@@ -48,7 +48,7 @@ export default class Sending {
         document.addEventListener('change', this.sendField.bind(this));
         document.addEventListener('input', this.sendField.bind(this));
         document.addEventListener('click', (e) => {
-            const root = e.target.closest(this.config.rootSelector);
+            const root = this.getRoot(e.target);
             if (e.target.type === 'reset' && root) {
                 this.resetForm(root);
                 this.resetAllErrors(root);
@@ -60,17 +60,22 @@ export default class Sending {
         });
     }
 
+    getRoot(target){
+        return target.form && target.form.dataset[this.config.rootKey]
+            ? target.form.closest(this.config.rootSelector) : target.closest(this.config.rootSelector);
+    }
+
     sendField(e) {
         if (e.isTrusted) SendIt?.setComponentCookie('sitrusted', '1');
         const field = e.target.closest(this.config.eventSelector.replace('${eventName}', e.type));
-        const root = e.target.closest(this.config.rootSelector);
+        const root = this.getRoot(e.target);
         if (!field && !root) return;
         const preset = (field && field.dataset[this.config.presetKey]) ? field.dataset[this.config.presetKey] : root.dataset[this.config.presetKey];
         if (root) {
             this.resetError(e.target.name, root);
         }
         if (field && field.tagName !== 'FORM') {
-            if(field.dataset[this.config.eventKey] === e.type){
+            if (field.dataset[this.config.eventKey] === e.type) {
                 field.tagName !== 'BUTTON' ? this.prepareSendParams(field, preset, e.type) : this.prepareSendParams(root, preset, e.type);
             }
         } else {
@@ -82,14 +87,13 @@ export default class Sending {
 
     prepareSendParams(root, preset = '', event = 'submit', action = 'send', params = new FormData()) {
         if (root !== document) {
-            if(root.tagName === 'FORM'){
+            if (root.tagName === 'FORM') {
                 params = new FormData(root);
-            }
-            else if(root.name){
+            } else if (root.name) {
                 params.append(root.name, root.value);
-            }else{
+            } else {
                 const fields = root.querySelectorAll('input, select, textarea, button');
-                if(fields.length){
+                if (fields.length) {
                     fields.forEach(field => field.name && params.append(field.name, field.value))
                 }
             }
@@ -224,7 +228,11 @@ export default class Sending {
 
     error(result, root) {
         if (!result.data || !result.data.errors) {
-            SendIt?.Notify?.info(result.message);
+            if (SendIt?.getComponentCookie('sitrusted') === '0') {
+                SendIt?.Notify?.info(SendIt?.getComponentCookie('simsgantispam'));
+            } else {
+                SendIt?.Notify?.error(result.message);
+            }
         } else {
             for (let k in result.data.errors) {
                 const errorBlock = root.querySelector(this.config.errorBlockSelector.replace('${fieldName}', k));
@@ -259,14 +267,14 @@ export default class Sending {
 
         if (target.tagName === 'FORM') {
             target.reset();
-        } else if(target.value){
+        } else if (target.value) {
             target.value = '';
         }
     }
 
     resetAllErrors(target) {
         if (target === document) return;
-        const root = target.closest(this.config.rootSelector);
+        const root = this.getRoot(target);
         const errorBlocks = root?.querySelector(this.config.errorBlockSelector.replace('="${fieldName}"', ''));
         const fields = root?.querySelectorAll(`.${this.config.errorClass}`);
         if (fields && fields.length) {
