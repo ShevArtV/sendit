@@ -4,74 +4,82 @@ export default class FileUploaderFactory {
         this.rootSelector = config['rootSelector'] || '[data-fu-wrap]';
         this.sendEvent = config['sendEvent'] || 'si:send:after';
         this.pathAttr = config['pathAttr'] || 'data-fu-path';
+        this.config = config;
         this.instances = new Map();
 
         document.addEventListener('si:init', (e) => {
-            this.initialize(config);
+            this.initialize();
         });
     }
 
-    initialize(config) {
-        const roots = document.querySelectorAll(this.rootSelector);
+    initialize() {
+
+        this.addInstances(document)
+
+        document.addEventListener('change', (e) => {
+            const root = e.target.closest(this.rootSelector);
+            if (this.instances.has(root)) {
+                const fileUploader = this.instances.get(root);
+                fileUploader.changeEventHandler();
+            }
+        });
+
+        document.addEventListener(this.sendEvent, async (e) => {
+            const {target, result} = e.detail;
+            if (target === document) return true;
+            if (!result.data) return true;
+            if (this.instances.has(target)) {
+                const fileUploader = this.instances.get(target);
+                await fileUploader.sendEventHandler(e.detail);
+            } else {
+                if (result.data.clearFieldsOnSuccess) {
+                    const fileWraps = target.querySelectorAll(config.rootSelector);
+                    fileWraps.forEach(fileWrap => {
+                        if (fileWrap && this.instances.has(fileWrap)) {
+                            const fileUploader = this.instances.get(fileWrap);
+                            fileUploader.clearFields();
+                        }
+                    })
+                }
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const root = e.target.closest(this.rootSelector);
+            if (this.instances.has(root) && e.target.closest(`[${this.pathAttr}]`)) {
+                const fileUploader = this.instances.get(root);
+                fileUploader.removeFile(e.target.closest(`[${this.pathAttr}]`))
+            }
+        })
+
+        window.addEventListener('beforeunload', (e) => {
+            for (let fileUploader of this.instances.values()) {
+                fileUploader.removeDir();
+            }
+        });
+    }
+
+    addInstances(block) {
+        const roots = block.querySelectorAll(this.rootSelector);
         if (roots.length) {
             roots.forEach(root => {
-                this.instances.set(root, new FileUploader(root, config));
-                const dropzone = root.querySelector(config.dropzoneSelector);
-                if (dropzone) {
-                    dropzone.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                    });
+                if (!this.instances.has(root)) {
+                    this.instances.set(root, new FileUploader(root, this.config));
+                    const dropzone = root.querySelector(this.config.dropzoneSelector);
+                    if (dropzone) {
+                        dropzone.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                        });
 
-                    dropzone.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        const fileInput = dropzone.querySelector('[type="file"]');
-                        fileInput.files = e.dataTransfer.files;
-                        fileInput.dispatchEvent(new Event('change', {bubbles: true}))
-                    });
-                }
-            })
-
-            document.addEventListener('change', (e) => {
-                const root = e.target.closest(this.rootSelector);
-                if (this.instances.has(root)) {
-                    const fileUploader = this.instances.get(root);
-                    fileUploader.changeEventHandler();
-                }
-            });
-
-            document.addEventListener(this.sendEvent, async (e) => {
-                const {target, result} = e.detail;
-                if (target === document) return true;
-                if (!result.data) return true;
-                if (this.instances.has(target)) {
-                    const fileUploader = this.instances.get(target);
-                    await fileUploader.sendEventHandler(e.detail);
-                } else {
-                    if (result.data.clearFieldsOnSuccess) {
-                        const fileWraps = target.querySelectorAll(config.rootSelector);
-                        fileWraps.forEach(fileWrap => {
-                            if (fileWrap && this.instances.has(fileWrap)) {
-                                const fileUploader = this.instances.get(fileWrap);
-                                fileUploader.clearFields();
-                            }
-                        })
+                        dropzone.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            const fileInput = dropzone.querySelector('[type="file"]');
+                            fileInput.files = e.dataTransfer.files;
+                            fileInput.dispatchEvent(new Event('change', {bubbles: true}))
+                        });
                     }
                 }
-            });
-
-            document.addEventListener('click', (e) => {
-                const root = e.target.closest(this.rootSelector);
-                if (this.instances.has(root) && e.target.closest(`[${this.pathAttr}]`)) {
-                    const fileUploader = this.instances.get(root);
-                    fileUploader.removeFile(e.target.closest(`[${this.pathAttr}]`))
-                }
             })
-
-            window.addEventListener('beforeunload', (e) => {
-                for (let fileUploader of this.instances.values()) {
-                    fileUploader.removeDir();
-                }
-            });
         }
     }
 }
@@ -114,6 +122,7 @@ class FileUploader {
         this.events = {
             uploadingStart: 'fu:uploading:start',
             uploadingEnd: 'fu:uploading:end',
+            removePreview: 'fu:preview:remove',
         }
     }
 
@@ -239,6 +248,17 @@ class FileUploader {
     removePreview(path) {
         const preview = this.root.querySelector(`[${this.config.pathAttr}="${path}"]`);
         preview && preview.remove();
+
+        document.dispatchEvent(new CustomEvent(this.events.removePreview, {
+            bubbles: true,
+            cancelable: true,
+            detail: {
+                path: path,
+                root: this.root,
+                preview: preview,
+                FileUploader: this
+            }
+        }))
     }
 
     removeFromList(filename) {
