@@ -684,6 +684,12 @@ class SendIt
             'data' => $data,
         ];
 
-        return $response;
+        $this->modx->invokeEvent('OnBeforeReturnResponse', [
+            'formName' => $this->formName,
+            'presetName' => $this->presetName,
+            'response' => $response
+        ]);
+
+        return is_array($this->modx->event->returnedValues['response']) ? $this->modx->event->returnedValues['response'] : $response;
     }
 }
