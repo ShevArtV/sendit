@@ -359,7 +359,6 @@ class SendIt
             }
 
             $snippet = $this->params['snippet'] ?: 'FormIt';
-
             if ($snippet !== 'FormIt') {
                 if ($this->params['validate']) {
                     $this->runSnippet('FormIt');
@@ -461,14 +460,6 @@ class SendIt
             }
         }
 
-        $data = array_merge($this->params, $data);
-        if($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')){
-            $unsetParams = explode(',', $unsetParams);
-            foreach($unsetParams as $param){
-                unset($data[$param]);
-            }
-        }
-        unset($data['SendIt']);
         return ['success' => $success, 'message' => $message, 'data' => $data];
     }
 
@@ -629,13 +620,13 @@ class SendIt
             $objects = scandir($dir);
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
-                    if (is_dir($dir . DIRECTORY_SEPARATOR . $object) && !is_link($dir . DIRECTORY_SEPARATOR . $object))
-                        SendIt::removeDir($dir . DIRECTORY_SEPARATOR . $object);
+                    if (is_dir($dir . $object) && !is_link($dir . $object))
+                        SendIt::removeDir($dir . $object);
                     else
-                        if (file_exists($dir . DIRECTORY_SEPARATOR . $object)) unlink($dir . DIRECTORY_SEPARATOR . $object);
+                        if (file_exists($dir . $object)) unlink($dir . $object);
                 }
             }
-            if (file_exists($dir)) {
+            if (file_exists($dir) && is_dir($dir)) {
                 rmdir($dir);
             }
         }
@@ -678,12 +669,27 @@ class SendIt
      */
     private function getResponse(bool $status, $message = '', $data = [], $placeholders = [])
     {
+        $data = array_merge($this->params, $data);
+        if($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')){
+            $unsetParams = explode(',', $unsetParams);
+            foreach($unsetParams as $param){
+                unset($data[$param]);
+            }
+        }
+        unset($data['SendIt']);
+
         $response = [
             'success' => $status,
             'message' => $this->modx->lexicon($message, $placeholders),
             'data' => $data,
         ];
 
-        return $response;
+        $this->modx->invokeEvent('OnBeforeReturnResponse', [
+            'formName' => $this->formName,
+            'presetName' => $this->presetName,
+            'response' => $response
+        ]);
+
+        return is_array($this->modx->event->returnedValues['response']) ? $this->modx->event->returnedValues['response'] : $response;
     }
 }

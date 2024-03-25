@@ -34,6 +34,7 @@ export default class QuizForm {
         }
         this.events = {
             change: 'si:quiz:change',
+            reset: 'si:quiz:reset',
         };
         this.config = Object.assign(defaults, config);
 
@@ -160,6 +161,22 @@ export default class QuizForm {
         this.resetBtns(btns);
         this.resetProgress(progress);
         this.resetPagination(pages, currentQuestion, totalQuestions, items.length);
+
+        document.dispatchEvent(new CustomEvent(this.events.reset, {
+            bubbles: true,
+            cancelable: true,
+            detail: {
+                items: items,
+                btns: btns,
+                progress: progress,
+                currentQuestion: currentQuestion,
+                totalQuestions: totalQuestions,
+                root: root,
+                finishItem: finishItem,
+                pages: pages,
+                Quiz: this
+            }
+        }))
     }
 
     resetPagination(pages, currentQuestion, totalQuestions, total) {
@@ -241,7 +258,7 @@ export default class QuizForm {
             return;
         }
 
-        this.changeItem(root, current, nextItem, items);
+        this.changeItem(root, current, nextItem);
 
         this.changeBtnsState(root, prevIndex, nextIndex, dir);
 
@@ -252,7 +269,7 @@ export default class QuizForm {
         }
     }
 
-    changeItem(root, current, next, items) {
+    changeItem(root, current, next) {
         if (next) {
             current.classList.add(this.config.visabilityClass);
             SendIt?.setComponentCookie(root.dataset[this.config.rootKey] + 'Current', next.dataset[this.config.itemKey]);
