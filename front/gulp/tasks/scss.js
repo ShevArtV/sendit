@@ -55,10 +55,10 @@ export const purge = () => {
         .pipe(purgecss({
             content: [app.path.watch.html, app.path.watch.js]
         }))
-        .pipe(cleanCss())
-        .pipe(rename({
+        //.pipe(cleanCss())
+       /* .pipe(rename({
             extname: ".min.css"
-        }))
+        }))*/
         .pipe(gulp.dest(app.path.build.css))
         .pipe(app.plugins.browsersync.stream());
 }
