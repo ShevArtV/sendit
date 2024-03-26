@@ -258,7 +258,7 @@ export default class QuizForm {
             return;
         }
 
-        this.changeItem(root, current, nextItem);
+        this.changeItem(root, current, nextItem, items);
 
         this.changeBtnsState(root, prevIndex, nextIndex, dir);
 
@@ -285,6 +285,7 @@ export default class QuizForm {
         switch (dir) {
             case 'next':
                 btnPrev.disabled = false;
+                btnPrev.classList.remove(this.config.disabledClass);
                 if (!prev.includes(prevIndex) && Number(prevIndex) !== Number(lastIndex)) {
                     prev.push(prevIndex);
                 }
@@ -292,8 +293,9 @@ export default class QuizForm {
 
                 break;
             case 'prev':
-                if (!prev.length) {
+                if (!prev.length || nextIndex === '1') {
                     btnPrev.disabled = true;
+                    btnPrev.classList.add(this.config.disabledClass);
                 }
                 break;
         }

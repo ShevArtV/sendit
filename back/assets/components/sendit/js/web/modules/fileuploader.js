@@ -32,8 +32,8 @@ export default class FileUploaderFactory {
                 const fileUploader = this.instances.get(target);
                 await fileUploader.sendEventHandler(e.detail);
             } else {
-                if (result.data.clearFieldsOnSuccess) {
-                    const fileWraps = target.querySelectorAll(config.rootSelector);
+                if (result.success && result.data.clearFieldsOnSuccess) {
+                    const fileWraps = target.querySelectorAll(this.config.rootSelector);
                     fileWraps.forEach(fileWrap => {
                         if (fileWrap && this.instances.has(fileWrap)) {
                             const fileUploader = this.instances.get(fileWrap);
