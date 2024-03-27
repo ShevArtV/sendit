@@ -642,7 +642,7 @@ class SendIt
      */
     public function error($message = '', $data = [], $placeholders = [])
     {
-        return $this->getResponse(false, $message, $data, $placeholders);
+        return $this->getResponse(false, $message ?? '', $data ?? [], $placeholders ?? []);
     }
 
     /**
@@ -655,7 +655,7 @@ class SendIt
      */
     public function success($message = '', $data = [], $placeholders = [])
     {
-        return $this->getResponse(true, $message, $data, $placeholders);
+        return $this->getResponse(true, $message ?? '', $data ?? [], $placeholders ?? []);
     }
 
     /**
@@ -667,7 +667,7 @@ class SendIt
      *
      * @return array|string
      */
-    private function getResponse(bool $status, $message = '', $data = [], $placeholders = [])
+    private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = [])
     {
         $data = array_merge($this->params, $data);
         if($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')){
