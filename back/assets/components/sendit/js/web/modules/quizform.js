@@ -35,6 +35,7 @@ export default class QuizForm {
         this.events = {
             change: 'si:quiz:change',
             reset: 'si:quiz:reset',
+            progress: 'si:quiz:progress',
         };
         this.config = Object.assign(defaults, config);
 
@@ -164,7 +165,7 @@ export default class QuizForm {
 
         document.dispatchEvent(new CustomEvent(this.events.reset, {
             bubbles: true,
-            cancelable: true,
+            cancelable: false,
             detail: {
                 items: items,
                 btns: btns,
@@ -284,8 +285,8 @@ export default class QuizForm {
 
         switch (dir) {
             case 'next':
-                btnPrev.disabled = false;
-                btnPrev.classList.remove(this.config.disabledClass);
+                btnPrev && (btnPrev.disabled = false);
+                btnPrev && btnPrev.classList.remove(this.config.disabledClass);
                 if (!prev.includes(prevIndex) && Number(prevIndex) !== Number(lastIndex)) {
                     prev.push(prevIndex);
                 }
@@ -294,17 +295,17 @@ export default class QuizForm {
                 break;
             case 'prev':
                 if (!prev.length || nextIndex === '1') {
-                    btnPrev.disabled = true;
-                    btnPrev.classList.add(this.config.disabledClass);
+                    btnPrev && (btnPrev.disabled = true);
+                    btnPrev && btnPrev.classList.add(this.config.disabledClass);
                 }
                 break;
         }
         if (Number(nextIndex) === Number(lastIndex)) {
-            btnSend.classList.remove(this.config.visabilityClass);
-            btnNext.classList.add(this.config.visabilityClass);
+            btnSend && btnSend.classList.remove(this.config.visabilityClass);
+            btnNext && btnNext.classList.add(this.config.visabilityClass);
         } else {
-            btnSend.classList.add(this.config.visabilityClass);
-            btnNext.classList.remove(this.config.visabilityClass);
+            btnSend && btnSend.classList.add(this.config.visabilityClass);
+            btnNext && btnNext.classList.remove(this.config.visabilityClass);
         }
     }
 
@@ -317,8 +318,8 @@ export default class QuizForm {
         } else {
             index = items.indexOf(nextItem[0]) + 1;
         }
-        totalQuestions.textContent = total;
-        currentQuestion.textContent = Number(index) < total ? index : total;
+        totalQuestions && (totalQuestions.textContent = total);
+        currentQuestion && (currentQuestion.textContent = Number(index) < total ? index : total);
     }
 
     prepareProgress(root, item) {
@@ -368,7 +369,6 @@ export default class QuizForm {
             }
         }
 
-
         if (complete > total) complete = total;
 
         let percent = Math.round(Number(complete) * 100 / Number(total));
@@ -377,6 +377,22 @@ export default class QuizForm {
             progressValue.style.width = progressValue.textContent = `${percent}%`;
             progress.classList.add(this.config.activeClass);
         }
+
+        document.dispatchEvent(new CustomEvent(this.events.progress, {
+            bubbles: true,
+            cancelable: false,
+            detail: {
+                items: items,
+                progressValue: progressValue,
+                progress: progress,
+                itemsComplete: itemsComplete,
+                total: total,
+                root: root,
+                complete: complete,
+                percent: percent,
+                Quiz: this
+            }
+        }))
     }
 
     getNextIndex(item, items) {

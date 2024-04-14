@@ -4,7 +4,7 @@
 {set $answers = $fields['answers'] | fromJSON}
 <h3>{$_pls['savedForm.form']}</h3>
 
-{if $questions | count}
+{if $questions && ($questions | count)}
     {foreach $questions as $i => $question}
         <p><strong>{$question}</strong>: {$answers[$i] | join: ', '}</p>
     {/foreach}

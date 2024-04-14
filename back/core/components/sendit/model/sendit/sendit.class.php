@@ -166,8 +166,8 @@ class SendIt
 
     public static function loadCssJs($modx)
     {
-        $frontend_js = $modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/web/js/sendit.js');
-        $frontend_css = $modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/web/css/index.min.css');
+        $frontend_js = $modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/js/web/sendit.js');
+        $frontend_css = $modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/css/web/index.min.css');
         $basePath = $modx->getOption('base_path');
         $assetsUrl = str_replace($basePath, '', $modx->getOption('assets_path'));
 
