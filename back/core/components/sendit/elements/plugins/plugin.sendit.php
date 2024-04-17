@@ -5,7 +5,12 @@ switch ($modx->event->name) {
     case 'OnLoadWebDocument':
         SendIt::loadCssJs($modx);
         break;
-    case 'OnWebPageInit':
+    case 'OnHandleRequest':
+        $alias = explode('.', basename($_REQUEST['q']));
+        if (isset($alias[1]) && $alias[1] !== 'html') {
+            return;
+        }
+        $modx->lexicon->load('sendit:default');
         unset($_SESSION['SendIt']['sendingLimits'], $_SESSION['sitoken']);
         $basePath = $modx->getOption('base_path');
         $uploaddir = $modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
