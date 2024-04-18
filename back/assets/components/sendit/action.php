@@ -54,13 +54,14 @@ switch ($action) {
         break;
     case 'removeFile':
         $path = MODX_BASE_PATH . $_POST['path'];
+        $nomsg = (bool)$_POST['nomsg'];
         if(strpos($path, session_id()) === false){
             $res = $sendit->error('si_msg_file_remove_session_err', [], ['filename' => basename($_POST['path'])]);
         }else{
             if(file_exists($path)){
                 unlink($path);
             }
-            $res = $sendit->success('si_msg_file_remove_success', ['filename' => basename($_POST['path']), 'path' => $_POST['path']]);
+            $res = $sendit->success(($nomsg ? '' : 'si_msg_file_remove_success'), ['filename' => basename($_POST['path']), 'path' => $_POST['path']]);
         }
         break;
 }

@@ -162,7 +162,7 @@ class FileUploader {
     clearFields() {
         const btns = this.root.querySelectorAll(`[${this.config.pathAttr}]`);
         if (btns.length) {
-            btns.forEach(btn => this.removeFile(btn))
+            btns.forEach(btn => this.removeFile(btn, true))
         }
     }
 
@@ -269,9 +269,10 @@ class FileUploader {
         this.listField.value = fileList.join(',');
     }
 
-    removeFile(btn) {
+    removeFile(btn, nomsg = false) {
         const params = new FormData();
         params.append('path', btn.dataset[this.config.pathKey]);
+        params.append('nomsg', nomsg);
         const headers = {
             'X-SIACTION': 'removeFile',
             'X-SIPRESET': 'removeFile',
