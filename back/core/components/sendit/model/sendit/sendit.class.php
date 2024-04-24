@@ -616,6 +616,9 @@ class SendIt
      */
     public static function removeDir(string $dir): void
     {
+        if(substr($dir, -1) !== '/'){
+            $dir .= '/';
+        }
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
