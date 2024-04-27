@@ -315,7 +315,7 @@ class FileUploader {
             chunksQueue.push(chunkId);
         }
 
-        await this.sendNext(file, filename, chunksQueue);
+        //await this.sendNext(file, filename, chunksQueue);
     }
 
     uploadChunk(chunk, chunkId, file, filename) {
