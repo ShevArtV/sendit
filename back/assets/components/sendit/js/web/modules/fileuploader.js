@@ -303,13 +303,13 @@ class FileUploader {
         if (response.ok) {
             const result = await response.json();
             if (result.success) {
+                this.activeConnections -= 1;
                 this.setProgress(filename, result.data.percent, result.message)
                 await this.sendNext(file, filename, chunksQueue);
                 result.data.path && (this.filePath = result.data.path)
             } else {
                 SendIt?.Notify?.error(result.message);
             }
-            this.activeConnections -= 1;
         } else {
             this.activeConnections -= 1;
             chunksQueue.push(chunkId);
