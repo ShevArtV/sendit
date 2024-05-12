@@ -222,20 +222,28 @@ class Identification
     public function forgot()
     {
         $usernameField = $this->config['usernameField'] ?: 'username';
-        $user = $this->modx->getObject('modUser', array('username' => $this->values[$usernameField]));
+        $activationResourceId = $this->config['activationResourceId'] ?: 1;
+        $user = $this->modx->getObject('modUser', ['username' => $this->values[$usernameField]]);
 
-        if (is_object($user)) {
-            if (!$this->values['password']) {
-                $this->values['password'] = $this->generateCode($this->modx);
-                $this->hook->setValue('password', $this->values['password']);
+        if ($user) {
+            $profile = $user->getOne('Profile');
+            $extended = $profile->get('extended');
+            $extended['activate_pass_before'] = time() + $this->config['activationUrlTime'] ?: time() + 60 * 60 * 3; // срок жизни ссылки на активацию
+            $extended['temp_password'] = $this->generateCode($this->modx);
+            if($this->config['autoLogin']){
+                $extended['autologin'] = [
+                    'rememberme' => $this->config['rememberme'] ?: 1,
+                    'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
+                    'afterLoginRedirectId' => $this->config['afterLoginRedirectId']
+                ];
             }
-
-            $user->set('password', $this->values['password']);
-            $user->save();
-
-            if ($this->config['autoLogin'] == true && $user->get('active') && !$user->get('block')) {
-                $this->login();
-            }
+            $profile->set('extended', $extended);
+            $profile->save();
+            $confirmParams['rp'] = $this->base64url_encode($user->get('username'));
+            $confirmUrl = $this->modx->makeUrl($activationResourceId, '', $confirmParams, 'full');
+            $this->hook->setValue('password', $extended['temp_password']);
+            $this->hook->setValue('email', $profile->get('email'));
+            $this->hook->setValue('confirmUrl', $confirmUrl);
         }
         return true;
     }
@@ -370,5 +378,28 @@ class Identification
             }
             return $userData;
         }
+    }
+
+    public static function resetPassword($username, $modx){
+        $user = $modx->getObject('modUser', array('username' => $username));
+        if($user){
+            $profile = $user->getOne('Profile');
+            $extended = $profile->get('extended');
+            $password = $extended['temp_password'];
+            $activateBefore = $extended['activate_pass_before'];
+            unset($extended['activate_pass_before'], $extended['temp_password']);
+            $profile->set('extended', $extended);
+            $profile->save();
+
+            if ($activateBefore - time() <= 0) {
+                return [];
+            }
+            if($password){
+                $user->set('password', $password);
+                $user->save();
+            }
+            return array_merge($profile->toArray(), $user->toArray());
+        }
+        return [];
     }
 }

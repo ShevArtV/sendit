@@ -174,7 +174,8 @@ class SendIt
         if ($frontend_js) {
             $scriptPath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_js);
             $modx->regClientScript(
-                '<script type="module" src="' . $scriptPath . '"></script>', true
+                '<script type="module" src="' . $scriptPath . '"></script>',
+                true
             );
         }
         if ($frontend_css) {
@@ -274,7 +275,9 @@ class SendIt
      */
     private function setValue($value, $key): void
     {
-        if ($key === 'fields') return;
+        if ($key === 'fields') {
+            return;
+        }
         if (!is_array($value)) {
             $_POST[$key] = $value;
             $k = preg_replace('/\[\d*?\]/', '[*]', $key);
@@ -296,7 +299,9 @@ class SendIt
     private function getValidate($validate = ''): array
     {
         $output = [];
-        if (!$validate) return $output;
+        if (!$validate) {
+            return $output;
+        }
         $validate = str_replace(["\r", "\n", ', '], ['', '', ','], $validate);
         $validates = explode(',', $validate);
 
@@ -330,8 +335,9 @@ class SendIt
         $this->modx->invokeEvent('OnGetFormParams', [
             'formName' => $this->formName,
             'presetName' => $this->presetName,
+            'SendIt' => $this
         ]);
-
+        /** TODO исправить плагины в модулях использующих  SendIt */
         return is_array($this->modx->event->returnedValues) ? $this->modx->event->returnedValues : [];
     }
 
@@ -376,7 +382,6 @@ class SendIt
             }
         }
         return $result;
-
     }
 
     /**
@@ -399,7 +404,14 @@ class SendIt
 
     private function checkPossibilityWork()
     {
-        if ($this->event !== 'submit') return $this->success();
+        if ($this->event !== 'submit') {
+            return $this->success();
+        }
+
+        $hooks = explode(',', $this->params['hooks']) ?: [];
+        if (!in_array('email', $hooks) && !in_array('FormItAutoResponder', $hooks)) {
+            return $this->success();
+        }
 
         $pause = $this->modx->getOption('si_pause_between_sending', '', 30);
         $maxSendingCount = $this->modx->getOption('si_max_sending_per_session', '', 2);
@@ -427,10 +439,14 @@ class SendIt
         $plPrefix = $plPrefix . 'error.';
         $data = [];
         foreach ($this->modx->placeholders as $pls => $v) {
-            if (strpos($pls, $plPrefix) === false) continue;
+            if (strpos($pls, $plPrefix) === false) {
+                continue;
+            }
             $v = strip_tags(trim($v));
             preg_match('/[^\s]/', $v, $matches);
-            if (empty($matches)) continue;
+            if (empty($matches)) {
+                continue;
+            }
             if ($k = str_replace($plPrefix, '', $pls)) {
                 $data['errors'][$k] = $v;
             }
@@ -601,12 +617,14 @@ class SendIt
             SendIt::removeDir($dir);
             return $this->success($this->modx->lexicon('si_msg_loading', [
                 'filename' => $headers['x-content-name'],
-                'percent' => $percent]), ['path' => str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $headers['x-content-name'], 'percent' => "$percent%"]);
+                'percent' => $percent
+            ]), ['path' => str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $headers['x-content-name'], 'percent' => "$percent%"]);
         }
 
         return $this->success($this->modx->lexicon('si_msg_loading', [
             'filename' => $headers['x-content-name'],
-            'percent' => $percent]),
+            'percent' => $percent
+        ]),
             ['percent' => "$percent%"]);
     }
 
@@ -616,17 +634,20 @@ class SendIt
      */
     public static function removeDir(string $dir): void
     {
-        if(substr($dir, -1) !== '/'){
+        if (substr($dir, -1) !== '/') {
             $dir .= '/';
         }
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
-                    if (is_dir($dir . $object) && !is_link($dir . $object))
+                    if (is_dir($dir . $object) && !is_link($dir . $object)) {
                         SendIt::removeDir($dir . $object);
-                    else
-                        if (file_exists($dir . $object)) unlink($dir . $object);
+                    } else {
+                        if (file_exists($dir . $object)) {
+                            unlink($dir . $object);
+                        }
+                    }
                 }
             }
             if (file_exists($dir) && is_dir($dir)) {
@@ -673,9 +694,9 @@ class SendIt
     private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = [])
     {
         $data = array_merge($this->params, $data);
-        if($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')){
+        if ($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')) {
             $unsetParams = explode(',', $unsetParams);
-            foreach($unsetParams as $param){
+            foreach ($unsetParams as $param) {
                 unset($data[$param]);
             }
         }

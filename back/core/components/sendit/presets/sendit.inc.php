@@ -128,6 +128,14 @@ return [
 
         'email.vTextRequired' => 'Укажите email.',
         'email.vTextUserNotExists' => 'Пользователь не найден',
+
+        'rememberme' => 1,
+        'authenticateContexts' => 'web',
+        'afterLoginRedirectId' => 5,
+        'autoLogin' => 1,
+
+        'activationResourceId' => 1,
+        'activationUrlTime' => 3600,
     ],
     'custom' => [
         'extends' => 'onestepform',
