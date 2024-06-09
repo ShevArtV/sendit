@@ -378,7 +378,7 @@ class SendIt
         }
 
         if ($result['success']) {
-            if (in_array('email', $this->hooks) || in_array('FormItAutoResponder', $this->hooks)) {
+            if (in_array('FormItAutoResponder', $this->hooks) || in_array('FormItAutoResponder', $this->hooks) || $this->params['antispam']) {
                 $this->session['sendingLimits'][$this->formName]['countSending'] = (int)$this->session['sendingLimits'][$this->formName]['countSending'] + 1;
                 $this->session['sendingLimits'][$this->formName]['lastSendingTime'] = time();
                 SendIt::setSession($this->modx, ['sendingLimits' => $this->session['sendingLimits']]);
