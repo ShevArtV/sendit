@@ -1,8 +1,8 @@
 <?php
-
+$time_start = microtime(true);
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 4) . '/index.php';
-require_once MODX_CORE_PATH . 'components/sendit/model/sendit/sendit.class.php';
+require_once MODX_CORE_PATH . 'components/sendit/services/sendit.class.php';
 
 $modx->getService('error', 'error.modError');
 $modx->setLogLevel(modX::LOG_LEVEL_ERROR);
@@ -14,9 +14,8 @@ $cookie = $_COOKIE['SendIt'] ? json_decode($_COOKIE['SendIt'], 1) : [];
 $preset = $headers['x-sipreset'];
 $formName = $headers['x-siform'];
 $action = $headers['x-siaction'];
-$event = $headers['x-sievent'];
 
-$sendit = new SendIt($modx, (string)$preset, (string)$formName, (string)$event);
+$sendit = new SendIt($modx, (string)$preset, (string)$formName);
 
 $res = [
     'success' => false,
@@ -24,7 +23,9 @@ $res = [
     'data' => []
 ];
 
-if (!isset($_SESSION['sitoken']) || !$token || $token !== $_SESSION['sitoken']) die(json_encode($sendit->error('si_msg_token_err')));
+$session = SendIt::getSession($modx);
+
+if (!isset($session['sitoken']) || !$token || $token !== $session['sitoken']) die(json_encode($sendit->error('si_msg_token_err')));
 if (!$cookie['sitrusted']) die(json_encode($sendit->error('si_msg_trusted_err')));
 
 switch ($action) {
@@ -55,14 +56,7 @@ switch ($action) {
     case 'removeFile':
         $path = MODX_BASE_PATH . $_POST['path'];
         $nomsg = (bool)$_POST['nomsg'];
-        if(strpos($path, session_id()) === false){
-            $res = $sendit->error('si_msg_file_remove_session_err', [], ['filename' => basename($_POST['path'])]);
-        }else{
-            if(file_exists($path)){
-                unlink($path);
-            }
-            $res = $sendit->success(($nomsg ? '' : 'si_msg_file_remove_success'), ['filename' => basename($_POST['path']), 'path' => $_POST['path']]);
-        }
+        $res = $sendit->removeFile($path, $nomsg);
         break;
 }
 
@@ -71,4 +65,7 @@ if (is_array($res)) {
 } else {
     $res = json_encode(['result' => $res]);
 }
+$time_end = microtime(true);
+$duration = sprintf('TOTAL TIME %f sec.', $time_end - $time_start);
+//$modx->log(1, print_r($duration, 1));
 die($res);

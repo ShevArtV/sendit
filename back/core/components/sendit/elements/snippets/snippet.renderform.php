@@ -6,7 +6,8 @@ if (class_exists('pdoTools') && $pdo = $modx->getService('pdoTools')) {
 } else {
     $content = $modx->parseChunk($scriptProperties['tpl'], $scriptProperties);
 }
-
-$_SESSION['SendIt']['presets'][$scriptProperties['presetName']] = $scriptProperties;
+$session = SendIt::getSession($modx);
+$session['presets'][$scriptProperties['presetName']] = $scriptProperties;
+SendIt::setSession($modx, $session);
 
 return $content;

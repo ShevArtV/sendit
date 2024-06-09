@@ -27,7 +27,7 @@ class Identification
         $passwordField = $this->config['passwordField'] ?: 'password';
         $usernameField = $this->config['usernameField'] ?: 'username';
 
-        if(!$this->values['email']){
+        if (!$this->values['email']) {
             $this->values['email'] = $this->values[$usernameField] . '@' . $this->modx->getOption('http_host');
         }
 
@@ -36,7 +36,10 @@ class Identification
         $activationResourceId = $this->config['activationResourceId'] ?: 1;
         $userGroupsField = $this->config['usergroupsField'] ?: '';
         $this->modx->user = $this->modx->getObject('modUser', 1);
-        $userGroups = !empty($userGroupsField) && array_key_exists($userGroupsField, $this->values) ? $this->values[$userGroupsField] : explode(',', $this->config['usergroups']);
+        $userGroups = !empty($userGroupsField) && array_key_exists($userGroupsField, $this->values) ? $this->values[$userGroupsField] : explode(
+            ',',
+            $this->config['usergroups']
+        );
         if ($userGroups) {
             foreach ($userGroups as $k => $group) {
                 $group = explode(':', $group);
@@ -48,7 +51,7 @@ class Identification
             }
         }
         if (!$this->values[$passwordField]) {
-            $this->values[$passwordField] = $this->generateCode($this->modx,'pass', 10);
+            $this->values[$passwordField] = $this->generateCode($this->modx, 'pass', 10);
         }
 
         $this->values['passwordgenmethod'] = 'none';
@@ -68,9 +71,9 @@ class Identification
         }
 
         $extended = str_replace('&quot;', '"', $this->values['extended']);
-        $extended = $extended ? json_decode($extended,1) : [];
+        $extended = $extended ? json_decode($extended, 1) : [];
 
-        if($this->config['autoLogin']){
+        if ($this->config['autoLogin']) {
             $extended['autologin'] = [
                 'rememberme' => $this->config['rememberme'] ?: 1,
                 'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
@@ -85,8 +88,12 @@ class Identification
         if ($errors = $response->getFieldErrors()) {
             foreach ($errors as $error) {
                 $key = $error->getField();
-                if ($error->getField() === 'username') $key = $usernameField;
-                if (in_array($error->getField(), ['password','specifiedpassword'])) $key = $passwordField;
+                if ($error->getField() === 'username') {
+                    $key = $usernameField;
+                }
+                if (in_array($error->getField(), ['password', 'specifiedpassword'])) {
+                    $key = $passwordField;
+                }
                 $this->hook->addError($key, $error->getMessage());
             }
             $this->modx->user = null;
@@ -111,8 +118,8 @@ class Identification
         $contexts = $properties['authenticateContexts'] ? explode(',', $properties['authenticateContexts']) : ['web'];
         $q = $modx->newQuery('modUser');
         $q->leftJoin('modUserProfile', 'Profile');
-        $q->select($modx->getSelectColumns('modUser','modUser','',array('id','username', 'active')));
-        $q->select($modx->getSelectColumns('modUserProfile','Profile','',array('blocked')));
+        $q->select($modx->getSelectColumns('modUser', 'modUser', '', array('id', 'username', 'active')));
+        $q->select($modx->getSelectColumns('modUserProfile', 'Profile', '', array('blocked')));
         $q->where(['modUser.username' => $username, 'modUser.active' => 1, 'Profile.blocked' => 0]);
         $user = $modx->getObject('modUser', $q);
 
@@ -182,8 +189,8 @@ class Identification
             $profile = $user->getOne('Profile');
             $profileData = $profile->toArray();
             $extended = str_replace('&quot;', '"', $this->values['extended']);
-            $extended = $extended ? json_decode($extended,1) : [];
-            $this->values['extended'] = array_merge($profileData['extended'], $extended);
+            $extended = $extended ? json_decode($extended, 1) : [];
+            $this->values['extended'] = array_merge($profileData['extended'] ?? [], $extended);
             $this->values['dob'] = $this->values['dob'] ? strtotime($this->values['dob']) : $profile->get('dob');
             $userData = $user->toArray();
             unset($userData['password']);
@@ -199,7 +206,6 @@ class Identification
                 'profile' => $profile,
                 'data' => $this->values
             ));
-
         }
         return true;
     }
@@ -227,10 +233,14 @@ class Identification
 
         if ($user) {
             $profile = $user->getOne('Profile');
+            if ($profile->get('email')) {
+                $this->hook->addError($this->config['errorFieldName'], $this->modx->lexicon('si_msg_no_email_err'));
+                return false;
+            }
             $extended = $profile->get('extended');
             $extended['activate_pass_before'] = time() + $this->config['activationUrlTime'] ?: time() + 60 * 60 * 3; // срок жизни ссылки на активацию
             $extended['temp_password'] = $this->generateCode($this->modx);
-            if($this->config['autoLogin']){
+            if ($this->config['autoLogin']) {
                 $extended['autologin'] = [
                     'rememberme' => $this->config['rememberme'] ?: 1,
                     'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
@@ -265,32 +275,138 @@ class Identification
         switch ($type) {
             case 'pass':
                 $arr = array(
-                    'a', 'b', 'c', 'd', 'e', 'f',
-                    'g', 'h', 'i', 'j', 'k', 'l',
-                    'm', 'n', 'o', 'p', 'q', 'r',
-                    's', 't', 'u', 'v', 'w', 'x',
-                    'y', 'z', 'A', 'B', 'C', 'D',
-                    'E', 'F', 'G', 'H', 'I', 'J',
-                    'K', 'L', 'M', 'N', 'O', 'P',
-                    'Q', 'R', 'S', 'T', 'U', 'V',
-                    'W', 'X', 'Y', 'Z', '1', '2',
-                    '3', '4', '5', '6', '7', '8',
-                    '9', '0', '#', '!', "?", "&"
+                    'a',
+                    'b',
+                    'c',
+                    'd',
+                    'e',
+                    'f',
+                    'g',
+                    'h',
+                    'i',
+                    'j',
+                    'k',
+                    'l',
+                    'm',
+                    'n',
+                    'o',
+                    'p',
+                    'q',
+                    'r',
+                    's',
+                    't',
+                    'u',
+                    'v',
+                    'w',
+                    'x',
+                    'y',
+                    'z',
+                    'A',
+                    'B',
+                    'C',
+                    'D',
+                    'E',
+                    'F',
+                    'G',
+                    'H',
+                    'I',
+                    'J',
+                    'K',
+                    'L',
+                    'M',
+                    'N',
+                    'O',
+                    'P',
+                    'Q',
+                    'R',
+                    'S',
+                    'T',
+                    'U',
+                    'V',
+                    'W',
+                    'X',
+                    'Y',
+                    'Z',
+                    '1',
+                    '2',
+                    '3',
+                    '4',
+                    '5',
+                    '6',
+                    '7',
+                    '8',
+                    '9',
+                    '0',
+                    '#',
+                    '!',
+                    "?",
+                    "&"
                 );
                 break;
             case 'hash':
                 $arr = array(
-                    'a', 'b', 'c', 'd', 'e', 'f',
-                    'g', 'h', 'i', 'j', 'k', 'l',
-                    'm', 'n', 'o', 'p', 'q', 'r',
-                    's', 't', 'u', 'v', 'w', 'x',
-                    'y', 'z', 'A', 'B', 'C', 'D',
-                    'E', 'F', 'G', 'H', 'I', 'J',
-                    'K', 'L', 'M', 'N', 'O', 'P',
-                    'Q', 'R', 'S', 'T', 'U', 'V',
-                    'W', 'X', 'Y', 'Z', '1', '2',
-                    '3', '4', '5', '6', '7', '8',
-                    '9', '0'
+                    'a',
+                    'b',
+                    'c',
+                    'd',
+                    'e',
+                    'f',
+                    'g',
+                    'h',
+                    'i',
+                    'j',
+                    'k',
+                    'l',
+                    'm',
+                    'n',
+                    'o',
+                    'p',
+                    'q',
+                    'r',
+                    's',
+                    't',
+                    'u',
+                    'v',
+                    'w',
+                    'x',
+                    'y',
+                    'z',
+                    'A',
+                    'B',
+                    'C',
+                    'D',
+                    'E',
+                    'F',
+                    'G',
+                    'H',
+                    'I',
+                    'J',
+                    'K',
+                    'L',
+                    'M',
+                    'N',
+                    'O',
+                    'P',
+                    'Q',
+                    'R',
+                    'S',
+                    'T',
+                    'U',
+                    'V',
+                    'W',
+                    'X',
+                    'Y',
+                    'Z',
+                    '1',
+                    '2',
+                    '3',
+                    '4',
+                    '5',
+                    '6',
+                    '7',
+                    '8',
+                    '9',
+                    '0'
                 );
                 break;
             case 'code':
@@ -373,16 +489,17 @@ class Identification
                 'profile' => $profile,
                 'data' => $userData
             ));
-            if($toPls && $userData){
+            if ($toPls && $userData) {
                 $modx->setPlaceholder($toPls, $userData);
             }
             return $userData;
         }
     }
 
-    public static function resetPassword($username, $modx){
+    public static function resetPassword($username, $modx)
+    {
         $user = $modx->getObject('modUser', array('username' => $username));
-        if($user){
+        if ($user) {
             $profile = $user->getOne('Profile');
             $extended = $profile->get('extended');
             $password = $extended['temp_password'];
@@ -394,7 +511,7 @@ class Identification
             if ($activateBefore - time() <= 0) {
                 return [];
             }
-            if($password){
+            if ($password) {
                 $user->set('password', $password);
                 $user->save();
             }

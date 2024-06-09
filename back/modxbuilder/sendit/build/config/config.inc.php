@@ -1,5 +1,7 @@
 <?php
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/modxbuilder/sendit/build/build.package.php
+// /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/modxbuilder/sendit/build/build.schema.php
+// /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/modxbuilder/sendit/build/build.models.php
 //If you need to update only builder component files - set COMPONENT_BUILD to true.
 define("COMPONENT_BUILD", true);
 
@@ -12,7 +14,7 @@ $buildConfig = array(
     "real_package_name" => "SendIt",
     //name for folder
     "package_name" => "sendit",
-    "package_version" => "1.2.7",
+    "package_version" => "2.0.0",
     "package_release" => "pl",
     "package_table_prefix" => "si_",
     "package_class_prefix" => "si",

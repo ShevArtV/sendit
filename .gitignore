@@ -6,3 +6,12 @@
 /back/core/elements/
 /back/assets/index.js
 /back/assets/reset.css
+/back/core/components/pdotools/
+/back/modxbuilder/sendit/core/components/sendit/model/sendit/metadata.mysql.php
+/back/modxbuilder/sendit/core/components/sendit/model/schema/sendit.mysql.schema.xml
+/back/core/packages/sendit-2.0.0-pl.transport.zip
+/back/modxbuilder/sendit/core/components/sendit/model/sendit/mysql/sisession.class.php
+/back/modxbuilder/sendit/core/components/sendit/model/sendit/sisession.class.php
+/back/modxbuilder/sendit/core/components/sendit/model/sendit/mysql/sisession.map.inc.php
+/back/core/xpdo/xpdo.class.php
+/back/core/xpdo/om/xpdoobject.class.php

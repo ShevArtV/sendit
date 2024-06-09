@@ -1,5 +1,5 @@
 <?php
-require_once MODX_CORE_PATH . 'components/sendit/model/sendit/identification.class.php';
+require_once MODX_CORE_PATH . 'components/sendit/services/identification.class.php';
 
 if($scriptProperties['method']){
     $method = $scriptProperties['method'];

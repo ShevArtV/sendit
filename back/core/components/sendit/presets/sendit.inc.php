@@ -6,12 +6,15 @@ return [
         'fieldNames' => 'age==Возраст,name==Имя,phone==Телефон,email==Почта',
     ],
     'search_something' => [
+        'hooks' => '',
         'snippet' => '@FILE snippets/snippet.search.php'
     ],
     'check_something' => [
+        'hooks' => '',
         'snippet' => 'checkSnippet'
     ],
     'check_code' => [
+        'hooks' => '',
         'snippet' => 'code'
     ],
     'upload_file' => [
@@ -21,14 +24,15 @@ return [
         'threadsQuantity' => 12,
     ],
     'upload_simple_file' => [
-       'extends' => 'upload_file',
-        'maxSize' => 1,
-        'maxCount' => 2,
+        'extends' => 'upload_file',
+        'maxSize' => 5,
+        'maxCount' => 1,
     ],
     'upload_drop_file' => [
         'extends' => 'upload_file',
-        'maxSize' => 5,
-        'maxCount' => 10,
+        'maxSize' => 1001,
+        'maxCount' => 3,
+        'loadedUnit' => 'Mb', // %, b, mb, kb, gb, gb,
     ],
     'form_with_file' => [
         'extends' => 'default',

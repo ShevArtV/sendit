@@ -76,19 +76,19 @@ export default class Sending {
         }
         if (field && field.tagName !== 'FORM') {
             if (field.dataset[this.config.eventKey] === e.type) {
-                field.tagName !== 'BUTTON' ? this.prepareSendParams(field, preset, e.type) : this.prepareSendParams(root, preset, e.type);
+                field.tagName !== 'BUTTON' ? this.prepareSendParams(field, preset) : this.prepareSendParams(root, preset);
             }
         } else {
             if (root && root.dataset[this.config.eventKey] === e.type) {
-                this.prepareSendParams(root, preset, e.type);
+                this.prepareSendParams(root, preset);
             }
         }
     }
 
-    prepareSendParams(root, preset = '', event = 'submit', action = 'send', params = new FormData()) {
+    prepareSendParams(root, preset = '', params = new FormData(), action = 'send') {
         if (root !== document) {
             if (root.tagName === 'FORM') {
-                params = new FormData(root);
+                params = !params.keys().next().done ? params : new FormData(root);
             } else if (root.name) {
                 params.append(root.name, root.value);
             } else {
@@ -100,10 +100,9 @@ export default class Sending {
         }
 
         const headers = {
-            'X-SIFORM': (root !== document) ? root.dataset[this.config.rootKey] : '',
+            'X-SIFORM': (root !== document && root.dataset[this.config.rootKey]) ? root.dataset[this.config.rootKey] : '',
             'X-SIACTION': action,
             'X-SIPRESET': preset,
-            'X-SIEVENT': event,
             'X-SITOKEN': SendIt?.getComponentCookie('sitoken') || ''
         }
         return this.send(root, this.config.actionUrl, headers, params);
@@ -184,6 +183,14 @@ export default class Sending {
             }
 
             this.error(result, target)
+        }
+
+        if(result.data.html){
+            const resultBlocks = document.querySelectorAll(result.data.resultBlockSelector);
+            if(resultBlocks.length){
+                result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = result.data.html);
+                result.data.resultShowMethod === 'append' && resultBlocks.forEach(block => block.innerHTML += result.data.html);
+            }
         }
 
         document.dispatchEvent(new CustomEvent(this.events.finish, {

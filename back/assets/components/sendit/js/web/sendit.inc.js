@@ -1,5 +1,24 @@
 export default function returnConfigs() {
     return {
+        PaginationFactory: {
+            pathToScripts: './modules/paginationhandler.js',
+            sendEvent: 'si:send:finish',
+            rootSelector: '[data-pn-pagination]',
+            firstPageBtnSelector: '[data-pn-first]',
+            lastPageBtnSelector: '[data-pn-last]',
+            lastPageKey: 'pnLast',
+            prevPageBtnSelector: '[data-pn-prev]',
+            nextPageBtnSelector: '[data-pn-next]',
+            morePageBtnSelector: '[data-pn-more]',
+            resultBlockSelector: '[data-pn-result="${key}"]',
+            currentPageInputSelector: '[data-pn-current]',
+            totalPagesSelector: '[data-pn-total]',
+            limitSelector: '[data-pn-limit]',
+            typeKey: 'pnType',
+            hideClass: 'v_hidden',
+            presetKey: 'siPreset',
+            rootKey: 'pnPagination'
+        },
         SaveFormData: {
             pathToScripts: './modules/saveformdata.js',
             rootSelector: '[data-si-form]',
@@ -67,7 +86,7 @@ export default function returnConfigs() {
             eventSelector: '[data-si-event="${eventName}"]',
             errorClass: 'si-error'
         },
-        FileUploaderFactory:{
+        FileUploaderFactory: {
             pathToScripts: './modules/fileuploader.js',
             formSelector: '[data-si-form]',
             progressSelector: '[data-fu-progress]',
@@ -86,7 +105,7 @@ export default function returnConfigs() {
             actionUrl: 'assets/components/sendit/action.php',
             hiddenClass: 'v_hidden',
             progressClass: 'progress__line',
-            showTime: false
+            showTime: true
         }
     }
 }
