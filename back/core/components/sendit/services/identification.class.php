@@ -132,6 +132,7 @@ class Identification
             $user->addSessionContext($ctx);
         }
         $modx->user = $user;
+
         $modx->invokeEvent('OnWebLogin', array(
             'user' => $user,
             'attributes' => $properties['rememberme'],
@@ -201,7 +202,7 @@ class Identification
             $user->save();
             $profile->save();
 
-            $this->modx->invokeEvent('aiOnUserUpdate', array(
+            $this->modx->invokeEvent('siOnUserUpdate', array(
                 'user' => $user,
                 'profile' => $profile,
                 'data' => $this->values
@@ -489,6 +490,7 @@ class Identification
                 'profile' => $profile,
                 'data' => $userData
             ));
+
             if ($toPls && $userData) {
                 $modx->setPlaceholder($toPls, $userData);
             }

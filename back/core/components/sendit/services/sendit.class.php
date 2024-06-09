@@ -356,7 +356,7 @@ class SendIt
             'presetName' => $this->presetName,
             'SendIt' => $this
         ]);
-        /** TODO исправить плагины в модулях использующих  SendIt */
+
         return is_array($this->modx->event->returnedValues) ? $this->modx->event->returnedValues : [];
     }
 
@@ -462,12 +462,6 @@ class SendIt
             $html = $this->parser->getChunk($this->params['tplEmpty'], $this->params);
         }
 
-        $this->modx->invokeEvent('OnAfterPageRender', [
-            'formName' => $this->formName,
-            'presetName' => $this->presetName,
-            'SendIt' => $this
-        ]);
-
         return $this->success('', [
             'html' => $html,
             'totalPages' => $totalPages ?: 1,
@@ -565,16 +559,14 @@ class SendIt
     public function validateFiles(array $filesData, int $totalCount = 0): array
     {
         $this->modx->invokeEvent('OnBeforeFileValidate', [
-            'params' => $this->params,
+            'formName' => $this->formName,
+            'presetName' => $this->presetName,
+            'SendIt' => $this,
             'filesData' => $filesData,
             'totalCount' => $totalCount
         ]);
 
-        $response = $this->modx->event->returnedValues['params'];
         $totalCount = $this->modx->event->returnedValues['totalCount'] ?? $totalCount;
-        if (!empty($response)) {
-            $this->params = array_merge($this->params, $response);
-        }
 
         $uploaddir = $this->uploaddir . session_id() . '/';
         $allowExt = explode(',', $this->params['allowExt']) ?: [];
@@ -888,6 +880,12 @@ class SendIt
      */
     private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = [])
     {
+        $this->modx->invokeEvent('OnBeforeReturnResponse', [
+            'formName' => $this->formName,
+            'presetName' => $this->presetName,
+            'SendIt' => $this
+        ]);
+
         $data = array_merge($this->params, $data);
         if ($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')) {
             $unsetParams = explode(',', $unsetParams);
@@ -897,19 +895,11 @@ class SendIt
         }
         unset($data['SendIt']);
 
-        $response = [
+        return [
             'success' => $status,
             'message' => $this->modx->lexicon($message, $placeholders),
             'data' => $data,
         ];
-
-        $this->modx->invokeEvent('OnBeforeReturnResponse', [
-            'formName' => $this->formName,
-            'presetName' => $this->presetName,
-            'response' => $response
-        ]);
-
-        return is_array($this->modx->event->returnedValues['response']) ? $this->modx->event->returnedValues['response'] : $response;
     }
 
     public static function setSession($modx, $values = [], ?string $sessionId = '', ?string $className = 'SendIt')

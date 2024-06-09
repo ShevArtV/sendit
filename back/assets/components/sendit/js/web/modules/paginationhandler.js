@@ -78,7 +78,8 @@ class PaginationHandler {
         }
         this.wrapper = root;
         this.events = {
-            before: 'pn:handle:before', after: 'pn:handle:after',
+            before: 'pn:handle:before',
+            after: 'pn:handle:after',
         };
         this.config = Object.assign(defaults, config);
         this.initialize();
@@ -171,7 +172,9 @@ class PaginationHandler {
         const lastPage = this.gotoLastBtn;
 
         if (!document.dispatchEvent(new CustomEvent(this.events.before, {
-            bubbles: true, cancelable: true, detail: {
+            bubbles: true,
+            cancelable: true,
+            detail: {
                 result: result,
                 PaginationHandler: this
             }

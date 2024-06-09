@@ -13,5 +13,7 @@ if ($_GET['rp']) {
                 $modx->sendRedirect($url);
             }
         }
+    }else{
+        return $userdata;
     }
 }
