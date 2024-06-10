@@ -147,7 +147,7 @@ class PaginationHandler {
             this.observer = new IntersectionObserver(this.scrollHandler.bind(this), {
                 threshold: 0.5
             });
-            this.observer.observe(this.resultBlock.lastElementChild);
+            this.resultBlock.lastElementChild && this.observer.observe(this.resultBlock.lastElementChild);
         }
     }
 
@@ -167,7 +167,7 @@ class PaginationHandler {
 
     responseHandler(result) {
         if (!result.data) return;
-        const totalBlock = document.querySelector(this.config.totalPagesSelector);
+        const totalBlock = this.wrapper.querySelector(this.config.totalPagesSelector);
         const currentPageInput = this.pageInput;
         const lastPage = this.gotoLastBtn;
 

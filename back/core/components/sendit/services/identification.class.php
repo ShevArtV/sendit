@@ -498,7 +498,7 @@ class Identification
         }
     }
 
-    public static function resetPassword($username, $modx)
+    public static function resetPassword($username, $modx, $toPls = '')
     {
         $user = $modx->getObject('modUser', array('username' => $username));
         if ($user) {
@@ -517,7 +517,13 @@ class Identification
                 $user->set('password', $password);
                 $user->save();
             }
-            return array_merge($profile->toArray(), $user->toArray());
+            $userData = array_merge($profile->toArray(), $user->toArray());
+
+            if ($toPls && $userData) {
+                $modx->setPlaceholder($toPls, $userData);
+            }
+
+            return $userData;
         }
         return [];
     }
