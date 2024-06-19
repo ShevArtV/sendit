@@ -1,5 +1,6 @@
 <?php
-require_once MODX_CORE_PATH . 'components/sendit/services/sendit.class.php';
+$corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
+require_once $corePath . 'components/sendit/services/sendit.class.php';
 
 switch ($modx->event->name) {
     case 'OnLoadWebDocument':
@@ -28,7 +29,7 @@ switch ($modx->event->name) {
         setcookie('SendIt', json_encode($data), 0, '/');
         break;
     case 'OnMODXInit':
-        $modx->addPackage('sendit', MODX_BASE_PATH . 'core/components/sendit/model/');
+        $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         SendIt::clearSession($modx);
         break;
 }

@@ -934,8 +934,9 @@ class SendIt
 
     public static function clearSession($modx, ?string $className = 'SendIt')
     {
+        $assetsPath = $modx->getOption('core_path', null, MODX_ASSETS_PATH);
         $uploaddir = $modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
-        $uploaddir = str_replace('[[+asseetsUrl]]', MODX_ASSETS_PATH, $uploaddir);
+        $uploaddir = str_replace('[[+asseetsUrl]]', $assetsPath, $uploaddir);
         $storageTime = $modx->getOption('si_storage_time', '', 86400);
         $max = date('Y-m-d H:i:s', time() - $storageTime);
         $sessions = $modx->getIterator('siSession', ['class_name' => $className, 'createdon:<' => $max]);

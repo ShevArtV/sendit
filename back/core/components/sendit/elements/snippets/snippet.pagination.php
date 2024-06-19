@@ -8,7 +8,8 @@ if($SendIt instanceof SendIt){
     SendIt::setSession($modx, [
         'presets' => $session['presets']
     ]);
-    require_once MODX_CORE_PATH . 'components/sendit/services/sendit.class.php';
+    $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
+    require_once $corePath . 'components/sendit/services/sendit.class.php';
     $SendIt = new SendIt($modx, $scriptProperties['presetName'], $scriptProperties['formName']);
 }
 
