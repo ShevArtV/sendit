@@ -241,6 +241,9 @@ export default class Sending {
                 SendIt?.Notify?.error(result.message);
             }
         } else {
+            if(root.tagName.toLowerCase() !== 'form'){
+              root = root.closest(this.config.rootSelector);
+            }
             for (let k in result.data.errors) {
                 const errorBlock = root.querySelector(this.config.errorBlockSelector.replace('${fieldName}', k));
                 const fields = root.querySelectorAll(`[name="${k}"]`);

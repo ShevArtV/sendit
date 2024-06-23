@@ -5,6 +5,9 @@ return [
         'validate' => 'phone:required,age:required,name:required,email:email:required,politics:checkbox:required',
         'fieldNames' => 'age==Возраст,name==Имя,phone==Телефон,email==Почта',
     ],
+    'simpleform' => [
+        'validate' => 'email:email:required,name:required,politics:checkbox:required',
+    ],
     'search_something' => [
         'hooks' => '',
         'snippet' => '@FILE snippets/snippet.search.php'
