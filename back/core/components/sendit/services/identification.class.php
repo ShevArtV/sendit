@@ -234,7 +234,7 @@ class Identification
 
         if ($user) {
             $profile = $user->getOne('Profile');
-            if ($profile->get('email')) {
+            if (!$profile->get('email')) {
                 $this->hook->addError($this->config['errorFieldName'], $this->modx->lexicon('si_msg_no_email_err'));
                 return false;
             }
