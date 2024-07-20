@@ -33,7 +33,7 @@ return [
     ],
     'upload_drop_file' => [
         'extends' => 'upload_file',
-        'maxSize' => 1001,
+        'maxSize' => 2001,
         'maxCount' => 3,
         'loadedUnit' => 'Mb', // %, b, mb, kb, gb, gb,
     ],
@@ -124,7 +124,7 @@ return [
     'forgot' => [
         'hooks' => 'Identification,FormItSaveForm,FormItAutoResponder',
         'method' => 'forgot',
-        'successMessage' => 'Новый пароль отправлен на ваш email',
+        'successMessage' => 'Письмо с инструкциями отправлено на ваш email',
 
         'usernameField' => 'email',
         'validate' => 'email:required:userNotExists',

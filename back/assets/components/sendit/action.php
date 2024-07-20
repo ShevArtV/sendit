@@ -1,4 +1,5 @@
 <?php
+
 $time_start = microtime(true);
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 4) . '/index.php';
@@ -8,12 +9,12 @@ $modx->getService('error', 'error.modError');
 $modx->setLogLevel(modX::LOG_LEVEL_ERROR);
 
 $headers = array_change_key_case(getallheaders());
-$token = $headers['x-sitoken'];
+$token = $headers['x-sitoken'] ?? '';
 $cookie = $_COOKIE['SendIt'] ? json_decode($_COOKIE['SendIt'], 1) : [];
 
-$preset = $headers['x-sipreset'];
-$formName = $headers['x-siform'];
-$action = $headers['x-siaction'];
+$preset = $headers['x-sipreset'] ?? '';
+$formName = $headers['x-siform'] ?? '';
+$action = $headers['x-siaction'] ?? '';
 
 $sendit = new SendIt($modx, (string)$preset, (string)$formName);
 
@@ -25,34 +26,33 @@ $res = [
 
 $session = SendIt::getSession($modx);
 
-if (!isset($session['sitoken']) || !$token || $token !== $session['sitoken']) die(json_encode($sendit->error('si_msg_token_err')));
-if (!$cookie['sitrusted']) die(json_encode($sendit->error('si_msg_trusted_err')));
+if (!isset($session['sitoken']) || !$token || $token !== $session['sitoken']) {
+    die(json_encode($sendit->error('si_msg_token_err')));
+}
+if (!$cookie['sitrusted']) {
+    die(json_encode($sendit->error('si_msg_trusted_err')));
+}
 
 switch ($action) {
     case 'validate_files':
         $filesData = isset($_POST['filesData']) ? json_decode($_POST['filesData'], JSON_UNESCAPED_UNICODE) : [];
         $fileList = !empty($_POST['fileList']) ? explode(',', $_POST['fileList']) : [];
-        if(isset($_POST['params'])){
+        if (isset($_POST['params'])) {
             $params = json_decode($_POST['params'], true);
             $sendit->params = array_merge($sendit->params, $params);
         }
         $res = $sendit->validateFiles($filesData, count($fileList));
         break;
+
     case 'uploadChunk':
         $content = file_get_contents('php://input');
         $res = $sendit->uploadChunk($content, $headers);
         break;
+
     case 'send':
         $res = $sendit->process();
         break;
 
-    case 'removeDir':
-        $res = $sendit->success('', []);
-        $uploaddir = $sendit->uploaddir . session_id() . '/';
-        if (strpos($uploaddir, MODX_ASSETS_PATH) !== false) {
-            $sendit->removeDir($uploaddir);
-        }
-        break;
     case 'removeFile':
         $path = MODX_BASE_PATH . $_POST['path'];
         $nomsg = (bool)$_POST['nomsg'];

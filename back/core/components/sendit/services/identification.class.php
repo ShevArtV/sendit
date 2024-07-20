@@ -1,56 +1,78 @@
 <?php
 
+/**
+ *
+ */
 class Identification
 {
+    /**
+     * @var modX
+     */
+    public \modX $modx;
+    /**
+     * @var array
+     */
+    public array $config;
+    /**
+     * @var object
+     */
+    public object $hook;
+    /**
+     * @var array
+     */
+    public array $values;
+    /**
+     * @var int
+     */
+    private int $version;
 
     /**
-     * @param modX $modx A reference to the Modx instance
+     * @param \modX $modx A reference to the Modx instance
      * @param array $config
      * @param object $hook
      */
-    function __construct(modX $modx, object $hook, array $config = array())
+    function __construct(\modX $modx, object $hook, array $config = array())
     {
         $this->modx = $modx;
         $this->config = $config;
         $this->hook = $hook;
         $this->values = $hook->getValues();
+        $version = $modx->getVersionData();
+        $this->version = (int)$version['version'];
     }
 
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public function register()
+    public function register(): bool
     {
-        $email = $this->values['email'];
+        $email = $this->values['email'] ?? '';
+        $passwordField = !empty($this->config['passwordField']) ? $this->config['passwordField'] : 'password';
+        $usernameField = !empty($this->config['usernameField']) ? $this->config['usernameField'] : 'username';
 
-        $passwordField = $this->config['passwordField'] ?: 'password';
-        $usernameField = $this->config['usernameField'] ?: 'username';
-
-        if (!$this->values['email']) {
-            $this->values['email'] = $this->values[$usernameField] . '@' . $this->modx->getOption('http_host');
+        if (empty($this->values['email'])) {
+            $this->values['email'] = ($this->values[$usernameField] ?? time()) . '@' . $this->modx->getOption('http_host');
         }
 
-        $activation = $this->config['activation'];
-        $moderate = $this->config['moderate'];
-        $activationResourceId = $this->config['activationResourceId'] ?: 1;
-        $userGroupsField = $this->config['usergroupsField'] ?: '';
+        $activation = $this->config['activation'] ?? false;
+        $moderate = $this->config['moderate'] ?? false;
+        $activationResourceId = $this->config['activationResourceId'] ?? 1;
+        $userGroupsField = $this->config['usergroupsField'] ?? '';
+        $defaultUserGroups = explode(',', $this->config['usergroups']) ?? [];
         $this->modx->user = $this->modx->getObject('modUser', 1);
-        $userGroups = !empty($userGroupsField) && array_key_exists($userGroupsField, $this->values) ? $this->values[$userGroupsField] : explode(
-            ',',
-            $this->config['usergroups']
-        );
+        $userGroups = !empty($userGroupsField) && array_key_exists($userGroupsField, $this->values) ? $this->values[$userGroupsField] : $defaultUserGroups;
         if ($userGroups) {
             foreach ($userGroups as $k => $group) {
                 $group = explode(':', $group);
                 $this->values['groups'][] = array(
                     'usergroup' => $group[0],
-                    'role' => $group[1] ?: 1,
-                    'rank' => $group[2] ?: $k,
+                    'role' => $group[1] ?? 1,
+                    'rank' => $group[2] ?? $k,
                 );
             }
         }
-        if (!$this->values[$passwordField]) {
+        if (empty($this->values[$passwordField])) {
             $this->values[$passwordField] = $this->generateCode($this->modx, 'pass', 10);
         }
 
@@ -70,20 +92,21 @@ class Identification
             $this->values['blocked'] = 1;
         }
 
-        $extended = str_replace('&quot;', '"', $this->values['extended']);
+        $extended = !empty($this->values['extended']) ? str_replace('&quot;', '"', $this->values['extended']) : '';
         $extended = $extended ? json_decode($extended, 1) : [];
 
         if ($this->config['autoLogin']) {
             $extended['autologin'] = [
-                'rememberme' => $this->config['rememberme'] ?: 1,
-                'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
-                'afterLoginRedirectId' => $this->config['afterLoginRedirectId']
+                'rememberme' => $this->config['rememberme'] ?? 1,
+                'authenticateContexts' => $this->config['authenticateContexts'] ?? 'web',
+                'afterLoginRedirectId' => $this->config['afterLoginRedirectId'] ?? ''
             ];
         }
 
         $this->values['extended'] = $extended;
 
-        $response = $this->modx->runProcessor('/security/user/create', $this->values);
+        $processorName = $this->version === 2 ? '/security/user/create' : 'Security/User/Create';
+        $response = $this->modx->runProcessor($processorName, $this->values);
 
         if ($errors = $response->getFieldErrors()) {
             foreach ($errors as $error) {
@@ -113,9 +136,15 @@ class Identification
         return true;
     }
 
-    public static function loginWithoutPass($username, $modx, $properties = [])
+    /**
+     * @param string $username
+     * @param modX $modx
+     * @param array|null $properties
+     * @return bool
+     */
+    public static function loginWithoutPass(string $username, \modX $modx, ?array $properties = []): bool
     {
-        $contexts = $properties['authenticateContexts'] ? explode(',', $properties['authenticateContexts']) : ['web'];
+        $contexts = !empty($properties['authenticateContexts']) ? explode(',', $properties['authenticateContexts']) : ['web'];
         $q = $modx->newQuery('modUser');
         $q->leftJoin('modUserProfile', 'Profile');
         $q->select($modx->getSelectColumns('modUser', 'modUser', '', array('id', 'username', 'active')));
@@ -135,10 +164,10 @@ class Identification
 
         $modx->invokeEvent('OnWebLogin', array(
             'user' => $user,
-            'attributes' => $properties['rememberme'],
+            'attributes' => $properties['rememberme'] ?? 0,
             'lifetime' => $modx->getOption('session_gc_maxlifetime'),
             'loginContext' => $modx->context->key,
-            'addContexts' => $properties['authenticateContexts'],
+            'addContexts' => $properties['authenticateContexts'] ?? '',
             'session_id' => $session_id
         ));
 
@@ -152,11 +181,14 @@ class Identification
         return true;
     }
 
-    public function login()
+    /**
+     * @return bool
+     */
+    public function login(): bool
     {
-        $contexts = $this->config['authenticateContexts'];
-        $passwordField = $this->config['passwordField'] ?: 'password';
-        $usernameField = $this->config['usernameField'] ?: 'username';
+        $contexts = $this->config['authenticateContexts'] ?? '';
+        $passwordField = $this->config['passwordField'] ?? 'password';
+        $usernameField = $this->config['usernameField'] ?? 'username';
 
         if (!$this->values[$usernameField] || !$this->values[$passwordField]) {
             return false;
@@ -167,10 +199,11 @@ class Identification
             'add_contexts' => $contexts,
             'username' => $this->values[$usernameField],
             'password' => $this->values[$passwordField],
-            'rememberme' => $this->values['rememberme'],
+            'rememberme' => $this->values['rememberme'] ?? 0,
         );
 
-        $response = $this->modx->runProcessor('/security/login', $c);
+        $processorName = $this->version === 2 ? '/security/login' : 'Security/Login';
+        $response = $this->modx->runProcessor($processorName, $c);
         if ($response->getMessage()) {
             $this->hook->addError($this->config['errorFieldName'], $response->getMessage());
             return false;
@@ -178,9 +211,12 @@ class Identification
         return true;
     }
 
-    public function update()
+    /**
+     * @return bool
+     */
+    public function update(): bool
     {
-        if ((int)$this->values['uid']) {
+        if (isset($this->values['uid'])) {
             $user = $this->modx->getObject('modUser', (int)$this->values['uid']);
         } else {
             $user = $this->modx->user;
@@ -189,10 +225,11 @@ class Identification
         if ($this->modx->user->isAuthenticated($this->modx->context->get('key'))) {
             $profile = $user->getOne('Profile');
             $profileData = $profile->toArray();
-            $extended = str_replace('&quot;', '"', $this->values['extended']);
+            $profileExtended = $profileData['extended'] ?? [];
+            $extended = !empty($this->values['extended']) ? str_replace('&quot;', '"', $this->values['extended']) : '';
             $extended = $extended ? json_decode($extended, 1) : [];
-            $this->values['extended'] = array_merge($profileData['extended'] ?? [], $extended);
-            $this->values['dob'] = $this->values['dob'] ? strtotime($this->values['dob']) : $profile->get('dob');
+            $this->values['extended'] = array_merge($profileExtended, $extended);
+            $this->values['dob'] = !empty($this->values['dob']) ? strtotime($this->values['dob']) : $profile->get('dob');
             $userData = $user->toArray();
             unset($userData['password']);
             unset($userData['cachepwd']);
@@ -211,10 +248,14 @@ class Identification
         return true;
     }
 
-    public function logout()
+    /**
+     * @return bool
+     */
+    public function logout(): bool
     {
-        $contexts = $this->config['authenticateContexts'];
-        $response = $this->modx->runProcessor('/security/logout', array(
+        $contexts = $this->config['authenticateContexts'] ?? '';
+        $processorName = $this->version === 2 ? '/security/logout' : 'Security/Logout';
+        $response = $this->modx->runProcessor($processorName, array(
             'login_context' => $this->modx->context->key,
             'add_contexts' => $contexts
         ));
@@ -226,10 +267,13 @@ class Identification
         return true;
     }
 
-    public function forgot()
+    /**
+     * @return bool
+     */
+    public function forgot(): bool
     {
-        $usernameField = $this->config['usernameField'] ?: 'username';
-        $activationResourceId = $this->config['activationResourceId'] ?: 1;
+        $usernameField = $this->config['usernameField'] ?? 'username';
+        $activationResourceId = $this->config['activationResourceId'] ?? 1;
         $user = $this->modx->getObject('modUser', ['username' => $this->values[$usernameField]]);
 
         if ($user) {
@@ -243,9 +287,9 @@ class Identification
             $extended['temp_password'] = $this->generateCode($this->modx);
             if ($this->config['autoLogin']) {
                 $extended['autologin'] = [
-                    'rememberme' => $this->config['rememberme'] ?: 1,
-                    'authenticateContexts' => $this->config['authenticateContexts'] ?: 'web',
-                    'afterLoginRedirectId' => $this->config['afterLoginRedirectId']
+                    'rememberme' => $this->config['rememberme'] ?? 1,
+                    'authenticateContexts' => $this->config['authenticateContexts'] ?? 'web',
+                    'afterLoginRedirectId' => $this->config['afterLoginRedirectId'] ?? ''
                 ];
             }
             $profile->set('extended', $extended);
@@ -260,19 +304,20 @@ class Identification
     }
 
     /**
-     * @param string $type
-     * @param integer $length
+     * @param modX $modx
+     * @param string|null $type
+     * @param int|null $length
      *
      * @return string
      */
-    public static function generateCode($modx, $type = 'pass', $length = 0)
+    public static function generateCode(\modX $modx, ?string $type = 'pass', ?int $length = 0): string
     {
         if (!$length) {
             $length = $modx->getOption('password_min_length');
         }
 
-        $password = "";
-        /* Массив со всеми возможными символами в пароле */
+        $result = '';
+
         switch ($type) {
             case 'pass':
                 $arr = array(
@@ -416,10 +461,10 @@ class Identification
         }
 
         for ($i = 0; $i < $length; $i++) {
-            $password .= $arr[mt_rand(0, count($arr) - 1)]; // Берём случайный элемент из массива
+            $result .= $arr[mt_rand(0, count($arr) - 1)];
         }
 
-        return $password;
+        return $result;
     }
 
     /**
@@ -427,45 +472,45 @@ class Identification
      *
      * @return string
      */
-    public function getConfirmUrl($activationResourceId)
+    public function getConfirmUrl(int $activationResourceId): string
     {
         $confirmParams['lu'] = $this->base64url_encode($this->modx->user->get('username'));
         $profile = $this->modx->user->getOne('Profile');
         $extended = $profile->get('extended');
-        $extended['activate_before'] = time() + $this->config['activationUrlTime'] ?: time() + 60 * 60 * 3; // срок жизни ссылки на активацию
+        $extended['activate_before'] = time() + $this->config['activationUrlTime'] ?? time() + 60 * 60 * 3;
         $profile->set('extended', $extended);
         $profile->save();
         return $this->modx->makeUrl($activationResourceId, '', $confirmParams, 'full');
     }
 
     /**
-     * Encodes a string for URL safe transmission
-     *
-     * @access public
      * @param string $str
      * @return string
      */
-    public function base64url_encode($str)
+    public function base64url_encode(string $str): string
     {
         return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
     }
 
     /**
-     * Decodes an URL safe encoded string
-     *
-     * @access public
      * @param string $str
      * @return string
      */
-    public static function base64url_decode($str)
+    public static function base64url_decode(string $str): string
     {
         return base64_decode(str_pad(strtr($str, '-_', '+/'), strlen($str) % 4, '=', STR_PAD_RIGHT));
     }
 
 
-    public static function activateUser($username, $modx, $toPls = '')
+    /**
+     * @param string $username
+     * @param modX $modx
+     * @param string|null $toPls
+     * @return array
+     */
+    public static function activateUser(string $username, \modX $modx, ?string $toPls = ''): array
     {
-        $userData = false;
+        $userData = [];
         if ($user = $modx->getObject('modUser', array('username' => $username))) {
             $profile = $user->getOne('Profile');
             $extended = $profile->get('extended');
@@ -498,14 +543,20 @@ class Identification
         }
     }
 
-    public static function resetPassword($username, $modx, $toPls = '')
+    /**
+     * @param string $username
+     * @param modX $modx
+     * @param string|null $toPls
+     * @return array
+     */
+    public static function resetPassword(string $username, \modX $modx, ?string $toPls = '')
     {
         $user = $modx->getObject('modUser', array('username' => $username));
         if ($user) {
             $profile = $user->getOne('Profile');
             $extended = $profile->get('extended');
-            $password = $extended['temp_password'];
-            $activateBefore = $extended['activate_pass_before'];
+            $password = $extended['temp_password'] ?? '';
+            $activateBefore = $extended['activate_pass_before'] ?? 0;
             unset($extended['activate_pass_before'], $extended['temp_password']);
             $profile->set('extended', $extended);
             $profile->save();

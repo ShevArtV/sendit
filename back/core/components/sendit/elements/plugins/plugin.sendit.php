@@ -7,7 +7,7 @@ switch ($modx->event->name) {
         SendIt::loadCssJs($modx);
         break;
     case 'OnWebPageInit':
-        $alias = explode('.', basename($_REQUEST['q']));
+        $alias = !empty($_REQUEST['q']) ? explode('.', basename($_REQUEST['q'])) : [];
         if (isset($alias[1]) && $alias[1] !== 'html') {
             return;
         }

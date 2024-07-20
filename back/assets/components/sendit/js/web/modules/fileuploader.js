@@ -57,12 +57,6 @@ export default class FileUploaderFactory {
                 }
             }
         })
-
-        /*window.addEventListener('beforeunload', (e) => {
-            for (let fileUploader of this.instances.values()) {
-                fileUploader.removeDir();
-            }
-        });*/
     }
 
     addInstances(block) {
@@ -505,16 +499,6 @@ class FileUploader {
         }
         fileList.length && hide && hide.classList.add(this.config.hiddenClass);
         this.listField.value = fileList.join(',');
-    }
-
-    removeDir() {
-        const headers = {
-            'X-SIACTION': 'removeDir',
-            'X-SIPRESET': 'removeDir',
-            'X-SITOKEN': SendIt?.getComponentCookie('sitoken')
-        }
-        SendIt?.setComponentCookie('sitrusted', '1');
-        SendIt?.Sending?.send(document, this.config.actionUrl, headers, '');
     }
 
     translitName(filename) {

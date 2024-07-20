@@ -1,29 +1,104 @@
 <?php
 
 
+/**
+ *
+ */
 class SendIt
 {
+    /**
+     * @var modX
+     */
     public modX $modx;
-    public object $parser;
+    /**
+     * @var string|null
+     */
     public string $formName;
+    /**
+     * @var string
+     */
     public string $presetName;
+    /**
+     * @var string
+     */
     public string $basePath;
+    /**
+     * @var string
+     */
     public string $assetsPath;
+    /**
+     * @var string
+     */
     public string $jsConfigPath;
+    /**
+     * @var string
+     */
     public string $uploaddir;
+    /**
+     * @var string
+     */
     public string $pathToPresets;
+    /**
+     * @var string
+     */
     public string $corePath;
+    /**
+     * @var string
+     */
     public string $presetKey;
+    /**
+     * @var array
+     */
     public array $presets;
+    /**
+     * @var array
+     */
     public array $preset;
+    /**
+     * @var array
+     */
     public array $extendsPreset;
+    /**
+     * @var array
+     */
     public array $pluginParams;
+    /**
+     * @var array
+     */
     public array $params;
+    /**
+     * @var array
+     */
     public array $validates;
-    public array $defaltValidators;
+    /**
+     * @var array
+     */
+    public array $defaultValidators;
+    /**
+     * @var array
+     */
     public array $hooks;
+    /**
+     * @var array
+     */
     public array $session;
+    /**
+     * @var int
+     */
     public int $roundPrecision;
+    /**
+     * @var int
+     */
+    private int $version;
+
+    /**
+     * @var object
+     */
+    public object $parser;
+    /**
+     * @var string
+     */
+    public static string $allowDirs;
 
 
     /**
@@ -36,7 +111,7 @@ class SendIt
         $this->modx = $modx;
         $this->formName = $formName ?: $presetName;
         $this->presetName = $presetName ?: '';
-
+        SendIt::$allowDirs = $this->modx->getOption('si_allow_dirs', '', 'uploaded_files');
         $this->initialize();
     }
 
@@ -45,8 +120,9 @@ class SendIt
      */
     private function initialize(): void
     {
+        $version = $this->modx->getVersionData();
+        $this->version = (int)$version['version'];
         $this->session = SendIt::getSession($this->modx) ?: [];
-        $this->parser = $this->modx->getService('pdoTools') ?: $this->modx;
         $this->basePath = $this->modx->getOption('base_path');
         $this->corePath = $this->modx->getOption('core_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
@@ -57,14 +133,15 @@ class SendIt
         $pathToPresets = $this->modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
         $this->presetKey = str_replace('.inc.php', '', basename($pathToPresets));
         $this->pathToPresets = dirname($this->corePath . $pathToPresets);
+        $this->version === 2 ? $this->setParser() : $this->setParserModx3();
         $this->setPresets();
-        $sessionPreset = $this->session['presets'][$this->presetName] ?: [];
-        $this->preset = array_merge($sessionPreset, $this->presets[$this->presetKey][$this->presetName] ?: []);
+        $sessionPreset = $this->session['presets'][$this->presetName] ?? [];
+        $this->preset = array_merge($sessionPreset, $this->presets[$this->presetKey][$this->presetName] ?? []);
         $this->pluginParams = [];
         $this->getFormParams();
         $this->params = [];
         $this->validates = [];
-        $this->defaltValidators = [
+        $this->defaultValidators = [
             'blank',
             'required',
             'password_confirm',
@@ -89,14 +166,18 @@ class SendIt
 
         $this->modx->lexicon->load('sendit:default');
 
-        $this->extendsPreset = $this->getExtends($this->preset['extends'], []);
+        $this->extendsPreset = !empty($this->preset['extends']) ? $this->getExtends($this->preset['extends'], []) : [];
 
         $this->setParams();
 
-        $this->params['sendGoal'] = $this->params['sendGoal'] ?: $this->modx->getOption('si_send_goal', '', false);
-        $this->params['counterId'] = $this->params['counterId'] ?: $this->modx->getOption('si_counter_id', '', '');
-        $this->params['formName'] = $this->params['formName'] !== $this->modx->lexicon('si_default_formname') ? $this->params['formName'] : $this->formName;
-        $this->validates = $this->getValidate($this->params['validate']);
+        $this->params['sendGoal'] = $this->params['sendGoal'] ?? $this->modx->getOption('si_send_goal', '', false);
+        $this->params['counterId'] = $this->params['counterId'] ?? $this->modx->getOption('si_counter_id', '', '');
+        $this->params['formName'] = !empty($this->params['formName']) && $this->params['formName'] !== $this->modx->lexicon(
+            'si_default_formname'
+        ) ? $this->params['formName'] : $this->formName;
+        if (!empty($this->params['validate'])) {
+            $this->validates = $this->getValidate($this->params['validate']);
+        }
         foreach ($_POST as $k => $v) {
             $this->setValue($v, $k);
             if (is_array($v)) {
@@ -107,11 +188,11 @@ class SendIt
 
         $this->removeUselessField();
 
-        if ($this->params['fieldNames']) {
+        if (!empty($this->params['fieldNames'])) {
             $this->setFieldsAliases();
         }
 
-        if ($this->params['attachFilesToEmail'] && $this->params['allowFiles']) {
+        if (!empty($this->params['attachFilesToEmail']) && !empty($this->params['allowFiles'])) {
             $this->attachFiles();
         }
 
@@ -122,7 +203,26 @@ class SendIt
         $this->setValidate();
     }
 
-    private function setPresets()
+    /**
+     * @return void
+     */
+    private function setParser(): void
+    {
+        $this->parser = $this->modx->getService('pdoTools') ?: $this->modx;
+    }
+
+    /**
+     * @return void
+     */
+    private function setParserModx3(): void
+    {
+        $this->parser = $this->modx->services->has('pdoTools') ? $this->modx->services->get('pdoTools') : $this->modx;
+    }
+
+    /**
+     * @return void
+     */
+    private function setPresets(): void
     {
         $this->presets = [];
         if (file_exists($this->pathToPresets)) {
@@ -137,7 +237,12 @@ class SendIt
         }
     }
 
-    private function getExtends($preset, $extends)
+    /**
+     * @param string $preset
+     * @param array $extends
+     * @return array
+     */
+    private function getExtends(string $preset, array $extends): array
     {
         $preset = explode('.', $preset);
         if (count($preset) < 2) {
@@ -147,14 +252,17 @@ class SendIt
         $presetData = $this->presets[$preset[0]][$preset[1]];
         if ($presetData && is_array($presetData)) {
             $extends = array_merge($extends, $presetData);
-            if ($presetData['extends']) {
+            if (!empty($presetData['extends'])) {
                 $extends = $this->getExtends($presetData['extends'], $extends);
             }
         }
         return $extends;
     }
 
-    private function setParams()
+    /**
+     * @return void
+     */
+    private function setParams(): void
     {
         $adminID = $this->modx->getOption('si_default_admin', '', 1);
         $http_host = $this->modx->getOption('http_host', '', 'domain.com');
@@ -180,10 +288,14 @@ class SendIt
             $this->params = array_merge($default, $this->params);
         }
 
-        $this->hooks = $this->params['hooks'] ? explode(',', $this->params['hooks']) : [];
+        $this->hooks = !empty($this->params['hooks']) ? explode(',', $this->params['hooks']) : [];
     }
 
-    public static function loadCssJs($modx)
+    /**
+     * @param modX $modx
+     * @return void
+     */
+    public static function loadCssJs(\modX $modx): void
     {
         $frontend_js = $modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/js/web/sendit.js');
         $frontend_css = $modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/css/web/index.css');
@@ -261,7 +373,7 @@ class SendIt
             $output = [];
             foreach ($allValidators as $validator) {
                 $items = explode('=', $validator);
-                if (!in_array($items[0], $this->defaltValidators)) {
+                if (!in_array($items[0], $this->defaultValidators)) {
                     $output[] = $items[0];
                 }
             }
@@ -300,7 +412,7 @@ class SendIt
         if (!is_array($value)) {
             $_POST[$key] = $value;
             $k = preg_replace('/\[\d*?\]/', '[*]', $key);
-            if ($this->validates[$k] && !$this->validates[$key]) {
+            if (!empty($this->validates[$k]) && !isset($this->validates[$key])) {
                 $this->validates[$key] = $this->validates[$k];
             }
         } else {
@@ -312,10 +424,10 @@ class SendIt
     }
 
     /**
-     * @param string $validate
+     * @param string|null $validate
      * @return array
      */
-    private function getValidate($validate = ''): array
+    private function getValidate(?string $validate = ''): array
     {
         $output = [];
         if (!$validate) {
@@ -347,17 +459,15 @@ class SendIt
     }
 
     /**
-     * @return array
+     * @return void
      */
-    private function getFormParams(): array
+    private function getFormParams(): void
     {
         $this->modx->invokeEvent('OnGetFormParams', [
             'formName' => $this->formName,
             'presetName' => $this->presetName,
             'SendIt' => $this
         ]);
-
-        return is_array($this->modx->event->returnedValues) ? $this->modx->event->returnedValues : [];
     }
 
     /**
@@ -372,21 +482,25 @@ class SendIt
             'result' => $result
         ]);
 
-        $response = $this->modx->event->returnedValues['result'];
+        $response = isset($this->modx->event->returnedValues) && !empty($this->modx->event->returnedValues['result']) ? $this->modx->event->returnedValues['result'] : '';
         if (!empty($response)) {
             $result = $response;
         }
 
         if ($result['success']) {
-            if (in_array('FormItAutoResponder', $this->hooks) || in_array('FormItAutoResponder', $this->hooks) || $this->params['antispam']) {
-                $this->session['sendingLimits'][$this->formName]['countSending'] = (int)$this->session['sendingLimits'][$this->formName]['countSending'] + 1;
+            if (in_array('FormItAutoResponder', $this->hooks) || !empty($this->params['antispam'])) {
+                $countSending = 0;
+                if (isset($this->session['sendingLimits'][$this->formName]['countSending'])) {
+                    $countSending = (int)$this->session['sendingLimits'][$this->formName]['countSending'];
+                }
+                $this->session['sendingLimits'][$this->formName]['countSending'] = ++$countSending;
                 $this->session['sendingLimits'][$this->formName]['lastSendingTime'] = time();
                 SendIt::setSession($this->modx, ['sendingLimits' => $this->session['sendingLimits']]);
             }
 
-            $snippet = $this->params['snippet'] ?: 'FormIt';
+            $snippet = !empty($this->params['snippet']) ? $this->params['snippet'] : 'FormIt';
             if ($snippet !== 'FormIt') {
-                if ($this->params['validate']) {
+                if (!empty($this->params['validate'])) {
                     $this->runSnippet('FormIt');
                     $result = $this->handleFormIt();
                     if (!$result['success']) {
@@ -414,13 +528,16 @@ class SendIt
         return $this->parser->runSnippet($snippet, $this->params);
     }
 
-    public function paginationHandler()
+    /**
+     * @return array
+     */
+    public function paginationHandler(): array
     {
         $snippetName = $this->params['render'] ?? '!pdoResources';
-        $pageKey = $this->params['pagination'] . 'page';
+        $pageKey = ($this->params['pagination'] ?? '') . 'page';
         unset($this->params['SendIt']);
-        $this->params['limit'] = (int)($_REQUEST['limit'] ?: $this->params['limit']) ?: 10;
-        $currentPage = (int)$_REQUEST[$pageKey] ?: 1;
+        $this->params['limit'] = (int)($_REQUEST['limit'] ?? $this->params['limit']) ?? 10;
+        $currentPage = !empty($_REQUEST[$pageKey]) ? (int)$_REQUEST[$pageKey] : 1;
         $hashParams = [];
         $this->modx->invokeEvent('OnBeforePageRender', [
             'formName' => $this->formName,
@@ -428,10 +545,10 @@ class SendIt
             'SendIt' => $this
         ]);
 
-        $this->params['hashParams'] = $this->params['hashParams'] ? explode(',', $this->params['hashParams'] ): [];
-        $this->params['hashParams'] = array_unique(array_merge(['pagination','limit','presetName'], $this->params['hashParams']));
-        foreach($this->params as $key => $value){
-            if(in_array($key, $this->params['hashParams'])){
+        $this->params['hashParams'] = !empty($this->params['hashParams']) ? explode(',', $this->params['hashParams']) : [];
+        $this->params['hashParams'] = array_unique(array_merge(['pagination', 'limit', 'presetName'], $this->params['hashParams']));
+        foreach ($this->params as $key => $value) {
+            if (in_array($key, $this->params['hashParams'])) {
                 $hashParams[$key] = $value;
             }
         }
@@ -474,12 +591,15 @@ class SendIt
     }
 
 
-    private function checkPossibilityWork()
+    /**
+     * @return array
+     */
+    private function checkPossibilityWork(): array
     {
         if (!in_array('email', $this->hooks)
             && !in_array('FormItAutoResponder', $this->hooks)
-            && !$this->params['pauseBetweenSending']
-            && !$this->params['sendingPerSession']
+            && empty($this->params['pauseBetweenSending'])
+            && empty($this->params['sendingPerSession'])
         ) {
             return $this->success();
         }
@@ -487,8 +607,13 @@ class SendIt
         $pause = $this->params['pauseBetweenSending'] ?? $this->modx->getOption('si_pause_between_sending', '', 30);
         $maxSendingCount = $this->params['sendingPerSession'] ?? $this->modx->getOption('si_max_sending_per_session', '', 2);
         $now = time();
-        $countSending = (int)$this->session['sendingLimits'][$this->formName]['countSending'];
-        $lastSendingTime = (int)$this->session['sendingLimits'][$this->formName]['lastSendingTime'] ?: $now - $pause;
+        $countSending = 0;
+        $lastSendingTime = $now - $pause;
+        if (isset($this->session['sendingLimits'][$this->formName])) {
+            $countSending = (int)$this->session['sendingLimits'][$this->formName]['countSending'] ?? 0;
+            $lastSendingTime = (int)$this->session['sendingLimits'][$this->formName]['lastSendingTime'] ?? $now - $pause;
+        }
+
         $timePassed = $now - $lastSendingTime;
         if ($timePassed >= $pause && $countSending < $maxSendingCount) {
             return $this->success();
@@ -506,7 +631,7 @@ class SendIt
      */
     private function handleFormIt(): array
     {
-        $plPrefix = $this->params['placeholderPrefix'] ?: 'fi.';
+        $plPrefix = $this->params['placeholderPrefix'] ?? 'fi.';
         $plPrefix = $plPrefix . 'error.';
         $data = [];
         foreach ($this->modx->placeholders as $pls => $v) {
@@ -524,7 +649,7 @@ class SendIt
         }
 
         $this->params['aliases'] = [];
-        if ($this->params['fieldNames']) {
+        if (!empty($this->params['fieldNames'])) {
             $fields = explode(',', $this->params['fieldNames']);
             foreach ($fields as $field) {
                 $items = explode('==', $field);
@@ -533,15 +658,15 @@ class SendIt
         }
 
         if (!empty($data['errors'])) {
-            $message = $this->params['validationErrorMessage'];
+            $message = $this->params['validationErrorMessage'] ?? '';
             $success = false;
         } else {
             $message = $this->params['successMessage'];
             $success = true;
 
-            $data['redirectTimeout'] = $this->params['redirectTimeout'] ?: 2000;
-            $data['redirectUrl'] = $this->params['redirectTo'];
-            if ((int)$this->params['redirectTo']) {
+            $data['redirectTimeout'] = $this->params['redirectTimeout'] ?? 2000;
+            $data['redirectUrl'] = $this->params['redirectTo'] ?? '';
+            if (!empty($this->params['redirectTo']) && (int)$this->params['redirectTo']) {
                 $redirectUrl = $this->modx->makeUrl($this->params['redirectTo'], '', '', 'full');
                 $data['redirectUrl'] = $redirectUrl;
             }
@@ -553,10 +678,10 @@ class SendIt
 
     /**
      * @param array $filesData
-     * @param int $totalCount
+     * @param int|null $totalCount
      * @return array
      */
-    public function validateFiles(array $filesData, int $totalCount = 0): array
+    public function validateFiles(array $filesData, ?int $totalCount = 0): array
     {
         $this->modx->invokeEvent('OnBeforeFileValidate', [
             'formName' => $this->formName,
@@ -569,14 +694,14 @@ class SendIt
         $totalCount = $this->modx->event->returnedValues['totalCount'] ?? $totalCount;
 
         $uploaddir = $this->uploaddir . session_id() . '/';
-        $allowExt = explode(',', $this->params['allowExt']) ?: [];
-        $maxSize = (float)$this->params['maxSize'] * 1024 * 1024;
-        $maxCount = (int)$this->params['maxCount'];
+        $allowExt = !empty($this->params['allowExt']) ? explode(',', $this->params['allowExt']) : [];
+        $maxSize = !empty($this->params['maxSize']) ? (float)$this->params['maxSize'] * 1024 * 1024 : 1024 * 1024;
+        $maxCount = !empty($this->params['maxCount']) ? (int)$this->params['maxCount'] : 1;
         $status = 'success';
         $data['fileNames'] = [];
         $data['errors'] = [];
-        $data['portion'] = $this->params['portion'];
-        $data['threadsQuantity'] = $this->params['threadsQuantity'];
+        $data['portion'] = !empty($this->params['portion']) ? $this->params['portion'] : 0.1;
+        $data['threadsQuantity'] = !empty($this->params['threadsQuantity']) ? $this->params['threadsQuantity'] : 1;
 
         if ($maxCount < ($totalCount + count($filesData))) {
             $left = $maxCount - $totalCount;
@@ -602,15 +727,16 @@ class SendIt
                 $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $filename;
                 $status = 'success';
             }
-            if (file_exists($dir) && $this->session['uploadedSize'][$filename]) {
-                $percent = $this->getPercent($this->session['uploadedSize'][$filename], $filesize);
+            $uploadedSize = $this->session['uploadedSize'][$filename] ?? 0;
+            if (file_exists($dir) && $uploadedSize) {
+                $percent = $this->getPercent($uploadedSize, $filesize);
                 if ($percent < 100 && $percent > 0) {
                     $chunks = scandir($dir);
                     unset($chunks[0], $chunks[1]);
-                    $msg = $this->getLoadingMsg($percent, $this->session['uploadedSize'][$filename], $filesize, $filename);
+                    $msg = $this->getLoadingMsg($percent, $uploadedSize, $filesize, $filename);
                     $data['start'][$filename] = [
                         'percent' => "{$percent}%",
-                        'bytes' => $this->session['uploadedSize'][$filename],
+                        'bytes' => $uploadedSize,
                         'chunks' => implode(',', $chunks),
                         'msg' => $msg
                     ];
@@ -660,7 +786,7 @@ class SendIt
      * @param array $headers
      * @return array
      */
-    public function uploadChunk(string $content, array $headers)
+    public function uploadChunk(string $content, array $headers): array
     {
         $uploaddir = $this->uploaddir . session_id() . '/';
         $filename = $uploaddir . $headers['x-content-name'];
@@ -669,8 +795,6 @@ class SendIt
         }
 
         if (file_exists($uploaddir . $filename)) {
-            unset($this->session['uploadedSize'][$headers['x-content-name']]);
-            SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize']]);
             return $this->success($this->modx->lexicon('si_msg_loading', [
                 'filename' => $headers['x-content-name'],
                 'percent' => 100
@@ -685,24 +809,27 @@ class SendIt
         $nameParts = explode('.', $headers['x-content-name']);
         $dir = $uploaddir . $nameParts[0] . '/';
         $chunkName = $headers['x-chunk-id'] . '.' . $nameParts[1];
+        $chunkPath = $dir . $chunkName;
         if (!is_dir($dir)) {
             mkdir($dir);
         }
 
-        if (!file_exists($dir . $chunkName) || filesize($dir . $chunkName) < $headers['content-length']) {
-            file_put_contents($dir . $chunkName, $content);
+        if (!file_exists($chunkPath) || filesize($chunkPath) < $headers['content-length']) {
+            file_put_contents($chunkPath, $content);
         }
 
-        $this->session['uploadedSize'][$headers['x-content-name']] += filesize($dir . $chunkName);
-
-        $percent = $this->getPercent($this->session['uploadedSize'][$headers['x-content-name']], $headers['x-total-length']);
-        $msg = $this->getLoadingMsg($percent, $this->session['uploadedSize'][$headers['x-content-name']], $headers['x-total-length'], $headers['x-content-name']);
-
-        if ($this->session['uploadedSize'][$headers['x-content-name']] < $headers['x-total-length']) {
-            SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize']]);
+        $portion = $this->params['portion'] * 1024 * 1024;
+        $countChunks = count(scandir($dir)) - 2;
+        $uploadedSize = $countChunks * $portion;
+        if ($uploadedSize > $headers['x-total-length']) {
+            $uploadedSize = $headers['x-total-length'];
+        }
+        $percent = $this->getPercent($uploadedSize, $headers['x-total-length']);
+        $msg = $this->getLoadingMsg($percent, $uploadedSize, $headers['x-total-length'], $headers['x-content-name']);
+        if ($uploadedSize < $headers['x-total-length']) {
             return $this->success($msg, [
                 'percent' => "$percent%",
-                'bytes' => $this->session['uploadedSize'][$headers['x-content-name']],
+                'bytes' => $this->session['uploadedSize'][$headers['x-content-name']] ?? 0,
                 'filename' => $headers['x-content-name'],
                 'chunkId' => $headers['x-chunk-id'],
             ]);
@@ -729,9 +856,8 @@ class SendIt
             $i++;
         }
 
-        unset($this->session['uploadedSize'][$headers['x-content-name']]);
-        SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize']]);
         SendIt::removeDir($dir);
+
         return $this->success($msg, [
             'path' => str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $headers['x-content-name'],
             'percent' => "$percent%",
@@ -740,9 +866,16 @@ class SendIt
         ]);
     }
 
-    protected function getLoadingMsg(int $percent, int $uploadedSize, int $totalSize, string $filename)
+    /**
+     * @param int $percent
+     * @param int $uploadedSize
+     * @param int $totalSize
+     * @param string $filename
+     * @return string
+     */
+    protected function getLoadingMsg(int $percent, int $uploadedSize, int $totalSize, string $filename): string
     {
-        $unit = $this->params['loadedUnit'] ?: '%';
+        $unit = $this->params['loadedUnit'] ?? '%';
         $key = 'si_msg_loading_bytes';
         $data = [
             'filename' => $filename,
@@ -773,7 +906,12 @@ class SendIt
         return $this->modx->lexicon($key, $data);
     }
 
-    protected function getPercent(int $uploadedSize, int $totalSize)
+    /**
+     * @param int $uploadedSize
+     * @param int $totalSize
+     * @return int
+     */
+    protected function getPercent(int $uploadedSize, int $totalSize): int
     {
         $percent = round($uploadedSize * 100 / $totalSize, $this->roundPrecision);
         if ($percent > 99) {
@@ -782,16 +920,22 @@ class SendIt
         return $percent;
     }
 
-
     /**
      * @param string $dir
      * @return void
      */
     public static function removeDir(string $dir): void
     {
+        $dirParts = explode('/', $dir);
+        $allowDirs = explode(',', SendIt::$allowDirs);
+        if (empty(array_intersect($allowDirs, $dirParts))) {
+            return;
+        }
+
         if (substr($dir, -1) !== '/') {
             $dir .= '/';
         }
+
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
@@ -811,7 +955,12 @@ class SendIt
         }
     }
 
-    public function removeFile(string $path, ?bool $nomsg = false)
+    /**
+     * @param string $path
+     * @param bool|null $nomsg
+     * @return array
+     */
+    public function removeFile(string $path, ?bool $nomsg = false): array
     {
         $filename = basename($path);
         $dir = str_replace($filename, '', $path);
@@ -820,7 +969,7 @@ class SendIt
             return $this->error('si_msg_file_remove_session_err', [], ['filename' => $filename]);
         } else {
             unset($this->session['uploadedSize'][$filename]);
-            SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize']]);
+            SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize'] ?? []]);
 
             if (file_exists($path)) {
                 unlink($path);
@@ -845,26 +994,26 @@ class SendIt
 
     /**
      *
-     * @param string $message
-     * @param array $data
-     * @param array $placeholders
+     * @param string|null $message
+     * @param array|null $data
+     * @param array|null $placeholders
      *
-     * @return array|string
+     * @return array
      */
-    public function error($message = '', $data = [], $placeholders = [])
+    public function error(?string $message = '', ?array $data = [], ?array $placeholders = []): array
     {
         return $this->getResponse(false, $message ?? '', $data ?? [], $placeholders ?? []);
     }
 
     /**
      *
-     * @param string $message
-     * @param array $data
-     * @param array $placeholders
+     * @param string|null $message
+     * @param array|null $data
+     * @param array|null $placeholders
      *
-     * @return array|string
+     * @return array
      */
-    public function success($message = '', $data = [], $placeholders = [])
+    public function success(?string $message = '', ?array $data = [], ?array $placeholders = []): array
     {
         return $this->getResponse(true, $message ?? '', $data ?? [], $placeholders ?? []);
     }
@@ -876,9 +1025,9 @@ class SendIt
      * @param array $data
      * @param array $placeholders
      *
-     * @return array|string
+     * @return array
      */
-    private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = [])
+    private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = []): array
     {
         $this->modx->invokeEvent('OnBeforeReturnResponse', [
             'formName' => $this->formName,
@@ -902,7 +1051,14 @@ class SendIt
         ];
     }
 
-    public static function setSession($modx, $values = [], ?string $sessionId = '', ?string $className = 'SendIt')
+    /**
+     * @param modX $modx
+     * @param array|null $values
+     * @param string|null $sessionId
+     * @param string|null $className
+     * @return void
+     */
+    public static function setSession(\modX $modx, ?array $values = [], ?string $sessionId = '', ?string $className = 'SendIt'): void
     {
         $sessionId = $sessionId ?: session_id();
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
@@ -910,20 +1066,26 @@ class SendIt
         }
         if (!$session) {
             $modx->log(1, print_r('Table si_sessions not found', 1));
-            return [];
+            return;
         }
         $item = $session->get('data') ? json_decode($session->get('data'), true) : [];
         $item = array_merge($item, $values);
         $session->fromArray([
             'session_id' => $sessionId,
-            'data' => $item ? json_encode($item): '',
+            'data' => $item ? json_encode($item) : '',
             'class_name' => $className,
             'createdon' => time(),
         ]);
         $session->save();
     }
 
-    public static function getSession($modx, ?string $sessionId = '', ?string $className = 'SendIt')
+    /**
+     * @param modX $modx
+     * @param string|null $sessionId
+     * @param string|null $className
+     * @return array
+     */
+    public static function getSession(\modX $modx, ?string $sessionId = '', ?string $className = 'SendIt'): array
     {
         $sessionId = $sessionId ?: session_id();
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
@@ -932,7 +1094,12 @@ class SendIt
         return $session->get('data') ? json_decode($session->get('data'), true) : [];
     }
 
-    public static function clearSession($modx, ?string $className = 'SendIt')
+    /**
+     * @param modX $modx
+     * @param string|null $className
+     * @return void
+     */
+    public static function clearSession(\modX $modx, ?string $className = 'SendIt'): void
     {
         $assetsPath = $modx->getOption('core_path', null, MODX_ASSETS_PATH);
         $uploaddir = $modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');

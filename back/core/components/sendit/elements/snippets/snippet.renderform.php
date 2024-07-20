@@ -1,13 +1,16 @@
 <?php
 
-/** @var pdoTools $pdo */
-if (class_exists('pdoTools') && $pdo = $modx->getService('pdoTools')) {
-    $content = $pdo->parseChunk($scriptProperties['tpl'], $scriptProperties);
+$version = $modx->getVersionData();
+if ((int)$version['version'] === 3) {
+    $parser = $modx->services->has('pdoTools') ? $modx->services->get('pdoTools') : $modx;
 } else {
-    $content = $modx->parseChunk($scriptProperties['tpl'], $scriptProperties);
+    $parser = $modx->getService('pdoTools') ?: $modx;
 }
+$tpl = $scriptProperties['tpl'] ?? '';
+$presetName = $scriptProperties['presetName'] ?? '';
+$content = $parser->parseChunk($tpl, $scriptProperties);
 $session = SendIt::getSession($modx);
-$session['presets'][$scriptProperties['presetName']] = $scriptProperties;
+$session['presets'][$presetName] = $scriptProperties;
 SendIt::setSession($modx, $session);
 
 return $content;
