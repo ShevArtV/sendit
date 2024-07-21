@@ -21,5 +21,6 @@ if (!$isAjax) {
     $modx->setPlaceholder($response['data']['pagination'] . '.totalPages', $response['data']['totalPages']);
     $modx->setPlaceholder($response['data']['pagination'] . '.limit', $response['data']['limit']);
     $modx->setPlaceholder($response['data']['pagination'] . '.currentPage', $response['data']['currentPage']);
+    $modx->setPlaceholder($response['data']['pagination'] . '.pageList', $response['data']['pageList']);
 }
 return $isAjax ? $response : $response['data']['html'];

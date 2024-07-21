@@ -97,7 +97,6 @@ class SendIt
     public object $parser;
 
 
-
     /**
      * @param modX $modx
      * @param string|null $presetName
@@ -527,7 +526,10 @@ class SendIt
     /**
      * @return array
      */
-    public function paginationHandler(): array
+    public function
+
+
+    paginationHandler(): array
     {
         $snippetName = $this->params['render'] ?? '!pdoResources';
         $pageKey = ($this->params['pagination'] ?? '') . 'page';
@@ -582,8 +584,48 @@ class SendIt
             'limit' => $this->params['limit'],
             'pagination' => $this->params['pagination'],
             'currentPage' => $currentPage,
-            'resultShowMethod' => $resultShowMethod
+            'resultShowMethod' => $resultShowMethod,
+            'pageList' => $this->getPageList($currentPage, $totalPages)
         ]);
+    }
+
+    private function getPageList(int $currentPage, int $totalPages): string
+    {
+        $maxPageListItems = $this->params['maxPageListItems'] ?? 0;
+        if (!$maxPageListItems) {
+            return '';
+        }
+
+        if ($maxPageListItems > $totalPages) {
+            $maxPageListItems = $totalPages;
+        }
+
+        $firstValue = $currentPage > 1 ? $currentPage - 1 : $currentPage;
+        $lastValue = $firstValue + ($maxPageListItems - 1);
+        if ($lastValue > $totalPages) {
+            $firstValue -= $lastValue - $totalPages;
+        }
+        $pageKey = ($this->params['pagination'] ?? '') . 'page';
+        $tplPageListItem = $this->params['tplPageListItem'] ?? 'siPageListItem';
+        $tplPageListWrapper = $this->params['tplPageListWrapper'] ?? 'siPageListWrapper';
+        $items = '';
+        for ($i = 0; $i < $maxPageListItems; $i++) {
+            $items .= $this->parser->getChunk($tplPageListItem, [
+                'page' => $firstValue++,
+                'currentPage' => $currentPage,
+                'totalPages' => $totalPages,
+                'pageKey' => $pageKey
+            ]);
+        }
+        if ($items) {
+            return $this->parser->getChunk($tplPageListWrapper, [
+                'items' => $items,
+                'currentPage' => $currentPage,
+                'totalPages' => $totalPages,
+                'pageKey' => $pageKey
+            ]);
+        }
+        return '';
     }
 
 
