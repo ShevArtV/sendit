@@ -95,10 +95,7 @@ class SendIt
      * @var object
      */
     public object $parser;
-    /**
-     * @var string
-     */
-    public static string $allowDirs;
+
 
 
     /**
@@ -111,7 +108,6 @@ class SendIt
         $this->modx = $modx;
         $this->formName = $formName ?: $presetName;
         $this->presetName = $presetName ?: '';
-        SendIt::$allowDirs = $this->modx->getOption('si_allow_dirs', '', 'uploaded_files');
         $this->initialize();
     }
 
@@ -856,7 +852,7 @@ class SendIt
             $i++;
         }
 
-        SendIt::removeDir($dir);
+        SendIt::removeDir($dir, $this->modx);
 
         return $this->success($msg, [
             'path' => str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $headers['x-content-name'],
@@ -924,14 +920,14 @@ class SendIt
      * @param string $dir
      * @return void
      */
-    public static function removeDir(string $dir): void
+    public static function removeDir(string $dir, \Modx $modx): void
     {
+        $allowDirs = $modx->getOption('si_allow_dirs', '', 'uploaded_files');
+        $allowDirs = explode(',', $allowDirs);
         $dirParts = explode('/', $dir);
-        $allowDirs = explode(',', SendIt::$allowDirs);
         if (empty(array_intersect($allowDirs, $dirParts))) {
             return;
         }
-
         if (substr($dir, -1) !== '/') {
             $dir .= '/';
         }
@@ -975,7 +971,7 @@ class SendIt
                 unlink($path);
             } else {
                 if (file_exists($dir)) {
-                    $this->removeDir($dir);
+                    $this->removeDir($dir, $this->modx);
                 }
             }
 
@@ -1109,7 +1105,7 @@ class SendIt
         $sessions = $modx->getIterator('siSession', ['class_name' => $className, 'createdon:<' => $max]);
         foreach ($sessions as $session) {
             if ($className === 'SendIt') {
-                SendIt::removeDir($uploaddir . $session->get('session_id'));
+                SendIt::removeDir($uploaddir . $session->get('session_id'), $modx);
             }
             $session->remove();
         }
