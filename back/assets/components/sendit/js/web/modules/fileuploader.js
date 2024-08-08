@@ -503,6 +503,8 @@ class FileUploader {
 
     translitName(filename) {
         const parts = filename.split('.');
+        const ext = parts.pop();
+        filename = parts.join('.');
         var converter = {
             'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
             'е': 'e', 'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i',
@@ -513,7 +515,7 @@ class FileUploader {
             'э': 'e', 'ю': 'yu', 'я': 'ya'
         };
 
-        let word = parts[0].toLowerCase();
+        let word = filename.toLowerCase();
 
         var answer = '';
         for (var i = 0; i < word.length; ++i) {
@@ -524,9 +526,9 @@ class FileUploader {
             }
         }
 
-        answer = answer.replace(/[^-0-9a-z]/g, '-');
+        answer = answer.replace(/[^-0-9a-z\.]/g, '-');
         answer = answer.replace(/[-]+/g, '-');
         answer = answer.replace(/^\-|-$/g, '');
-        return `${answer}.${parts[1]}`;
+        return `${answer}.${ext}`;
     }
 }

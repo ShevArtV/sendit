@@ -755,8 +755,8 @@ class SendIt
         }
         foreach ($filesData as $filename => $filesize) {
             $data['aliases'][$filename] = $filename;
-            $nameParts = explode('.', $filename);
-            $dir = $uploaddir . $nameParts[0] . '/';
+            list($nameWithoutExt, $fileExt) = $this->getFileParts($filename);
+            $dir = $uploaddir . $nameWithoutExt . '/';
             if ($status === 'error') {
                 $data['fileNames'][] = $filename;
             }
@@ -785,7 +785,7 @@ class SendIt
                 $data['fileNames'][] = $filename;
                 $status = 'error';
             }
-            if (!in_array($nameParts[1], $allowExt)) {
+            if (!in_array($fileExt, $allowExt)) {
                 $data['errors'][$filename] .= $this->modx->lexicon('si_msg_file_extention_err');
                 $data['fileNames'][] = $filename;
                 $status = 'error';
@@ -844,9 +844,10 @@ class SendIt
             ]);
         }
 
-        $nameParts = explode('.', $headers['x-content-name']);
-        $dir = $uploaddir . $nameParts[0] . '/';
-        $chunkName = $headers['x-chunk-id'] . '.' . $nameParts[1];
+        list($nameWithoutExt, $fileExt) = $this->getFileParts($headers['x-content-name']);
+
+        $dir = $uploaddir . $nameWithoutExt . '/';
+        $chunkName = $headers['x-chunk-id'] . '.' . $fileExt;
         $chunkPath = $dir . $chunkName;
         if (!is_dir($dir)) {
             mkdir($dir);
@@ -874,8 +875,8 @@ class SendIt
         }
 
         $i = 0;
-        while (file_exists($dir . $i . '.' . $nameParts[1])) {
-            $name = $dir . $i . '.' . $nameParts[1];
+        while (file_exists($dir . $i . '.' . $fileExt)) {
+            $name = $dir . $i . '.' . $fileExt;
             if (!file_exists($filename)) {
                 $fout = fopen($filename, "wb");
             } else {
@@ -902,6 +903,16 @@ class SendIt
             'filename' => $headers['x-content-name'],
             'chunkId' => $headers['x-chunk-id'],
         ]);
+    }
+
+    private function getFileParts(string $filename): array
+    {
+        $nameParts = explode('.', $filename);
+        $lastIndex = count($nameParts) - 1;
+        $fileExt = $nameParts[$lastIndex];
+        unset($nameParts[$lastIndex]);
+        $nameWithoutExt = implode('.', $nameParts);
+        return [$nameWithoutExt, $fileExt];
     }
 
     /**
