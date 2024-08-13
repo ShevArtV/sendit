@@ -1078,25 +1078,26 @@ class SendIt
      */
     private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = []): array
     {
+        $this->params = array_merge($this->params, $data);
+
         $this->modx->invokeEvent('OnBeforeReturnResponse', [
             'formName' => $this->formName,
             'presetName' => $this->presetName,
             'SendIt' => $this
         ]);
 
-        $data = array_merge($this->params, $data);
         if ($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')) {
             $unsetParams = explode(',', $unsetParams);
             foreach ($unsetParams as $param) {
-                unset($data[$param]);
+                unset($this->params[$param]);
             }
         }
-        unset($data['SendIt']);
+        unset($this->params['SendIt']);
 
         return [
             'success' => $status,
             'message' => $this->modx->lexicon($message, $placeholders),
-            'data' => $data,
+            'data' => $this->params,
         ];
     }
 
