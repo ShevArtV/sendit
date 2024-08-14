@@ -95,6 +95,7 @@ class SendIt
      * @var object
      */
     public object $parser;
+    public array $response;
 
 
     /**
@@ -1078,7 +1079,7 @@ class SendIt
      */
     private function getResponse(bool $status, string $message = '', array $data = [], array $placeholders = []): array
     {
-        $this->params = array_merge($this->params, $data);
+        $this->response = array_merge($this->params, $data);
 
         $this->modx->invokeEvent('OnBeforeReturnResponse', [
             'formName' => $this->formName,
@@ -1089,15 +1090,15 @@ class SendIt
         if ($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')) {
             $unsetParams = explode(',', $unsetParams);
             foreach ($unsetParams as $param) {
-                unset($this->params[$param]);
+                unset($this->response[$param]);
             }
         }
-        unset($this->params['SendIt']);
+        unset($this->response['SendIt']);
 
         return [
             'success' => $status,
             'message' => $this->modx->lexicon($message, $placeholders),
-            'data' => $this->params,
+            'data' => $this->response,
         ];
     }
 
