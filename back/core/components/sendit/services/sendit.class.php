@@ -86,15 +86,14 @@ class SendIt
      * @var int
      */
     public int $roundPrecision;
-    /**
-     * @var int
-     */
-    private int $version;
 
     /**
      * @var object
      */
     public object $parser;
+    /**
+     * @var array
+     */
     public array $response;
 
 
@@ -117,7 +116,6 @@ class SendIt
     private function initialize(): void
     {
         $version = $this->modx->getVersionData();
-        $this->version = (int)$version['version'];
         $this->session = SendIt::getSession($this->modx) ?: [];
         $this->basePath = $this->modx->getOption('base_path');
         $this->corePath = $this->modx->getOption('core_path');
@@ -129,7 +127,7 @@ class SendIt
         $pathToPresets = $this->modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
         $this->presetKey = str_replace('.inc.php', '', basename($pathToPresets));
         $this->pathToPresets = dirname($this->corePath . $pathToPresets);
-        $this->version === 2 ? $this->setParser() : $this->setParserModx3();
+        (int)$version['version'] === 2 ? $this->setParser() : $this->setParserModx3();
         $this->setPresets();
         $sessionPreset = $this->session['presets'][$this->presetName] ?? [];
         $this->preset = array_merge($sessionPreset, $this->presets[$this->presetKey][$this->presetName] ?? []);
