@@ -91,10 +91,16 @@ class SendIt
      * @var object
      */
     public object $parser;
+
     /**
      * @var array
      */
     public array $response;
+
+    /**
+     * @var bool
+     */
+    public bool $forceRemove = false;
 
 
     /**
@@ -550,7 +556,7 @@ class SendIt
             }
         }
 
-        $resultShowMethod = $_REQUEST['resultShowMethod'] ?? $this->params['resultShowMethod'] ?? 'insert';
+        $resultShowMethod = $_REQUEST['resultShowMethod'] ?: $this->params['resultShowMethod'] ?? 'insert';
         $oldHash = $this->session['hash'][$this->presetName] ?? '';
         $newHash = md5(json_encode($hashParams));
         if ($oldHash !== $newHash) {
@@ -574,6 +580,10 @@ class SendIt
 
         if (!$html && $this->params['tplEmpty']) {
             $html = $this->parser->getChunk($this->params['tplEmpty'], $this->params);
+        }
+
+        if((int)$totalPages === 1){
+            $resultShowMethod = 'insert';
         }
 
         return $this->success('', [
@@ -1013,7 +1023,12 @@ class SendIt
         $filename = basename($path);
         $dir = str_replace($filename, '', $path);
 
-        if (strpos($path, session_id()) === false) {
+        $this->modx->invokeEvent('OnBeforeFileRemove', [
+            'path' => $path,
+            'SendIt' => $this
+        ]);
+
+        if (strpos($path, session_id()) === false && !$this->forceRemove) {
             return $this->error('si_msg_file_remove_session_err', [], ['filename' => $filename]);
         } else {
             unset($this->session['uploadedSize'][$filename]);

@@ -61,7 +61,7 @@ export default class Sending {
     }
 
     getRoot(target){
-        return target.form && target.form.dataset[this.config.rootKey]
+        return target.form && target.form.closest(this.config.rootSelector)
             ? target.form.closest(this.config.rootSelector) : target.closest(this.config.rootSelector);
     }
 
@@ -185,11 +185,15 @@ export default class Sending {
             this.error(result, target)
         }
 
+        const resultBlocks = document.querySelectorAll(result.data.resultBlockSelector);
         if(result.data.html){
-            const resultBlocks = document.querySelectorAll(result.data.resultBlockSelector);
             if(resultBlocks.length){
                 result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = result.data.html);
                 result.data.resultShowMethod === 'append' && resultBlocks.forEach(block => block.innerHTML += result.data.html);
+            }
+        }else{
+            if(resultBlocks.length){
+                result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = '');
             }
         }
 
@@ -285,7 +289,7 @@ export default class Sending {
     resetAllErrors(target) {
         if (target === document) return;
         const root = this.getRoot(target);
-        const errorBlocks = root?.querySelector(this.config.errorBlockSelector.replace('="${fieldName}"', ''));
+        const errorBlocks = root?.querySelectorAll(this.config.errorBlockSelector.replace('="${fieldName}"', ''));
         const fields = root?.querySelectorAll(`.${this.config.errorClass}`);
         if (fields && fields.length) {
             fields.forEach(field => field.classList.remove(this.config.errorClass));

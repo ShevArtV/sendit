@@ -36,6 +36,7 @@ export default class QuizForm {
             change: 'si:quiz:change',
             reset: 'si:quiz:reset',
             progress: 'si:quiz:progress',
+            init: 'si:quiz:init'
         };
         this.config = Object.assign(defaults, config);
 
@@ -48,22 +49,10 @@ export default class QuizForm {
         const roots = Array.from(document.querySelectorAll(this.config.rootSelector));
         if (roots.length) {
             for (let i in roots) {
-                const root = roots[i];
-                const items = root.querySelectorAll(this.config.itemSelector);
-                if (items.length < 2) continue;
-                const currentIndex = root.hasAttribute(this.config.nosaveAttr) ? 1 : SendIt?.getComponentCookie(root.dataset[this.config.rootKey] + 'Current');
-
-                this.reset(root);
-
-                items.forEach(item => this.prepareProgress(root, item));
-
-                if (currentIndex) {
-                    this.change(root, currentIndex);
-                }
+                this.initQuiz(roots[i]);
             }
 
             document.addEventListener('click', (e) => {
-                if (!e.isTrusted) return;
                 const btn = e.target.closest(this.config.btnSelector);
                 const root = btn?.closest(this.config.rootSelector);
                 const dir = btn?.dataset[this.config.btnKey];
@@ -127,6 +116,32 @@ export default class QuizForm {
                 }
 
             });
+        }
+    }
+
+    initQuiz(root){
+        const items = root.querySelectorAll(this.config.itemSelector);
+        const currentIndex = root.hasAttribute(this.config.nosaveAttr) ? 1 : SendIt?.getComponentCookie(root.dataset[this.config.rootKey] + 'Current');
+
+        if (items.length < 2) return;
+
+        document.dispatchEvent(new CustomEvent(this.events.init, {
+            bubbles: true,
+            cancelable: false,
+            detail: {
+                items: items,
+                root: root,
+                currentIndex: currentIndex,
+                Quiz: this
+            }
+        }))
+
+        this.reset(root);
+
+        items.forEach(item => this.prepareProgress(root, item));
+
+        if (currentIndex) {
+            this.change(root, currentIndex);
         }
     }
 
@@ -234,6 +249,7 @@ export default class QuizForm {
         const prevIndex = current.dataset[this.config.itemKey];
         const nextItem = root.querySelector(`[data-qf-item="${nextIndex}"]`);
         const dir = (nextItem && items.indexOf(nextItem) > items.indexOf(current)) ? 'next' : 'prev';
+        if (nextItem === current) return;
 
         if (!document.dispatchEvent(new CustomEvent(this.events.change, {
             bubbles: true,

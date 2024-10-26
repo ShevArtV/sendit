@@ -155,6 +155,9 @@ export default class SaveFormData {
                 composed: true,
                 cancelable: false,
                 detail: {
+                    root: root,
+                    formFields: formFields,
+                    savedData: savedData,
                     SaveFormData: this
                 }
             }));

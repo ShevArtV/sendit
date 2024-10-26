@@ -219,7 +219,7 @@ class PaginationHandler {
       });
     }
 
-    if(this.pageList && result.data.pageList){
+    if (this.pageList && result.data.pageList) {
       this.pageList.innerHTML = result.data.pageList;
     }
     this.resultShowMethod = '';
@@ -299,7 +299,7 @@ class PaginationHandler {
 
   async sendResponse() {
     SendIt.setComponentCookie('sitrusted', '1');
-    this.setResultShowMethod();
+    this.resultShowMethod && this.setResultShowMethod();
     const params = new FormData(this.form);
     this.disabled([this.gotoLastBtn, this.gotoNextBtn, this.gotoMoreBtn, this.gotoFirstBtn, this.gotoPrevBtn, this.pageInput, this.limitInput]);
     await SendIt.Sending.prepareSendParams(this.form, this.preset, params);
