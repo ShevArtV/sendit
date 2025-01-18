@@ -37,10 +37,6 @@ switch ($action) {
     case 'validate_files':
         $filesData = isset($_POST['filesData']) ? json_decode($_POST['filesData'], JSON_UNESCAPED_UNICODE) : [];
         $fileList = !empty($_POST['fileList']) ? explode(',', $_POST['fileList']) : [];
-        if (isset($_POST['params'])) {
-            $params = json_decode($_POST['params'], true);
-            $sendit->params = array_merge($sendit->params, $params);
-        }
         $res = $sendit->validateFiles($filesData, count($fileList));
         break;
 

@@ -3,9 +3,10 @@ export default class FileUploaderFactory {
         if (window.SendIt && window.SendIt.FileUploaderFactory) return window.SendIt.FileUploaderFactory;
         this.rootSelector = config['rootSelector'] || '[data-fu-wrap]';
         this.sendEvent = config['sendEvent'] || 'si:send:after';
+        this.resetEvent = config['resetEvent'] || 'si:send:reset';
         this.pathAttr = config['pathAttr'] || 'data-fu-path';
         this.deleteFromQueueAttr = config['deleteFromQueueAttr'] || 'data-fu-delete',
-            this.config = config;
+          this.config = config;
         this.instances = new Map();
 
         document.addEventListener('si:init', (e) => {
@@ -23,6 +24,16 @@ export default class FileUploaderFactory {
                 const fileUploader = this.instances.get(root);
                 fileUploader.changeEventHandler();
             }
+        });
+
+        document.addEventListener(this.resetEvent, (e) => {
+            const roots = e.detail.target.querySelectorAll(this.rootSelector);
+            roots.length && roots.forEach(root => {
+                if (this.instances.has(root)) {
+                    const fileUploader = this.instances.get(root);
+                    fileUploader.resetHandler();
+                }
+            })
         });
 
         document.addEventListener(this.sendEvent, async (e) => {
@@ -203,6 +214,15 @@ class FileUploader {
         if (btns.length) {
             btns.forEach(btn => this.removeFile(btn, true))
         }
+    }
+
+    resetHandler(){
+        const btns = this.root.querySelectorAll(`[${this.config.pathAttr}]`);
+        if (btns.length) {
+            btns.forEach(btn => btn.remove())
+        }
+        this.field && (this.field.value = '') ;
+        this.listField && (this.listField.value = '');
     }
 
     validateFiles(filesData) {

@@ -101,6 +101,10 @@ class SendIt
      * @var bool
      */
     public bool $forceRemove = false;
+    /**
+     * @var array
+     */
+    private array $unsetParamsList;
 
 
     /**
@@ -128,6 +132,8 @@ class SendIt
         $this->assetsPath = $this->modx->getOption('assets_path');
         $this->jsConfigPath = $this->modx->getOption('si_js_config_path', '', './sendit.inc.js');
         $this->roundPrecision = $this->modx->getOption('si_precision', '', 2);
+        $unsetParamsList = $this->modx->getOption('si_unset_params', '', 'emailTo,extends');
+        $this->unsetParamsList = explode(',', $unsetParamsList);
         $uploaddir = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
         $this->uploaddir = str_replace('[[+asseetsUrl]]', $this->assetsPath, $uploaddir);
         $pathToPresets = $this->modx->getOption('si_path_to_presets', '', 'components/sendit/presets/sendit.inc.php');
@@ -265,11 +271,14 @@ class SendIt
     private function setParams(): void
     {
         $adminID = $this->modx->getOption('si_default_admin', '', 1);
+        $mgrEmail = '';
         $http_host = $this->modx->getOption('http_host', '', 'domain.com');
         $useSMTP = $this->modx->getOption('mail_use_smtp', '', false);
         $emailFrom = $useSMTP ? $this->modx->getOption('emailsender') : "noreply@{$http_host}";
-        $profile = $this->modx->getObject('modUserProfile', ['internalKey' => $adminID]);
-        $email = $this->modx->getOption('si_default_email') ?: $profile->get('email');
+        if ($profile = $this->modx->getObject('modUserProfile', ['internalKey' => $adminID])) {
+            $mgrEmail = $profile->get('email');
+        }
+        $email = $this->modx->getOption('si_default_email') ?: $mgrEmail;
         $email = $email ?: $this->modx->getOption('ms2_email_manager');
         $emailTpl = $this->modx->getOption('si_default_emailtpl', '', 'siDefaultEmail');
         $hooks = $email ? 'FormItSaveForm,email' : 'FormItSaveForm';
@@ -582,7 +591,7 @@ class SendIt
             $html = $this->parser->getChunk($this->params['tplEmpty'], $this->params);
         }
 
-        if((int)$totalPages === 1){
+        if ((int)$totalPages === 1) {
             $resultShowMethod = 'insert';
         }
 
@@ -1100,12 +1109,8 @@ class SendIt
             'SendIt' => $this
         ]);
 
-        if ($unsetParams = $this->modx->getOption('si_unset_params', '', 'emailTo,extends')) {
-            $unsetParams = explode(',', $unsetParams);
-            foreach ($unsetParams as $param) {
-                unset($this->response[$param]);
-            }
-        }
+        $this->response = $this->unsetParams($this->response);
+
         unset($this->response['SendIt']);
 
         return [
@@ -1113,6 +1118,16 @@ class SendIt
             'message' => $this->modx->lexicon($message, $placeholders),
             'data' => $this->response,
         ];
+    }
+
+    private function unsetParams(array $paramList)
+    {
+        if (!empty($this->unsetParamsList)) {
+            foreach ($this->unsetParamsList as $param) {
+                unset($paramList[$param]);
+            }
+        }
+        return $paramList;
     }
 
     /**
