@@ -49,6 +49,7 @@ export default class QuizForm {
         const roots = Array.from(document.querySelectorAll(this.config.rootSelector));
         if (roots.length) {
             for (let i in roots) {
+                if(typeof roots[i] !== 'object') continue;
                 this.initQuiz(roots[i]);
             }
 

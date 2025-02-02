@@ -24,8 +24,8 @@ export default class SaveFormData {
         const roots = Array.from(document.querySelectorAll(this.config.rootSelector));
         if (roots.length) {
             for (let i in roots) {
-                const root = roots[i];
-                this.setValues(root);
+                if(typeof roots[i] !== 'object') continue;
+                this.setValues(roots[i]);
             }
         }
 

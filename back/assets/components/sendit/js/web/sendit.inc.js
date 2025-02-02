@@ -28,8 +28,8 @@ export default function returnConfigs() {
         },
         Notify: {
             pathToScripts: './modules/notify.js',
-            jsPath: 'assets/components/sendit/js/web/lib/izitoast/iziToast.min.js',
-            cssPath: 'assets/components/sendit/css/web/lib/izitoast/iziToast.min.css',
+            jsPath: '/assets/components/sendit/js/web/lib/izitoast/iziToast.min.js',
+            cssPath: '/assets/components/sendit/css/web/lib/izitoast/iziToast.min.css',
             handlerClassName: 'iziToast',
             toastSelector: '.iziToast',
             typeSelectors: {
@@ -80,7 +80,7 @@ export default function returnConfigs() {
             presetKey: 'siPreset',
             eventKey: 'siEvent',
             goalKey: 'siGoal',
-            actionUrl: 'assets/components/sendit/action.php',
+            actionUrl: '/assets/components/sendit/action.php',
             antiSpamEvent: 'keydown',
             errorBlockSelector: '[data-si-error="${fieldName}"]',
             eventSelector: '[data-si-event="${eventName}"]',
@@ -102,7 +102,7 @@ export default function returnConfigs() {
             sendEvent: 'si:send:after',
             pathKey: 'fuPath',
             pathAttr: 'data-fu-path',
-            actionUrl: 'assets/components/sendit/action.php',
+            actionUrl: '/assets/components/sendit/action.php',
             hiddenClass: 'v_hidden',
             progressClass: 'progress__line',
             showTime: true
