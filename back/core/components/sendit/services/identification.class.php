@@ -216,7 +216,7 @@ class Identification
             'password' => $this->values[$passwordField],
             'rememberme' => $this->values['rememberme'] ?? 0,
         ];
-        $this->modx->log(1, print_r($c, 1));
+
         $processorName = $this->version === 2 ? '/security/login' : 'Security/Login';
         $response = $this->modx->runProcessor($processorName, $c);
         if ($response->getMessage()) {
