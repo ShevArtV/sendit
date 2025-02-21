@@ -67,7 +67,6 @@ return [
         'autoLogin' => 1,
         'redirectTo' => '',
         'passwordField' => '',
-        'usernameField' => 'email',
         'usergroupsField' => '',
         'moderate' => '',
         'redirectTimeout' => 3000,

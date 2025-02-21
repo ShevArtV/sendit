@@ -41,6 +41,10 @@ class Identification
         $this->version = (int)$version['version'];
     }
 
+    public function generateUsername(): string
+    {
+        return 'user_' . time() . '_' . $this->generateCode($this->modx, 'code', 4);
+    }
 
     /**
      * @return bool
@@ -51,13 +55,19 @@ class Identification
         $passwordField = !empty($this->config['passwordField']) ? $this->config['passwordField'] : 'password';
         $usernameField = !empty($this->config['usernameField']) ? $this->config['usernameField'] : 'username';
 
+        if ($usernameField === 'username' && empty($this->values[$usernameField])) {
+            $this->values[$usernameField] = $this->generateUsername();
+        } else {
+            $this->values['username'] = $this->values[$usernameField];
+        }
+
         if (empty($this->values['email'])) {
             $this->values['email'] = ($this->values[$usernameField] ?? time()) . '@' . $this->modx->getOption('http_host');
         }
 
         $activation = $this->config['activation'] ?? false;
         $moderate = $this->config['moderate'] ?? false;
-        $activationResourceId = $this->config['activationResourceId'] ?? 1;
+        $activationResourceId = $this->config['activationResourceId'] ?? $this->modx->getOption('site_start', '', 1);
         $userGroupsField = $this->config['usergroupsField'] ?? '';
         $defaultUserGroups = explode(',', $this->config['usergroups']) ?? [];
         $this->modx->user = $this->modx->getObject('modUser', 1);
@@ -81,7 +91,6 @@ class Identification
         $this->hook->setValue('password', $this->values[$passwordField]);
         $this->hook->setValue('username', $this->values[$usernameField]);
         $this->values['confirmpassword'] = $this->values[$passwordField];
-        $this->values['username'] = $this->values[$usernameField];
         $this->values['passwordnotifymethod'] = 's';
 
         if (!$activation) {
@@ -147,8 +156,8 @@ class Identification
         $contexts = !empty($properties['authenticateContexts']) ? explode(',', $properties['authenticateContexts']) : ['web'];
         $q = $modx->newQuery('modUser');
         $q->leftJoin('modUserProfile', 'Profile');
-        $q->select($modx->getSelectColumns('modUser', 'modUser', '', array('id', 'username', 'active')));
-        $q->select($modx->getSelectColumns('modUserProfile', 'Profile', '', array('blocked')));
+        $q->select($modx->getSelectColumns('modUser', 'modUser', '', ['id', 'username', 'active']));
+        $q->select($modx->getSelectColumns('modUserProfile', 'Profile', '', ['blocked']));
         $q->where(['modUser.username' => $username, 'modUser.active' => 1, 'Profile.blocked' => 0]);
         $user = $modx->getObject('modUser', $q);
 
@@ -191,17 +200,23 @@ class Identification
         $usernameField = $this->config['usernameField'] ?? 'username';
 
         if (!$this->values[$usernameField] || !$this->values[$passwordField]) {
+            $this->hook->addError($this->config['errorFieldName'], $this->modx->lexicon('si_msg_login_err'));
             return false;
         }
 
-        $c = array(
+        if (!$username = $this->getUsername($usernameField, $this->values[$usernameField])) {
+            $this->hook->addError($this->config['errorFieldName'], $this->modx->lexicon('si_msg_username_err'));
+            return false;
+        }
+
+        $c = [
             'login_context' => $this->modx->context->key,
             'add_contexts' => $contexts,
-            'username' => $this->values[$usernameField],
+            'username' => $username,
             'password' => $this->values[$passwordField],
             'rememberme' => $this->values['rememberme'] ?? 0,
-        );
-
+        ];
+        $this->modx->log(1, print_r($c, 1));
         $processorName = $this->version === 2 ? '/security/login' : 'Security/Login';
         $response = $this->modx->runProcessor($processorName, $c);
         if ($response->getMessage()) {
@@ -209,6 +224,41 @@ class Identification
             return false;
         }
         return true;
+    }
+
+    public function getUsername(string $key, $value)
+    {
+        $userFields = $this->getTableColumns('modUser');
+        if(in_array($key, $userFields)){
+           $key = 'modUser.' . $key;
+        }else{
+            $profileFields = $this->getTableColumns('modUserProfile');
+            if(in_array($key, $profileFields)){
+                $key = 'Profile.' . $key;
+            }
+        }
+        $q = $this->modx->newQuery('modUser');
+        $q->leftJoin('modUserProfile', 'Profile');
+        $q->where([$key => $value]);
+        $q->select('username');
+        $q->limit(1);
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            return $q->stmt->fetch(PDO::FETCH_COLUMN);
+        }
+        return '';
+    }
+
+    public function getTableColumns($className)
+    {
+        $tableName = $this->modx->getTableName($className);
+        $tableName = str_replace('`', '\'', $tableName);
+        $sql = "SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_NAME = $tableName";
+        $stmt = $this->modx->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
     /**
@@ -273,8 +323,12 @@ class Identification
     public function forgot(): bool
     {
         $usernameField = $this->config['usernameField'] ?? 'username';
-        $activationResourceId = $this->config['activationResourceId'] ?? 1;
-        $user = $this->modx->getObject('modUser', ['username' => $this->values[$usernameField]]);
+        $username = $this->values[$usernameField];
+        if ($usernameField !== 'username') {
+            $username = $this->getUsername($usernameField, $this->values[$usernameField]);
+        }
+        $activationResourceId = $this->config['activationResourceId'] ?? $this->modx->getOption('site_start', '', 1);
+        $user = $this->modx->getObject('modUser', ['username' => $username]);
 
         if ($user) {
             $profile = $user->getOne('Profile');
@@ -320,7 +374,7 @@ class Identification
 
         switch ($type) {
             case 'pass':
-                $arr = array(
+                $arr = [
                     'a',
                     'b',
                     'c',
@@ -385,12 +439,11 @@ class Identification
                     '0',
                     '#',
                     '!',
-                    "?",
-                    "&"
-                );
+                    "?"
+                ];
                 break;
             case 'hash':
-                $arr = array(
+                $arr = [
                     'a',
                     'b',
                     'c',
@@ -453,10 +506,10 @@ class Identification
                     '8',
                     '9',
                     '0'
-                );
+                ];
                 break;
             case 'code':
-                $arr = array('1', '2', '3', '4', '5', '6', '7', '8', '9', '0');
+                $arr = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
                 break;
         }
 

@@ -51,5 +51,7 @@ $_lang['si_msg_reject_err'] = 'Отправка формы запрещена.';
 $_lang['si_msg_token_err'] = 'Невалидный токен.';
 $_lang['si_msg_trusted_err'] = 'Если вы не робот - перезагрузите страницу!';
 $_lang['si_msg_count_sending_err'] = 'Нельзя отправить эту форму больше [[+count]] раз без перезагрузки.';
+$_lang['si_msg_login_err'] = 'Не указан логин или пароль.';
+$_lang['si_msg_username_err'] = 'Не найден username.';
 $_lang['si_default_formname'] = 'Форма по умолчанию.';
 $_lang['si_default_subject'] = 'Письмо с сайта [[+host]]';
