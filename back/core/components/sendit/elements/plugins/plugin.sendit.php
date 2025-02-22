@@ -29,7 +29,6 @@ switch ($modx->event->name) {
         setcookie('SendIt', json_encode($data), 0, '/');
         break;
     case 'OnMODXInit':
-        $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         SendIt::clearSession($modx);
         break;
 }

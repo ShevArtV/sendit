@@ -1139,6 +1139,10 @@ class SendIt
      */
     public static function setSession(\modX $modx, ?array $values = [], ?string $sessionId = '', ?string $className = 'SendIt'): void
     {
+        if(!$modx->packages['sendit']){
+            $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
+            $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
+        }
         $sessionId = $sessionId ?: session_id();
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
             $session = $modx->newObject('siSession');
@@ -1166,6 +1170,10 @@ class SendIt
      */
     public static function getSession(\modX $modx, ?string $sessionId = '', ?string $className = 'SendIt'): array
     {
+        if(!$modx->packages['sendit']){
+            $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
+            $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
+        }
         $sessionId = $sessionId ?: session_id();
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
             return [];
@@ -1180,6 +1188,10 @@ class SendIt
      */
     public static function clearSession(\modX $modx, ?string $className = 'SendIt'): void
     {
+        if(!$modx->packages['sendit']){
+            $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
+            $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
+        }
         $assetsPath = $modx->getOption('core_path', null, MODX_ASSETS_PATH);
         $uploaddir = $modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
         $uploaddir = str_replace('[[+asseetsUrl]]', $assetsPath, $uploaddir);
