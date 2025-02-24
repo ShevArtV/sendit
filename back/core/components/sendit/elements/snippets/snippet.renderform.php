@@ -6,7 +6,7 @@ if ((int)$version['version'] === 3) {
 } else {
     $parser = $modx->getService('pdoTools') ?: $modx;
 }
-$tpl = $scriptProperties['tpl'] ?? '';
+$tpl = $scriptProperties['tpl'] ?? $scriptProperties['form'] ?? '';
 $presetName = $scriptProperties['presetName'] ?? '';
 $content = $parser->parseChunk($tpl, $scriptProperties);
 $session = SendIt::getSession($modx);
