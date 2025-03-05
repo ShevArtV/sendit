@@ -72,7 +72,10 @@ class Identification
         $defaultUserGroups = explode(',', $this->config['usergroups']) ?? [];
         $this->modx->user = $this->modx->getObject('modUser', 1);
         $userGroups = !empty($userGroupsField) && array_key_exists($userGroupsField, $this->values) ? $this->values[$userGroupsField] : $defaultUserGroups;
-        if ($userGroups) {
+        if(is_string($userGroups)){
+            $userGroups = explode(',', $userGroups);
+        }
+        if (!empty($userGroups)) {
             foreach ($userGroups as $k => $group) {
                 $group = explode(':', $group);
                 $this->values['groups'][] = array(

@@ -565,7 +565,7 @@ class SendIt
             }
         }
 
-        $resultShowMethod = $_REQUEST['resultShowMethod'] ?: $this->params['resultShowMethod'] ?? 'insert';
+        $resultShowMethod = $_REQUEST['resultShowMethod'] ?? $this->params['resultShowMethod'] ?? 'insert';
         $oldHash = $this->session['hash'][$this->presetName] ?? '';
         $newHash = md5(json_encode($hashParams));
         if ($oldHash !== $newHash) {
@@ -1139,7 +1139,7 @@ class SendIt
      */
     public static function setSession(\modX $modx, ?array $values = [], ?string $sessionId = '', ?string $className = 'SendIt'): void
     {
-        if(!$modx->packages['sendit']){
+        if(!isset($modx->packages['sendit'])){
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
@@ -1170,7 +1170,7 @@ class SendIt
      */
     public static function getSession(\modX $modx, ?string $sessionId = '', ?string $className = 'SendIt'): array
     {
-        if(!$modx->packages['sendit']){
+        if(!isset($modx->packages['sendit'])){
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
@@ -1188,7 +1188,7 @@ class SendIt
      */
     public static function clearSession(\modX $modx, ?string $className = 'SendIt'): void
     {
-        if(!$modx->packages['sendit']){
+        if(empty($modx->packages['sendit'])){
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
