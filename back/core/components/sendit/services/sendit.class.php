@@ -763,13 +763,13 @@ class SendIt
             $left = $maxCount - $totalCount;
             $declension = $this->getDeclension($left, 'файл', 'файла', 'файлов');
             if ($totalCount === 0) {
-                $data['errors'][] = $this->modx->lexicon('si_msg_files_maxcount_err', ['left' => $left, 'declension' => $declension]);
+                $data['errors']['size'] = $this->modx->lexicon('si_msg_files_maxcount_err', ['left' => $left, 'declension' => $declension]);
             } elseif ($left === 0) {
-                $data['errors'][] = $this->modx->lexicon('si_msg_files_loaded_err');
+                $data['errors']['size'] = $this->modx->lexicon('si_msg_files_loaded_err');
             } else {
-                $data['errors'][] = $this->modx->lexicon('si_msg_files_count_err', ['left' => $left, 'declension' => $declension]);
+                $data['errors']['size'] = $this->modx->lexicon('si_msg_files_count_err', ['left' => $left, 'declension' => $declension]);
             }
-            $status = 'error';
+            return $this->error('', $data);
         }
         foreach ($filesData as $filename => $filesize) {
             $data['aliases'][$filename] = $filename;

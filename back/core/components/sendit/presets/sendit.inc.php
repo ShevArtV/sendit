@@ -33,8 +33,8 @@ return [
     ],
     'upload_drop_file' => [
         'extends' => 'upload_file',
-        'maxSize' => 2001,
-        'maxCount' => 3,
+        'maxSize' => 1,
+        'maxCount' => 1,
         'loadedUnit' => 'Mb', // %, b, mb, kb, gb, gb,
     ],
     'form_with_file' => [

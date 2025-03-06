@@ -124,7 +124,6 @@ export default class Sending {
       detail: {
         action: headers['X-SIACTION'],
         target: target,
-        submitter: this.submitter,
         fetchOptions: fetchOptions,
         headers: headers,
         Sending: this
