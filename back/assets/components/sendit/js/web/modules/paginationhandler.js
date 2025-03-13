@@ -72,6 +72,7 @@ class PaginationHandler {
       resultBlockSelector: '[data-pn-result="${key}"]',
       currentPageInputSelector: '[data-pn-current]',
       totalPagesSelector: '[data-pn-total]',
+      totalResultsSelector: '[data-pn-total-results="${key}"]',
       limitSelector: '[data-pn-limit]',
       pageListSelector: '[data-pn-list]',
       pageLinkSelector: '[data-pn-page]',
@@ -95,7 +96,9 @@ class PaginationHandler {
     if (!this.wrapper) return;
     this.key = this.wrapper.dataset[this.config.rootKey];
     const resultBlockSelector = this.config.resultBlockSelector.replace('${key}', this.key);
+    const totalResultsSelector = this.config.totalResultsSelector.replace('${key}', this.key);
     this.resultBlock = document.querySelector(resultBlockSelector);
+    this.totalResultsBlock = document.querySelector(totalResultsSelector);
     this.pageInput = this.wrapper.querySelector(this.config.currentPageInputSelector);
     this.limitInput = this.wrapper.querySelector(this.config.limitSelector);
     this.gotoFirstBtn = this.wrapper.querySelector(this.config.firstPageBtnSelector);
@@ -223,7 +226,7 @@ class PaginationHandler {
       this.pageList.innerHTML = result.data.pageList;
     }
     this.resultShowMethod = '';
-
+    this.totalResultsBlock && (this.totalResultsBlock.textContent = result.data.total);
     document.dispatchEvent(new CustomEvent(this.events.after, {
       bubbles: true,
       cancelable: false,

@@ -176,21 +176,11 @@ class SendIt
 
         $this->setParams();
 
-        $this->params['sendGoal'] = $this->params['sendGoal'] ?? $this->modx->getOption('si_send_goal', '', false);
-        $this->params['counterId'] = $this->params['counterId'] ?? $this->modx->getOption('si_counter_id', '', '');
-        $this->params['formName'] = !empty($this->params['formName']) && $this->params['formName'] !== $this->modx->lexicon(
-            'si_default_formname'
-        ) ? $this->params['formName'] : $this->formName;
-        if (!empty($this->params['validate'])) {
-            $this->validates = $this->getValidate($this->params['validate']);
+        if (!empty($this->params['useLexicons'])) {
+            $this->replaceLexicons();
         }
-        foreach ($_POST as $k => $v) {
-            $this->setValue($v, $k);
-            if (is_array($v)) {
-                $_POST[$k] = json_encode($v);
-            }
-        }
-        $_POST['fields'] = json_encode($_POST);
+
+        $this->prepareValues();
 
         $this->removeUselessField();
 
@@ -207,6 +197,46 @@ class SendIt
         //$this->modx->log(1, print_r($this->extendsPreset, 1));
         //$this->modx->log(1, print_r($this->params, 1));
         $this->setValidate();
+    }
+
+    /**
+     * @return void
+     */
+    private function replaceLexicons(): void
+    {
+        $lexicons = explode(',', $this->params['useLexicons']);
+        foreach ($lexicons as $lexicon) {
+            $this->modx->lexicon->load($lexicon);
+        }
+
+        foreach ($this->params as $key => $value) {
+            if (strpos($key, 'Message') !== false
+                || strpos($key, 'message') !== false
+                || strpos($key, 'vText') !== false) {
+                $this->params[$key] = $this->modx->lexicon($value);
+            }
+            if ($key === 'fieldNames') {
+                $fieldNames = explode('==', $value);
+                foreach ($fieldNames as $k => $v) {
+                    $fieldNames[$k] = $this->modx->lexicon($v);
+                }
+                $this->params[$key] = implode('==', $fieldNames);
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function prepareValues(): void
+    {
+        foreach ($_POST as $k => $v) {
+            $this->setValue($v, $k);
+            if (is_array($v)) {
+                $_POST[$k] = json_encode($v);
+            }
+        }
+        $_POST['fields'] = json_encode($_POST);
     }
 
     /**
@@ -298,6 +328,15 @@ class SendIt
         }
 
         $this->hooks = !empty($this->params['hooks']) ? explode(',', $this->params['hooks']) : [];
+
+        $this->params['sendGoal'] = $this->params['sendGoal'] ?? $this->modx->getOption('si_send_goal', '', false);
+        $this->params['counterId'] = $this->params['counterId'] ?? $this->modx->getOption('si_counter_id', '', '');
+        $this->params['formName'] = !empty($this->params['formName']) && $this->params['formName'] !== $this->modx->lexicon(
+            'si_default_formname'
+        ) ? $this->params['formName'] : $this->formName;
+        if (!empty($this->params['validate'])) {
+            $this->validates = $this->getValidate($this->params['validate']);
+        }
     }
 
     /**
@@ -540,10 +579,7 @@ class SendIt
     /**
      * @return array
      */
-    public function
-
-
-    paginationHandler(): array
+    public function paginationHandler(): array
     {
         $snippetName = $this->params['render'] ?? '!pdoResources';
         $pageKey = ($this->params['pagination'] ?? '') . 'page';
@@ -607,6 +643,11 @@ class SendIt
         ]);
     }
 
+    /**
+     * @param int $currentPage
+     * @param int $totalPages
+     * @return string
+     */
     private function getPageList(int $currentPage, int $totalPages): string
     {
         $maxPageListItems = $this->params['maxPageListItems'] ?? 0;
@@ -680,6 +721,8 @@ class SendIt
         if ($timePassed < $pause) {
             return $this->error('si_msg_pause_err', [], ['left' => $pause - $timePassed]);
         }
+
+        return $this->success();
     }
 
     /**
@@ -923,6 +966,10 @@ class SendIt
         ]);
     }
 
+    /**
+     * @param string $filename
+     * @return array
+     */
     private function getFileParts(string $filename): array
     {
         $nameParts = explode('.', $filename);
@@ -1120,6 +1167,10 @@ class SendIt
         ];
     }
 
+    /**
+     * @param array $paramList
+     * @return array
+     */
     private function unsetParams(array $paramList)
     {
         if (!empty($this->unsetParamsList)) {
@@ -1139,7 +1190,7 @@ class SendIt
      */
     public static function setSession(\modX $modx, ?array $values = [], ?string $sessionId = '', ?string $className = 'SendIt'): void
     {
-        if(!isset($modx->packages['sendit'])){
+        if (!isset($modx->packages['sendit'])) {
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
@@ -1170,7 +1221,7 @@ class SendIt
      */
     public static function getSession(\modX $modx, ?string $sessionId = '', ?string $className = 'SendIt'): array
     {
-        if(!isset($modx->packages['sendit'])){
+        if (!isset($modx->packages['sendit'])) {
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
@@ -1188,7 +1239,7 @@ class SendIt
      */
     public static function clearSession(\modX $modx, ?string $className = 'SendIt'): void
     {
-        if(empty($modx->packages['sendit'])){
+        if (empty($modx->packages['sendit'])) {
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
