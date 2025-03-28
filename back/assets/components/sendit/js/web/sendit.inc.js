@@ -28,7 +28,7 @@ export default function returnConfigs() {
         },
         Notify: {
             pathToScripts: './modules/notify.js',
-            jsPath: '/assets/components/sendit/js/web/lib/izitoast/iziToast.min.js',
+            jsPath: '/assets/components/sendit/js/web/lib/izitoast/iziToast.js',
             cssPath: '/assets/components/sendit/css/web/lib/izitoast/iziToast.min.css',
             handlerClassName: 'iziToast',
             toastSelector: '.iziToast',

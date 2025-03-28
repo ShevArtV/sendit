@@ -138,7 +138,7 @@ export default class Sending {
 
     const response = await fetch(url, fetchOptions);
 
-    const result = await response.json();
+    this.result = await response.json();
 
     if (!document.dispatchEvent(new CustomEvent(this.events.after, {
       bubbles: true,
@@ -147,14 +147,14 @@ export default class Sending {
         action: headers['X-SIACTION'],
         headers: headers,
         target: target,
-        result: result,
+        result: this.result,
         Sending: this
       }
     }))) {
       return;
     }
 
-    if (result.success) {
+    if (this.result.success) {
       if (!document.dispatchEvent(new CustomEvent(this.events.success, {
         bubbles: true,
         cancelable: true,
@@ -162,14 +162,14 @@ export default class Sending {
           action: headers['X-SIACTION'],
           headers: headers,
           target: target,
-          result: result,
+          result: this.result,
           Sending: this
         }
       }))) {
         return;
       }
 
-      this.success(result, target)
+      this.success(this.result, target)
     } else {
       if (!document.dispatchEvent(new CustomEvent(this.events.error, {
         bubbles: true,
@@ -178,26 +178,26 @@ export default class Sending {
           action: headers['X-SIACTION'],
           headers: headers,
           target: target,
-          result: result,
+          result: this.result,
           Sending: this
         }
       }))) {
         return;
       }
 
-      this.error(result, target)
+      this.error(this.result, target)
     }
 
-    if (result.data.resultBlockSelector) {
-      const resultBlocks = document.querySelectorAll(result.data.resultBlockSelector);
-      if (result.data.html) {
+    if (this.result.data.resultBlockSelector) {
+      const resultBlocks = document.querySelectorAll(this.result.data.resultBlockSelector);
+      if (this.result.data.html) {
         if (resultBlocks.length) {
-          result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = result.data.html);
-          result.data.resultShowMethod === 'append' && resultBlocks.forEach(block => block.innerHTML += result.data.html);
+          this.result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = this.result.data.html);
+          this.result.data.resultShowMethod === 'append' && resultBlocks.forEach(block => block.innerHTML += this.result.data.html);
         }
       } else {
         if (resultBlocks.length) {
-          result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = '');
+          this.result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = '');
         }
       }
     }
@@ -210,12 +210,12 @@ export default class Sending {
         action: headers['X-SIACTION'],
         headers: headers,
         target: target,
-        result: result,
+        result: this.result,
         Sending: this
       }
     }))
 
-    return result;
+    return this.result;
   }
 
   success(result, root) {
