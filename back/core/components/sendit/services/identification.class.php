@@ -143,7 +143,7 @@ class Identification
         }
 
         if ($this->config['autoLogin'] == true && !$activation && !$moderate) {
-            $this->login();
+            return $this->login();
         }
         return true;
     }
@@ -199,10 +199,11 @@ class Identification
     public function login(): bool
     {
         $contexts = $this->config['authenticateContexts'] ?? '';
-        $passwordField = $this->config['passwordField'] ?? 'password';
-        $usernameField = $this->config['usernameField'] ?? 'username';
+        $passwordField = !empty($this->config['passwordField']) ? $this->config['passwordField'] : 'password';
+        $usernameField = !empty($this->config['usernameField']) ? $this->config['usernameField'] : 'username';
 
         if (!$this->values[$usernameField] || !$this->values[$passwordField]) {
+            $this->modx->log(1, print_r([$usernameField,$passwordField,$this->values], 1));
             $this->hook->addError($this->config['errorFieldName'], $this->modx->lexicon('si_msg_login_err'));
             return false;
         }
@@ -222,8 +223,8 @@ class Identification
 
         $processorName = $this->version === 2 ? '/security/login' : 'Security/Login';
         $response = $this->modx->runProcessor($processorName, $c);
-        if ($response->getMessage()) {
-            $this->hook->addError($this->config['errorFieldName'], $response->getMessage());
+        if ($response->isError()) {
+            $this->hook->addError($this->config['errorFieldName']??'errorLogin', $response->getMessage());
             return false;
         }
         return true;
@@ -313,7 +314,7 @@ class Identification
             'add_contexts' => $contexts
         ));
 
-        if ($response->getMessage()) {
+        if ($response->isError()) {
             $this->hook->addError($this->config['errorFieldName'], $response->getMessage());
             return false;
         }
