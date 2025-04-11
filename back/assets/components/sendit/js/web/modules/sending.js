@@ -214,8 +214,9 @@ export default class Sending {
         Sending: this
       }
     }))
-
-    return this.result;
+    const result = this.result;
+    delete this.result;
+    return result;
   }
 
   success(result, root) {
