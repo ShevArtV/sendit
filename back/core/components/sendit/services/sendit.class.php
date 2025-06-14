@@ -106,6 +106,11 @@ class SendIt
      */
     private array $unsetParamsList;
 
+    /**
+     * @var array
+     */
+    private array $webConfig = [];
+
 
     /**
      * @param modX $modx
@@ -130,7 +135,7 @@ class SendIt
         $this->basePath = $this->modx->getOption('base_path');
         $this->corePath = $this->modx->getOption('core_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
-        $this->jsConfigPath = $this->modx->getOption('si_js_config_path', '', './sendit.inc.js');
+        $this->jsConfigPath = $this->modx->getOption('si_js_config_path', '', '../configs/modules.inc.js');
         $this->roundPrecision = $this->modx->getOption('si_precision', '', 2);
         $unsetParamsList = $this->modx->getOption('si_unset_params', '', 'emailTo,extends');
         $this->unsetParamsList = explode(',', $unsetParamsList);
@@ -343,24 +348,64 @@ class SendIt
      * @param modX $modx
      * @return void
      */
-    public static function loadCssJs(\modX $modx): void
+    public function loadCssJs(): void
     {
-        $frontend_js = $modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/js/web/sendit.js');
-        $frontend_css = $modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/css/web/index.css');
-        $basePath = $modx->getOption('base_path');
-        $assetsUrl = str_replace($basePath, '', $modx->getOption('assets_path'));
+        $frontend_js = $this->modx->getOption('si_frontend_js', '', '[[+assetsUrl]]components/sendit/js/web/index.js');
+        $frontend_css = $this->modx->getOption('si_frontend_css', '', '[[+assetsUrl]]components/sendit/css/web/index.css');
+        $basePath = $this->modx->getOption('base_path');
+        $assetsUrl = str_replace($basePath, '', $this->modx->getOption('assets_path'));
+        $this->getWebConfig();
 
+        if (!empty($this->webConfig)) {
+            $webConfig = json_encode($this->webConfig, JSON_UNESCAPED_UNICODE);
+            $this->modx->regClientScript(
+                "<script> window.siConfig = $webConfig; </script>",
+                1
+            );
+        }
         if ($frontend_js) {
             $scriptPath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_js);
-            $modx->regClientScript(
-                '<script type="module" src="' . $scriptPath . '"></script>',
+            $this->modx->regClientScript(
+                '<script type="module" src="' . $scriptPath . $this->webConfig['version'] . '"></script>',
                 true
             );
         }
         if ($frontend_css) {
             $stylePath = str_replace('[[+assetsUrl]]', $assetsUrl, $frontend_css);
-            $modx->regClientCSS($stylePath);
+            $this->modx->regClientCSS($stylePath . $this->webConfig['version']);
         }
+    }
+
+    private function getWebConfig(): void
+    {
+        $packageVersion = $this->getPackageVersion();
+        //$scriptsVersion = $packageVersion ? '?v=' . md5($packageVersion) : '';
+        $scriptsVersion = '?v=' . time();
+
+        $this->webConfig = [
+            'version' => $scriptsVersion,
+            'actionUrl' => '/assets/components/sendit/action.php',
+            'modulesConfigPath' => $this->jsConfigPath,
+            'cookieName' => 'SendIt',
+        ];
+
+        $this->modx->invokeEvent('senditOnGetWebConfig', [
+            'webConfig' => $this->webConfig,
+            'object' => $this
+        ]);
+    }
+
+    private function getPackageVersion(): string
+    {
+        $q = $this->modx->newQuery('transport.modTransportPackage');
+        $q->select('signature');
+        $q->sortby('installed', 'DESC');
+        $q->limit(1);
+        $q->prepare();
+        if (!$q->stmt->execute()) {
+            return '';
+        }
+        return $q->stmt->fetchColumn();
     }
 
     /**

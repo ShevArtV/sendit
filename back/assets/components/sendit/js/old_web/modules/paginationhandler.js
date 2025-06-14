@@ -1,11 +1,17 @@
-import {Base} from './base.js';
-
-export class PaginationFactory extends Base {
-  initialize() {
-    this.rootSelector = this.config['rootSelector'] || '[data-pn-pagination]';
+export default class PaginationFactory {
+  constructor(config) {
+    if (window.SendIt && window.SendIt.PaginationFactory) return window.SendIt.PaginationFactory;
+    this.rootSelector = config['rootSelector'] || '[data-pn-pagination]';
+    this.config = config;
     this.instances = new Map();
 
-    this.addInstances(document);
+    document.addEventListener('si:init', (e) => {
+      this.initialize()
+    });
+  }
+
+  initialize() {
+    this.addInstances(document)
 
     document.addEventListener('change', (e) => {
       if (e.target.closest(this.config.rootSelector)) {
@@ -15,7 +21,7 @@ export class PaginationFactory extends Base {
           this.instances.get(root).changeEventHandler(e.target);
         }
       }
-    });
+    })
 
     document.addEventListener('click', (e) => {
       if (e.target.closest(this.config.rootSelector)) {
@@ -25,7 +31,7 @@ export class PaginationFactory extends Base {
           this.instances.get(root).clickEventHandler(e.target);
         }
       }
-    });
+    })
 
     document.addEventListener(this.config.sendEvent, (e) => {
       if (e.detail.result.data && e.detail.result.data.pagination) {
@@ -35,7 +41,7 @@ export class PaginationFactory extends Base {
           this.instances.get(root).responseHandler(e.detail.result);
         }
       }
-    });
+    })
   }
 
   addInstances(block) {
@@ -43,20 +49,17 @@ export class PaginationFactory extends Base {
     if (roots.length) {
       roots.forEach(root => {
         if (!this.instances.has(root)) {
-          this.instances.set(root, new PaginationHandler(root, this));
+          this.instances.set(root, new PaginationHandler(root, this.config));
         }
-      });
+      })
     }
   }
 }
 
 
 class PaginationHandler {
-  constructor(root, factory) {
-    if (factory.instances.has(root)) {
-      return factory.instances.has(root);
-    }
-    this.factory = factory;
+  constructor(root, config) {
+    if (window.SendIt && window.SendIt.PaginationHandler) return window.SendIt.PaginationHandler;
     const defaults = {
       sendEvent: 'si:send:finish',
       rootSelector: '[data-pn-pagination]',
@@ -79,13 +82,13 @@ class PaginationHandler {
       activeClass: 'active',
       presetKey: 'siPreset',
       rootKey: 'pnPagination'
-    };
+    }
     this.wrapper = root;
     this.events = {
       before: 'pn:handle:before',
       after: 'pn:handle:after',
     };
-    this.config = Object.assign(defaults, factory.config);
+    this.config = Object.assign(defaults, config);
     this.initialize();
   }
 
@@ -175,7 +178,7 @@ class PaginationHandler {
         }
         this.observer = observer;
       }
-    });
+    })
   }
 
   responseHandler(result) {
@@ -184,14 +187,14 @@ class PaginationHandler {
     const currentPageInput = this.pageInput;
     const lastPage = this.gotoLastBtn;
 
-    if (!this.factory.hub.dispatchEvent(this.events.before, {
+    if (!document.dispatchEvent(new CustomEvent(this.events.before, {
       bubbles: true,
       cancelable: true,
       detail: {
         result: result,
         PaginationHandler: this
       }
-    })) {
+    }))) {
       return;
     }
 
@@ -213,9 +216,9 @@ class PaginationHandler {
     }
     if (this.resultShowMethod === 'insert' && this.resultBlock) {
       this.resultBlock.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'start'
+        behavior: "smooth",
+        block: "start",
+        inline: "start"
       });
     }
 
@@ -224,15 +227,14 @@ class PaginationHandler {
     }
     this.resultShowMethod = '';
     this.totalResultsBlock && (this.totalResultsBlock.textContent = result.data.total);
-
-    this.factory.hub.dispatchEvent(this.events.after, {
+    document.dispatchEvent(new CustomEvent(this.events.after, {
       bubbles: true,
       cancelable: false,
       detail: {
         result: result,
         PaginationHandler: this
       }
-    });
+    }))
   }
 
   buttonsHandler(pageNum) {
@@ -255,14 +257,14 @@ class PaginationHandler {
 
   disabled(elements) {
     elements.length && elements.forEach(el => {
-      el && (el.disabled = true);
-    });
+      el && (el.disabled = true)
+    })
   }
 
   enabled(elements) {
     elements.length && elements.forEach(el => {
-      el && (el.disabled = false);
-    });
+      el && (el.disabled = false)
+    })
   }
 
   goto(pageNum, nosend = false) {
@@ -299,11 +301,11 @@ class PaginationHandler {
   }
 
   async sendResponse() {
-    this.factory.hub.setComponentCookie('sitrusted', '1');
+    SendIt.setComponentCookie('sitrusted', '1');
     this.resultShowMethod && this.setResultShowMethod();
     const params = new FormData(this.form);
     this.disabled([this.gotoLastBtn, this.gotoNextBtn, this.gotoMoreBtn, this.gotoFirstBtn, this.gotoPrevBtn, this.pageInput, this.limitInput]);
-    await this.factory.hub.Sending.sendRequest(this.form, this.preset, params);
+    await SendIt.Sending.prepareSendParams(this.form, this.preset, params);
   }
 
   setResultShowMethod() {

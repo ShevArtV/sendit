@@ -14,6 +14,9 @@ return [
         [
             'source' => $this->config['resolvers'].'resolver.tables.php'
         ],
+        [
+            'source' => $this->config['resolvers'].'resolver.settings.php'
+        ],
         /*[
             'source' => $this->config['resolvers'].'resolver.setup.php'
         ],

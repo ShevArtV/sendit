@@ -1,16 +1,22 @@
-import {Base} from './base.js';
-
-export class FileUploaderFactory extends Base {
-  initialize() {
-    this.rootSelector = this.config['rootSelector'] || '[data-fu-wrap]';
-    this.sendEvent = this.config['sendEvent'] || 'si:send:after';
-    this.resetEvent = this.config['resetEvent'] || 'si:send:reset';
-    this.pathAttr = this.config['pathAttr'] || 'data-fu-path';
-    this.deleteFromQueueAttr = this.config['deleteFromQueueAttr'] || 'data-fu-delete';
-
+export default class FileUploaderFactory {
+  constructor(config) {
+    if (window.SendIt && window.SendIt.FileUploaderFactory) return window.SendIt.FileUploaderFactory;
+    this.rootSelector = config['rootSelector'] || '[data-fu-wrap]';
+    this.sendEvent = config['sendEvent'] || 'si:send:after';
+    this.resetEvent = config['resetEvent'] || 'si:send:reset';
+    this.pathAttr = config['pathAttr'] || 'data-fu-path';
+    this.deleteFromQueueAttr = config['deleteFromQueueAttr'] || 'data-fu-delete',
+      this.config = config;
     this.instances = new Map();
 
-    this.addInstances(document);
+    document.addEventListener('si:init', (e) => {
+      this.initialize();
+    });
+  }
+
+  initialize() {
+
+    this.addInstances(document)
 
     document.addEventListener('change', (e) => {
       const root = e.target.closest(this.rootSelector);
@@ -27,7 +33,7 @@ export class FileUploaderFactory extends Base {
           const fileUploader = this.instances.get(root);
           fileUploader.resetHandler();
         }
-      });
+      })
     });
 
     document.addEventListener(this.sendEvent, async (e) => {
@@ -45,7 +51,7 @@ export class FileUploaderFactory extends Base {
               const fileUploader = this.instances.get(fileWrap);
               fileUploader.clearFields();
             }
-          });
+          })
         }
       }
     });
@@ -55,13 +61,13 @@ export class FileUploaderFactory extends Base {
       if (this.instances.has(root)) {
         const fileUploader = this.instances.get(root);
         if (e.target.closest(`[${this.pathAttr}]`)) {
-          fileUploader.removeFile(e.target.closest(`[${this.pathAttr}]`));
+          fileUploader.removeFile(e.target.closest(`[${this.pathAttr}]`))
         }
         if (e.target.closest(`[${this.deleteFromQueueAttr}]`)) {
-          fileUploader.deleteFileFromQueue(e.target.closest(`[${this.deleteFromQueueAttr}]`));
+          fileUploader.deleteFileFromQueue(e.target.closest(`[${this.deleteFromQueueAttr}]`))
         }
       }
-    });
+    })
   }
 
   addInstances(block) {
@@ -69,7 +75,7 @@ export class FileUploaderFactory extends Base {
     if (roots.length) {
       roots.forEach(root => {
         if (!this.instances.has(root)) {
-          this.instances.set(root, new FileUploader(root, this));
+          this.instances.set(root, new FileUploader(root, this.config));
           const dropzone = root.querySelector(this.config.dropzoneSelector);
           if (dropzone) {
             dropzone.addEventListener('dragover', (e) => {
@@ -80,19 +86,19 @@ export class FileUploaderFactory extends Base {
               e.preventDefault();
               const fileInput = dropzone.querySelector('[type="file"]');
               fileInput.files = e.dataTransfer.files;
-              fileInput.dispatchEvent(new Event('change', {bubbles: true}));
+              fileInput.dispatchEvent(new Event('change', {bubbles: true}))
             });
           }
         }
-      });
+      })
     }
   }
 }
 
 class FileUploader {
-  constructor(root, factory) {
-    if (factory.instances.has(root)) {
-      return factory.instances.has(root);
+  constructor(root, config) {
+    if (window.SendIt && window.SendIt.FileUploaderFactory && window.SendIt.FileUploaderFactory.instances.has(root)) {
+      return window.SendIt.FileUploaderFactory.instances.get(root);
     }
 
     const defaults = {
@@ -115,9 +121,9 @@ class FileUploader {
       hiddenClass: 'v_hidden',
       progressClass: 'progress__line',
       showTime: true
-    };
-    this.config = Object.assign(defaults, factory.config);
-    this.factory = factory;
+    }
+    this.config = Object.assign(defaults, config);
+
     this.root = root;
     this.field = root.querySelector('[type="file"]');
     this.listField = root.querySelector(this.config.fileListSelector);
@@ -138,7 +144,7 @@ class FileUploader {
       uploadingStart: 'fu:uploading:start',
       uploadingEnd: 'fu:uploading:end',
       removePreview: 'fu:preview:remove',
-    };
+    }
   }
 
   changeEventHandler() {
@@ -155,29 +161,29 @@ class FileUploader {
     const files = Array.from(this.field.files);
     const form = this.root.closest('form');
     switch (action) {
-    case 'validate_files':
-      this.queueMsg = result.data.queueMsg;
-      if (result.success) {
-        if (result.data.loaded) {
-          this.addLoadFiles(result.data.loaded);
+      case 'validate_files':
+        this.queueMsg = result.data.queueMsg;
+        if (result.success) {
+          if (result.data.loaded) {
+            this.addLoadFiles(result.data.loaded);
+          }
+          if (result.data.start) {
+            this.start = result.data.start;
+          }
+          this.prepareUpload(result.data, form)
+        } else {
+          if (result.data.fileNames && result.data.fileNames.length) {
+            const res = this.removeFromFileList(files, result.data.fileNames);
+            this.field.files = res.files;
+            if (!this.field.files) return false;
+            this.prepareUpload(result.data, form)
+          }
         }
-        if (result.data.start) {
-          this.start = result.data.start;
-        }
-        this.prepareUpload(result.data, form);
-      } else {
-        if (result.data.fileNames && result.data.fileNames.length) {
-          const res = this.removeFromFileList(files, result.data.fileNames);
-          this.field.files = res.files;
-          if (!this.field.files) return false;
-          this.prepareUpload(result.data, form);
-        }
-      }
-      break;
-    case 'removeFile':
-      this.removeFromList(result.data.filename);
-      this.removePreview(result.data.path, result.data.nomsg);
-      break;
+        break;
+      case 'removeFile':
+        this.removeFromList(result.data.filename);
+        this.removePreview(result.data.path, result.data.nomsg);
+        break;
     }
   }
 
@@ -206,14 +212,14 @@ class FileUploader {
   clearFields() {
     const btns = this.root.querySelectorAll(`[${this.config.pathAttr}]`);
     if (btns.length) {
-      btns.forEach(btn => this.removeFile(btn, true));
+      btns.forEach(btn => this.removeFile(btn, true))
     }
   }
 
   resetHandler() {
     const btns = this.root.querySelectorAll(`[${this.config.pathAttr}]`);
     if (btns.length) {
-      btns.forEach(btn => btn.remove());
+      btns.forEach(btn => btn.remove())
     }
     this.field && (this.field.value = '');
     this.listField && (this.listField.value = '');
@@ -224,17 +230,17 @@ class FileUploader {
     const headers = {
       'X-SIACTION': 'validate_files',
       'X-SIPRESET': this.preset,
-      'X-SITOKEN': this.factory.hub.getComponentCookie('sitoken')
-    };
+      'X-SITOKEN': SendIt?.getComponentCookie('sitoken')
+    }
     const params = new FormData();
-    for (let [key] of this.filesInQueue.entries()) {
-      fileList.push(key);
+    for (let [key, value] of this.filesInQueue.entries()) {
+      fileList.push(key)
     }
     params.append('filesData', JSON.stringify(filesData));
     params.append('fileList', fileList.join(','));
 
-    this.factory.hub.setComponentCookie('sitrusted', '1');
-    this.factory.hub.Sending?.send(this.root, this.config.actionUrl, headers, params);
+    SendIt?.setComponentCookie('sitrusted', '1');
+    SendIt?.Sending?.send(this.root, this.config.actionUrl, headers, params);
   }
 
   prepareUpload(data, form) {
@@ -244,8 +250,7 @@ class FileUploader {
     this.field.disabled = true;
     this.progressWrap = this.root.querySelector(this.config.progressSelector);
     this.addFileToQueue();
-
-    if (!this.factory.hub.dispatchEvent(this.events.uploadingStart, {
+    if (!document.dispatchEvent(new CustomEvent(this.events.uploadingStart, {
       bubbles: true,
       cancelable: true,
       detail: {
@@ -255,7 +260,7 @@ class FileUploader {
         files: this.field.files,
         FileUploader: this
       }
-    })) {
+    }))) {
       return;
     }
 
@@ -329,8 +334,7 @@ class FileUploader {
     this.field.value = '';
     form && form.querySelectorAll('[type="submit"]').forEach(btn => btn.disabled = false);
 
-
-    this.factory.hub.dispatchEvent(this.events.uploadingEnd, {
+    document.dispatchEvent(new CustomEvent(this.events.uploadingEnd, {
       bubbles: true,
       cancelable: true,
       detail: {
@@ -339,7 +343,7 @@ class FileUploader {
         files: this.field.files,
         FileUploader: this
       }
-    });
+    }))
   }
 
   async sendNext(file, filename) {
@@ -359,7 +363,7 @@ class FileUploader {
   }
 
   uploadChunk(chunk, chunkId, file, filename) {
-    return fetch(this.factory.hub.Sending?.config.actionUrl, {
+    return fetch(SendIt?.Sending?.config.actionUrl, {
       method: 'POST',
       headers: {
         'CONTENT-TYPE': 'application/octet-stream',
@@ -369,7 +373,7 @@ class FileUploader {
         'X-CONTENT-NAME': filename,
         'X-SIACTION': 'uploadChunk',
         'X-SIPRESET': this.preset,
-        'X-SITOKEN': this.factory.hub.getComponentCookie('sitoken')
+        'X-SITOKEN': SendIt?.getComponentCookie('sitoken')
       },
       body: chunk
     }).then(async (response) => {
@@ -398,7 +402,7 @@ class FileUploader {
         delete this.chunksQueue[result.data.filename];
         this.startUpload(this.filesQueue[0]);
       } else {
-        this.factory.hub.Notify?.error(result.message);
+        SendIt?.Notify?.error(result.message);
       }
     }
   }
@@ -412,7 +416,7 @@ class FileUploader {
         newFileList.items.add(file);
         filesData[filename] = file.size;
       }
-    });
+    })
     return {filesData, files: newFileList.files};
   }
 
@@ -420,7 +424,7 @@ class FileUploader {
     const preview = this.root.querySelector(`[${this.config.pathAttr}="${path}"]`);
     preview && preview.remove();
 
-    this.factory.hub.dispatchEvent(this.events.removePreview, {
+    document.dispatchEvent(new CustomEvent(this.events.removePreview, {
       bubbles: true,
       cancelable: true,
       detail: {
@@ -430,7 +434,7 @@ class FileUploader {
         nomsg: Number(nomsg),
         FileUploader: this
       }
-    });
+    }))
   }
 
   removeFromList(filename) {
@@ -442,7 +446,7 @@ class FileUploader {
   }
 
   removeFile(btn, nomsg = 0) {
-    const filename = btn.dataset[this.config.pathKey].split('/');
+    const filename = btn.dataset[this.config.pathKey].split('/')
     this.filesInQueue.delete(filename[filename.length - 1]);
 
     const params = new FormData();
@@ -451,11 +455,11 @@ class FileUploader {
     const headers = {
       'X-SIACTION': 'removeFile',
       'X-SIPRESET': 'removeFile',
-      'X-SITOKEN': this.factory.hub.getComponentCookie('sitoken')
-    };
+      'X-SITOKEN': SendIt?.getComponentCookie('sitoken')
+    }
 
-    this.factory.hub.setComponentCookie('sitrusted', '1');
-    this.factory.hub.Sending?.send(this.root, this.config.actionUrl, headers, params);
+    SendIt?.setComponentCookie('sitrusted', '1');
+    SendIt?.Sending?.send(this.root, this.config.actionUrl, headers, params);
   }
 
   addProgressBar(filename) {
@@ -476,12 +480,12 @@ class FileUploader {
     const progressLine = this.progressWrap.querySelector(`[${this.config.progressIdAttr}="${filename}"] span`);
     const progressLineWrap = this.progressWrap.querySelector(`[${this.config.progressIdAttr}="${filename}"]`);
     if (percent) {
-      progressLineWrap.removeAttribute('data-fu-delete');
+      progressLineWrap.removeAttribute('data-fu-delete')
     } else {
-      progressLineWrap.setAttribute('data-fu-delete', 1);
+      progressLineWrap.setAttribute('data-fu-delete', 1)
     }
-    progressLine && percent && (progressLine.style.width = percent);
-    progressLineWrap && msg && (progressLineWrap.setAttribute(this.config.progressTextAttr, msg));
+    progressLine && percent && (progressLine.style.width = percent)
+    progressLineWrap && msg && (progressLineWrap.setAttribute(this.config.progressTextAttr, msg))
   }
 
   removeProgressBar(filename, delay = true) {
@@ -490,10 +494,10 @@ class FileUploader {
     const progressLineWrap = this.progressWrap.querySelector(`[${this.config.progressIdAttr}="${filename}"]`);
     if (delay) {
       setTimeout(() => {
-        progressLineWrap.remove();
-      }, 2000);
+        progressLineWrap.remove()
+      }, 2000)
     } else {
-      progressLineWrap.remove();
+      progressLineWrap.remove()
     }
 
   }

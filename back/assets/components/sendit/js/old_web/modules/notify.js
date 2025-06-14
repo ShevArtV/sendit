@@ -1,28 +1,92 @@
-import {Base} from './base.js';
-
-export class Notify extends Base{
-  constructor(hub) {
-    super(hub);
+export default class Notify {
+  constructor(config) {
+    if (window.SendIt && window.SendIt.Notify) return window.SendIt.Notify;
+    const defaults = {
+      jsPath: 'assets/components/sendit/web/js/lib/izitoast/iziToast.js',
+      cssPath: 'assets/components/sendit/web/css/lib/izitoast/iziToast.min.css',
+      handlerClassName: 'iziToast',
+      toastSelector: '.iziToast',
+      typeSelectors: {
+        success: '.iziToast-color-green',
+        info: '.iziToast-color-blue',
+        error: '.iziToast-color-red',
+        warning: '.iziToast-color-yellow',
+      },
+      titleSelector: '.iziToast-title',
+      handlerOptions: {
+        timeout: 2500,
+        position: "topCenter"
+      }
+    }
     this.events = {
       before: 'si:notify:before',
     };
+    this.config = Object.assign(defaults, config);
+    this.loadScript(this.config.jsPath, () => {
+    }, this.config.cssPath);
+  }
+
+  loadScript(path, callback, cssPath) {
+    if (document.querySelector('script[src="' + path + '"]')) {
+      callback(path, "ok");
+      return;
+    }
+    let done = false,
+      scr = document.createElement('script');
+
+    scr.onload = handleLoad;
+    scr.onreadystatechange = handleReadyStateChange;
+    scr.onerror = handleError;
+    scr.src = path;
+    document.body.appendChild(scr);
+
+    function handleLoad() {
+      if (!done) {
+        if (cssPath) {
+          let css = document.createElement('link');
+          css.rel = 'stylesheet';
+          css.href = cssPath;
+          document.head.prepend(css);
+        }
+        done = true;
+        callback(path, "ok");
+      }
+    }
+
+    function handleReadyStateChange() {
+      let state;
+
+      if (!done) {
+        state = scr.readyState;
+        if (state === "complete") {
+          handleLoad();
+        }
+      }
+    }
+
+    function handleError() {
+      if (!done) {
+        done = true;
+        callback(path, "error");
+      }
+    }
   }
 
   show(type, message, options = {}) {
     message = message ? message.trim() : '';
-    this.hub.loadScript(this.config.jsPath, () => {
+    this.loadScript(this.config.jsPath, () => {
       if (window[this.config.handlerClassName] && Boolean(message)) {
         options = Object.assign(this.config.handlerOptions, {title: message}, options);
         options['type'] = type;
 
-        this.hub.dispatchEvent(this.events.before, {
+        document.dispatchEvent(new CustomEvent(this.events.before, {
           bubbles: true,
           cancelable: false,
           detail: {
             options: options,
             Notify: this
           }
-        });
+        }))
 
         try {
           const toast = document.querySelector(this.config.typeSelectors[type]);
@@ -59,13 +123,13 @@ export class Notify extends Base{
       const toast = document.querySelector(this.config.toastSelector);
       if (!toast) return;
       window[this.config.handlerClassName].hide({}, toast);
-    }, this.config.cssPath);
+    }, this.config.cssPath)
   }
 
   closeAll() {
     this.loadScript(this.config.jsPath, () => {
       window[this.config.handlerClassName].destroy();
-    }, this.config.cssPath);
+    }, this.config.cssPath)
   }
 
   updateText(selector, text) {

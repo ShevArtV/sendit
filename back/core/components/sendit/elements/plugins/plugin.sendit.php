@@ -4,7 +4,8 @@ require_once $corePath . 'components/sendit/services/sendit.class.php';
 
 switch ($modx->event->name) {
     case 'OnLoadWebDocument':
-        SendIt::loadCssJs($modx);
+        $SendIt = new SendIt($modx);
+        $SendIt->loadCssJs();
         break;
     case 'OnWebPageInit':
         $alias = !empty($_REQUEST['q']) ? explode('.', basename($_REQUEST['q'])) : [];
