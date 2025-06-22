@@ -14,10 +14,12 @@ class Main {
     return this.getProxy();
   }
 
-  static getInstance(appName) {
+  static async getInstance(appName) {
     if (!Main._instance) {
       Main._instance = new Main(appName);
-      Main._instance.initialize().then();
+      await Main._instance.initialize();
+    } else if (!Main._instance.initialized) {
+      await Main._instance.initialize();
     }
     return Main._instance;
   }
