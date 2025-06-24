@@ -379,8 +379,8 @@ class SendIt
     private function getWebConfig(): void
     {
         $packageVersion = $this->getPackageVersion();
-        //$scriptsVersion = $packageVersion ? '?v=' . md5($packageVersion) : '';
-        $scriptsVersion = '?v=' . time();
+        $scriptsVersion = $packageVersion ? '?v=' . md5($packageVersion) : '';
+        //$scriptsVersion = '?v=' . time();
 
         $this->webConfig = [
             'version' => $scriptsVersion,

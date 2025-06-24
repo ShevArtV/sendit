@@ -1,4 +1,5 @@
 <?php
+// /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL modxbuilder/sendit/build/build.package.php
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/modxbuilder/sendit/build/build.package.php
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/modxbuilder/sendit/build/build.schema.php
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL art-sites.ru/htdocs/sendit/modxbuilder/sendit/build/build.models.php
@@ -14,7 +15,7 @@ $buildConfig = array(
     "real_package_name" => "SendIt",
     //name for folder
     "package_name" => "sendit",
-    "package_version" => "2.4.1",
+    "package_version" => "2.4.2",
     "package_release" => "pl",
     "package_table_prefix" => "si_",
     "package_class_prefix" => "si",
