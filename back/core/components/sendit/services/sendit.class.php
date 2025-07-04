@@ -109,7 +109,7 @@ class SendIt
     /**
      * @var array
      */
-    private array $webConfig = [];
+    public array $webConfig = [];
 
 
     /**

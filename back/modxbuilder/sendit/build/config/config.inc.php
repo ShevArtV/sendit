@@ -15,7 +15,7 @@ $buildConfig = array(
     "real_package_name" => "SendIt",
     //name for folder
     "package_name" => "sendit",
-    "package_version" => "2.4.2",
+    "package_version" => "2.4.3",
     "package_release" => "pl",
     "package_table_prefix" => "si_",
     "package_class_prefix" => "si",
