@@ -75,14 +75,6 @@ class Main {
     }
 
     this.initialized = true;
-
-    this.dispatchEvent('si:init', {
-      bubbles: true,
-      cancelable: true,
-      detail: {
-        object: this
-      }
-    });
   }
 
   async _initModule(name, {pathToScripts, className}) {
