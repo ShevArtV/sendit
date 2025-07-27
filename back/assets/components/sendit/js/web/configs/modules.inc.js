@@ -8,6 +8,7 @@ export const ModulesConfig = {
     className: 'Sending',
     pathToScripts: '../modules/sending.js?v=hfghgjhjhgj',
     rootSelector: '[data-si-form]',
+    presetSelector: '[data-si-preset]',
     rootKey: 'siForm',
     presetKey: 'siPreset',
     eventKey: 'siEvent',
