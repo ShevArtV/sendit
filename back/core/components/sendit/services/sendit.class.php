@@ -376,7 +376,7 @@ class SendIt
         }
     }
 
-    private function getWebConfig(): void
+    public function getWebConfig(): void
     {
         $packageVersion = $this->getPackageVersion();
         $scriptsVersion = $packageVersion ? '?v=' . md5($packageVersion) : '';

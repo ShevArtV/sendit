@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * @var \modX $modx
+ */
 $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
 require_once $corePath . 'components/sendit/services/sendit.class.php';
 
