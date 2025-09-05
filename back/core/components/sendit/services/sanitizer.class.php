@@ -5,6 +5,8 @@
  */
 class Sanitizer
 {
+    private const EMAIL_REGEXP = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+
     private const DANGEROUS_PATTERNS = [
         '/\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE|TRUNCATE|ALTER|CREATE|SHOW|DESCRIBE|GRANT|REVOKE|COMMIT|ROLLBACK|MERGE|CALL)\b/i',
         '/;.*--/',
@@ -34,7 +36,7 @@ class Sanitizer
      */
     public static function process($input)
     {
-        if ($input === null || $input === '') {
+        if ($input === null || $input === '' || preg_match(self::EMAIL_REGEXP, $input)) {
             return $input;
         }
         if(is_array($input)){
