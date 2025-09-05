@@ -40,6 +40,8 @@
 
 .v_hidden {
   opacity: 0 !important;
+  position: absolute;
+  pointer-events: none;
 }
 
 [data-fu-id] {

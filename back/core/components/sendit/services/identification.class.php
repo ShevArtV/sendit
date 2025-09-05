@@ -156,11 +156,12 @@ class Identification
      */
     public static function loginWithoutPass(string $username, \modX $modx, ?array $properties = []): bool
     {
+        $lifetime = (int)$modx->getOption('session_cookie_lifetime', null,0);
         $contexts = !empty($properties['authenticateContexts']) ? explode(',', $properties['authenticateContexts']) : ['web'];
         $q = $modx->newQuery('modUser');
         $q->leftJoin('modUserProfile', 'Profile');
-        $q->select($modx->getSelectColumns('modUser', 'modUser', '', ['id', 'username', 'active']));
-        $q->select($modx->getSelectColumns('modUserProfile', 'Profile', '', ['blocked']));
+        $q->select($modx->getSelectColumns('modUser', 'modUser', '', array('id', 'username', 'active')));
+        $q->select($modx->getSelectColumns('modUserProfile', 'Profile', '', array('blocked')));
         $q->where(['modUser.username' => $username, 'modUser.active' => 1, 'Profile.blocked' => 0]);
         $user = $modx->getObject('modUser', $q);
 
@@ -171,6 +172,7 @@ class Identification
         $session_id = session_id();
         foreach ($contexts as $ctx) {
             $user->addSessionContext($ctx);
+            $_SESSION['modx.' . $ctx . '.session.cookie.lifetime'] = $properties['rememberme'] ? $lifetime : 0;
         }
         $modx->user = $user;
 

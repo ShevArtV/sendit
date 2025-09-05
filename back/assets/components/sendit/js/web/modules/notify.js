@@ -55,7 +55,7 @@ export class Notify extends Base{
   }
 
   close() {
-    this.loadScript(this.config.jsPath, () => {
+    this.hub.loadScript(this.config.jsPath, () => {
       const toast = document.querySelector(this.config.toastSelector);
       if (!toast) return;
       window[this.config.handlerClassName].hide({}, toast);
@@ -63,7 +63,7 @@ export class Notify extends Base{
   }
 
   closeAll() {
-    this.loadScript(this.config.jsPath, () => {
+    this.hub.loadScript(this.config.jsPath, () => {
       window[this.config.handlerClassName].destroy();
     }, this.config.cssPath);
   }

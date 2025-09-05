@@ -111,6 +111,8 @@ class SendIt
      */
     public array $webConfig = [];
 
+    public Sanitizer $sanitizer;
+
 
     /**
      * @param modX $modx
@@ -130,6 +132,8 @@ class SendIt
      */
     private function initialize(): void
     {
+        include_once 'sanitizer.class.php';
+        $this->sanitizer = new Sanitizer();
         $version = $this->modx->getVersionData();
         $this->session = SendIt::getSession($this->modx) ?: [];
         $this->basePath = $this->modx->getOption('base_path');
@@ -503,7 +507,7 @@ class SendIt
             return;
         }
         if (!is_array($value)) {
-            $_POST[$key] = $value;
+            $_POST[$key] = $this->sanitizer->process($value);;
             $k = preg_replace('/\[\d*?\]/', '[*]', $key);
             if (!empty($this->validates[$k]) && !isset($this->validates[$key])) {
                 $this->validates[$key] = $this->validates[$k];
@@ -511,7 +515,7 @@ class SendIt
         } else {
             $_POST[$key . '[]'] = implode(', ', $value);
             foreach ($value as $k => $v) {
-                $this->setValue($v, $key . '[' . $k . ']');
+                $this->setValue($this->sanitizer->process($v), $key . '[' . $k . ']');
             }
         }
     }
@@ -935,7 +939,7 @@ class SendIt
         $uploaddir = $this->uploaddir . session_id() . '/';
         $filename = $uploaddir . $headers['x-content-name'];
         if (!is_dir($uploaddir)) {
-            mkdir($uploaddir);
+            mkdir($uploaddir, 0777, true);
         }
 
         if (file_exists($uploaddir . $filename)) {
@@ -956,7 +960,7 @@ class SendIt
         $chunkName = $headers['x-chunk-id'] . '.' . $fileExt;
         $chunkPath = $dir . $chunkName;
         if (!is_dir($dir)) {
-            mkdir($dir);
+            mkdir($dir, 0777, true);
         }
 
         if (!file_exists($chunkPath) || filesize($chunkPath) < $headers['content-length']) {
