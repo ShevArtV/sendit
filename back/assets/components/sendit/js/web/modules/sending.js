@@ -188,7 +188,7 @@ export class Sending extends Base {
       if (this.result.data.html) {
         if (resultBlocks.length) {
           this.result.data.resultShowMethod === 'insert' && resultBlocks.forEach(block => block.innerHTML = this.result.data.html);
-          this.result.data.resultShowMethod === 'append' && resultBlocks.forEach(block => block.innerHTML += this.result.data.html);
+          this.result.data.resultShowMethod === 'append' && resultBlocks.forEach(block => block.insertAdjacentHTML('beforeend', this.result.data.html));
         }
       } else {
         if (resultBlocks.length) {
