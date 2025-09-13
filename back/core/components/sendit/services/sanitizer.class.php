@@ -36,13 +36,17 @@ class Sanitizer
      */
     public static function process($input)
     {
-        if ($input === null || $input === '' || preg_match(self::EMAIL_REGEXP, $input)) {
+        if ($input === null || $input === '') {
             return $input;
         }
         if(is_array($input)){
             foreach ($input as $key => $value) {
                 $input[$key] = self::process($value);
             }
+            return $input;
+        }
+
+        if(preg_match(self::EMAIL_REGEXP, $input)){
             return $input;
         }
 

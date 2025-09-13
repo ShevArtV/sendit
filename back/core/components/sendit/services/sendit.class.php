@@ -110,8 +110,14 @@ class SendIt
      * @var array
      */
     public array $webConfig = [];
-
+    /**
+     * @var Sanitizer $sanitizer
+     */
     public Sanitizer $sanitizer;
+    /**
+     * @var array|mixed|string|null $newValue
+     */
+    public $newValue;
 
 
     /**
@@ -507,7 +513,14 @@ class SendIt
             return;
         }
         if (!is_array($value)) {
-            $_POST[$key] = $this->sanitizer->process($value);;
+            $this->newValue = $this->sanitizer->process($value);
+            $this->modx->invokeEvent('senditOnSetValue', [
+                'key' => $key,
+                'value' => $value,
+                'SendIt' => $this
+            ]);
+
+            $_POST[$key] = $this->newValue;
             $k = preg_replace('/\[\d*?\]/', '[*]', $key);
             if (!empty($this->validates[$k]) && !isset($this->validates[$key])) {
                 $this->validates[$key] = $this->validates[$k];
@@ -515,7 +528,7 @@ class SendIt
         } else {
             $_POST[$key . '[]'] = implode(', ', $value);
             foreach ($value as $k => $v) {
-                $this->setValue($this->sanitizer->process($v), $key . '[' . $k . ']');
+                $this->setValue($v, $key . '[' . $k . ']');
             }
         }
     }
