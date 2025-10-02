@@ -231,11 +231,15 @@ class SendIt
                 $this->params[$key] = $this->modx->lexicon($value);
             }
             if ($key === 'fieldNames') {
-                $fieldNames = explode('==', $value);
-                foreach ($fieldNames as $k => $v) {
-                    $fieldNames[$k] = $this->modx->lexicon($v);
+                $values = explode(',', $value);
+                $replaced = [];
+                foreach($values as $item){
+                    $fieldNames = explode('==', $item);
+                    $fieldNames[0] = $this->modx->lexicon($fieldNames[0]);
+                    $fieldNames[1] = $this->modx->lexicon($fieldNames[1]);
+                    $replaced[] = implode('==', $fieldNames);
                 }
-                $this->params[$key] = implode('==', $fieldNames);
+                $this->params[$key] = implode(',', $replaced);
             }
         }
     }

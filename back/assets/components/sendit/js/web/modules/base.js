@@ -10,4 +10,15 @@ export class Base {
   }
 
   initialize(){}
+
+  checkPropertyLoad(object, propertyName) {
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (typeof object[propertyName] !== 'undefined') {
+          clearInterval(checkInterval);
+          resolve(propertyName);
+        }
+      }, 10);
+    });
+  }
 }

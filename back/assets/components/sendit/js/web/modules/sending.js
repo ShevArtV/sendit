@@ -108,7 +108,7 @@ export class Sending extends Base {
 
   async fetch(target, url, headers, params, method = 'POST') {
     url = url || this.config.actionUrl;
-    const fetchOptions = {
+    this.fetchOptions = {
       method: method,
       body: params,
       headers: headers
@@ -119,7 +119,7 @@ export class Sending extends Base {
       detail: {
         action: headers['X-SIACTION'],
         target: target,
-        fetchOptions: fetchOptions,
+        fetchOptions: this.fetchOptions,
         headers: headers,
         Sending: this
       }
@@ -131,7 +131,7 @@ export class Sending extends Base {
 
     this.resetAllErrors(target);
 
-    const response = await fetch(url, fetchOptions);
+    const response = await fetch(url, this.fetchOptions);
 
     this.result = await response.json();
 

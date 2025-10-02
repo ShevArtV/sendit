@@ -8,34 +8,37 @@ export class Notify extends Base{
     };
   }
 
+  async initialize(){
+    this.hub.loadScript(this.config.jsPath, () => {},this.config.cssPath);
+    await this.checkPropertyLoad(window, this.config.handlerClassName);
+  }
+
   show(type, message, options = {}) {
     message = message ? message.trim() : '';
-    this.hub.loadScript(this.config.jsPath, () => {
-      if (window[this.config.handlerClassName] && Boolean(message)) {
-        options = Object.assign(this.config.handlerOptions, {title: message}, options);
-        options['type'] = type;
+    if (window[this.config.handlerClassName] && Boolean(message)) {
+      options = Object.assign(this.config.handlerOptions, {title: message}, options);
+      options['type'] = type;
 
-        this.hub.dispatchEvent(this.events.before, {
-          bubbles: true,
-          cancelable: false,
-          detail: {
-            options: options,
-            Notify: this
-          }
-        });
-
-        try {
-          const toast = document.querySelector(this.config.typeSelectors[type]);
-          if (toast && options.upd) {
-            this.updateText(this.config.titleSelector, options['title']);
-          } else {
-            window[this.config.handlerClassName][options['type']](options);
-          }
-        } catch (e) {
-          console.error(e, `Не найден метод ${options['type']} в классе ${this.config.handlerClassName}`);
+      this.hub.dispatchEvent(this.events.before, {
+        bubbles: true,
+        cancelable: false,
+        detail: {
+          options: options,
+          Notify: this
         }
+      });
+
+      try {
+        const toast = document.querySelector(this.config.typeSelectors[type]);
+        if (toast && options.upd) {
+          this.updateText(this.config.titleSelector, options['title']);
+        } else {
+          window[this.config.handlerClassName][options['type']](options);
+        }
+      } catch (e) {
+        console.error(e, `Не найден метод ${options['type']} в классе ${this.config.handlerClassName}`);
       }
-    }, this.config.cssPath);
+    }
   }
 
   success(message) {
