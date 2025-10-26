@@ -51,6 +51,9 @@ export class FileUploaderFactory extends Base {
     });
 
     document.addEventListener('click', (e) => {
+      if(typeof e.target.closest !== 'function'){
+        return;
+      }
       const root = e.target.closest(this.rootSelector);
       if (this.instances.has(root)) {
         const fileUploader = this.instances.get(root);
@@ -233,7 +236,6 @@ class FileUploader {
     params.append('filesData', JSON.stringify(filesData));
     params.append('fileList', fileList.join(','));
 
-    this.factory.hub.setComponentCookie('sitrusted', '1');
     this.factory.hub.Sending?.send(this.root, this.config.actionUrl, headers, params);
   }
 
@@ -454,7 +456,6 @@ class FileUploader {
       'X-SITOKEN': this.factory.hub.getComponentCookie('sitoken')
     };
 
-    this.factory.hub.setComponentCookie('sitrusted', '1');
     this.factory.hub.Sending?.send(this.root, this.config.actionUrl, headers, params);
   }
 

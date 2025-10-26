@@ -1,12 +1,70 @@
 export const ModulesConfig = {
   Helpers: {
     className: 'Helpers',
-    pathToScripts: '../modules/helpers.js?v=hfghgjhjhgj',
+    pathToScripts: '../modules/helpers.js',
     forceLoad: true
   },
+  UserBehaviorTracker: {
+    className: 'UserBehaviorTracker',
+    pathToScripts: '../modules/userbehaviortracker.js',
+    debug: false,
+    forceLoad: true,
+    autoUpdateTime: 0,          // Период автообновления информации о поведении пользователя, 0 - автообновление не работает.
+    maxEvents: 50,              // Максимальное количество анализируемых событий
+    minBotScoreAmount: 70,      // Минимальное количество баллов для признания пользователя ботом
+    cooldownMultiplier: 0.02,   // Множитель для охлаждения счёта между обновлениями
+    weights: {
+      mouseMovements: 0.5,        // Вес анализа движений мыши в общем счёте
+      clicks: 1.5,                // Вес анализа кликов в общем счёте
+      keystrokes: 1.5,            // Вес анализа нажатий клавиш в общем счёте
+      scrolls: 0.8,               // Вес анализа скроллинга в общем счёте
+      timing: 0.5,                // Вес анализа временных характеристик в общем счёте
+      behaviorPatterns: 1,        // Вес анализа временных характеристик в общем счёте
+      recentBehavior: 0.3         // Вес последних действий на общий счёт (0-1)
+    },
+    mouse: {
+      minMovements: 5,            // Минимальное количество движений для анализа
+      straightLineThreshold: 0.7, // Порог определения прямолинейного движения (0-1)
+      rightAngleThreshold: 0.3,   // Порог определения прямого угла (0-1)
+    },
+    clicks: {
+      minClicks: 3,                    // Минимальное количество кликов для анализа
+      positionTolerance: 5,            // Допустимое отклонение позиции (в пикселях)
+      samePositionThreshold: 0.6,      // Порог определения кликов в одной позиции (0-1)
+      sameLocationThreshold: 0.5,      // Порог определения кликов в одной области (0-1)
+      naturalVariationThreshold: 0.4,  // Порог естественного разброса кликов (0-1)
+      stdDevThreshold: 30,             // Максимальное стандартное отклонение позиций
+      avgIntervalThreshold: 400,       // Средний интервал между кликами (мс)
+      highVarianceThreshold: 250,      // Порог высокой вариативности интервалов
+    },
+    keystrokes: {
+      minKeystrokes: 5,                // Минимальное количество нажатий для анализа
+      naturalVariationThreshold: 0.5,  // Порог естественного разброса нажатий (0-1)
+      stdDevThreshold: 8,              // Максимальное стандартное отклонение интервалов
+      fastTypingThreshold: 40,         // Порог быстрого набора (символов в минуту)
+      veryFastTypingThreshold: 30,     // Порог очень быстрого набора (символов в минуту)
+      highVarianceThreshold: 40,       // Порог высокой вариативности интервалов
+      repeatedPatternMultiplier: 5     // Множитель для повторяющихся паттернов набора
+    },
+    scrolls: {
+      minScrolls: 5,              // Минимальное количество скроллов для анализа
+      stdDevThreshold: 5,         // Максимальное стандартное отклонение дистанции скролла
+      avgDistanceThreshold: 10,   // Порог средней дистанции скролла
+    },
+    behavior: {
+      historySize: 30,                        // Максимальное количество записей в истории
+      recentWindow: 10,                       // Размер окна для анализа последних действий
+      minTimeThreshold: 5000,                 // Минимальное время наблюдения (мс)
+      suspiciousPatternThreshold: 0.8,        // Порог подозрительных паттернов (0-1)
+      humanLikePatternThreshold: 0.3,         // Порог человеко-подобного поведения (0-1)
+      maxInteractionsPerSecondThreshold: 100, // Макс. кол-во действий в секунду
+      minInteractionsPerSecondThreshold: 10,  // Мин. кол-во действий в секунду
+    }
+  },
   Sending: {
+    forceLoad: true,
     className: 'Sending',
-    pathToScripts: '../modules/sending.js?v=hfghgjhjhgj',
+    pathToScripts: '../modules/sending.js',
     rootSelector: '[data-si-form]',
     presetSelector: '[data-si-preset]',
     rootKey: 'siForm',
@@ -14,7 +72,6 @@ export const ModulesConfig = {
     eventKey: 'siEvent',
     goalKey: 'siGoal',
     actionUrl: '/assets/components/sendit/action.php',
-    antiSpamEvent: 'keydown',
     errorBlockSelector: '[data-si-error="${fieldName}"]',
     eventSelector: '[data-si-event="${eventName}"]',
     errorClass: 'si-error'

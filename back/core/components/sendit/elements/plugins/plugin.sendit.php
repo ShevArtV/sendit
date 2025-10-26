@@ -21,6 +21,7 @@ switch ($modx->event->name) {
         $cookies = !empty($_COOKIE['SendIt']) ? json_decode($_COOKIE['SendIt'], 1) : [];
 
         $data = [
+            'simsgantispam' => $modx->lexicon('si_msg_trusted_err'),
             'sitoken' => md5($_SERVER['REMOTE_ADDR'] . time()),
             'sitrusted' => '0',
             'sijsconfigpath' => $jsConfigPath

@@ -1,4 +1,5 @@
 import {Base} from './base.js';
+import {UserBehaviorTracker} from './userbehaviortracker.js';
 
 export class Sending extends Base {
   initialize() {
@@ -11,11 +12,7 @@ export class Sending extends Base {
       finish: 'si:send:finish',
     };
 
-    document.addEventListener(this.config.antiSpamEvent, (e) => {
-      if (e.isTrusted) this.hub.setComponentCookie('sitrusted', '1');
-    });
     document.addEventListener('submit', (e) => {
-      if (e.isTrusted) this.hub.setComponentCookie('sitrusted', '1');
       const submitter = e.target.closest(this.config.eventSelector.replace('="${eventName}"', ''));
       const root = submitter ? this.getRoot(submitter) : this.getRoot(e.target);
 
@@ -30,6 +27,9 @@ export class Sending extends Base {
     document.addEventListener('change', this.sendField.bind(this));
     document.addEventListener('input', this.sendField.bind(this));
     document.addEventListener('click', (e) => {
+      if(typeof e.target.closest !== 'function'){
+        return;
+      }
       const submitter = e.target.closest(this.config.eventSelector.replace('${eventName}', e.type));
       if (submitter) {
         const root = this.getRoot(submitter);
@@ -50,7 +50,6 @@ export class Sending extends Base {
   }
 
   sendField(e) {
-    if (e.isTrusted) this.hub.setComponentCookie('sitrusted', '1');
     const field = this.submitter = e.target.closest(this.config.presetSelector);
     const root = field ? this.getRoot(field) : this.getRoot(e.target);
     if (!field && !root) return;
@@ -107,6 +106,14 @@ export class Sending extends Base {
   }
 
   async fetch(target, url, headers, params, method = 'POST') {
+    if(!params.has('isBot')){
+      const userBehaviorAnalysisResult = this.hub?.UserBehaviorTracker?.requestAnalysis();
+      params.append('isBot', '0');
+      if(userBehaviorAnalysisResult){
+        params.set('isBot', userBehaviorAnalysisResult.isBot ? '1' : '0');
+      }
+    }
+
     url = url || this.config.actionUrl;
     this.fetchOptions = {
       method: method,
@@ -127,7 +134,10 @@ export class Sending extends Base {
       return;
     }
 
-    if (this.hub.getComponentCookie('sitrusted') === '0') return;
+    if(Number(this.fetchOptions.body.get('isBot')) === 1){
+      this.hub.Notify?.info(this.hub.getComponentCookie('simsgantispam'));
+      return;
+    }
 
     this.resetAllErrors(target);
 
@@ -241,11 +251,7 @@ export class Sending extends Base {
 
   error(result, root) {
     if (!result.data || !result.data.errors) {
-      if (this.hub.getComponentCookie('sitrusted') === '0') {
-        this.hub.Notify?.info(this.hub.getComponentCookie('simsgantispam'));
-      } else {
-        this.hub.Notify?.error(result.message);
-      }
+      this.hub.Notify?.error(result.message);
     } else {
       if (root.tagName.toLowerCase() !== 'form') {
         root = root.closest(this.config.rootSelector);

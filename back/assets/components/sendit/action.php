@@ -29,9 +29,9 @@ $session = SendIt::getSession($modx);
 if (!isset($session['sitoken']) || !$token || $token !== $session['sitoken']) {
     die(json_encode($sendit->error('si_msg_token_err')));
 }
-if (!$cookie['sitrusted']) {
+/*if (!$cookie['sitrusted']) {
     die(json_encode($sendit->error('si_msg_trusted_err')));
-}
+}*/
 
 switch ($action) {
     case 'validate_files':

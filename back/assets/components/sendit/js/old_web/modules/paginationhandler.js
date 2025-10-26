@@ -301,7 +301,6 @@ class PaginationHandler {
   }
 
   async sendResponse() {
-    SendIt.setComponentCookie('sitrusted', '1');
     this.resultShowMethod && this.setResultShowMethod();
     const params = new FormData(this.form);
     this.disabled([this.gotoLastBtn, this.gotoNextBtn, this.gotoMoreBtn, this.gotoFirstBtn, this.gotoPrevBtn, this.pageInput, this.limitInput]);

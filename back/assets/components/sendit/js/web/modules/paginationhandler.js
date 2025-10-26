@@ -18,6 +18,9 @@ export class PaginationFactory extends Base {
     });
 
     document.addEventListener('click', (e) => {
+      if(typeof e.target.closest !== 'function'){
+        return;
+      }
       if (e.target.closest(this.config.rootSelector)) {
         const root = e.target.closest(this.rootSelector);
         if (this.instances.has(root)) {
@@ -299,9 +302,9 @@ class PaginationHandler {
   }
 
   async sendResponse() {
-    this.factory.hub.setComponentCookie('sitrusted', '1');
     this.resultShowMethod && this.setResultShowMethod();
     const params = new FormData(this.form);
+    params.append('isBot', '0');
     this.disabled([this.gotoLastBtn, this.gotoNextBtn, this.gotoMoreBtn, this.gotoFirstBtn, this.gotoPrevBtn, this.pageInput, this.limitInput]);
     await this.factory.hub.Sending.sendRequest(this.form, this.preset, params);
   }

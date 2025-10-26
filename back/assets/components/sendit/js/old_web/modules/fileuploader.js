@@ -239,7 +239,6 @@ class FileUploader {
     params.append('filesData', JSON.stringify(filesData));
     params.append('fileList', fileList.join(','));
 
-    SendIt?.setComponentCookie('sitrusted', '1');
     SendIt?.Sending?.send(this.root, this.config.actionUrl, headers, params);
   }
 
@@ -458,7 +457,6 @@ class FileUploader {
       'X-SITOKEN': SendIt?.getComponentCookie('sitoken')
     }
 
-    SendIt?.setComponentCookie('sitrusted', '1');
     SendIt?.Sending?.send(this.root, this.config.actionUrl, headers, params);
   }
 

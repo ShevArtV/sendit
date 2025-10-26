@@ -17,6 +17,9 @@ export class QuizForm extends Base {
       }
 
       document.addEventListener('click', (e) => {
+        if(typeof e.target.closest !== 'function'){
+          return;
+        }
         const btn = e.target.closest(this.config.btnSelector);
         const root = btn?.closest(this.config.formSelector);
         const dir = btn?.dataset[this.config.btnKey];
