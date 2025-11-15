@@ -121,7 +121,7 @@ class SendIt
 
 
     /**
-     * @param modX $modx
+     * @param \modX $modx
      * @param string|null $presetName
      * @param string|null $formName
      */
@@ -233,7 +233,7 @@ class SendIt
             if ($key === 'fieldNames') {
                 $values = explode(',', $value);
                 $replaced = [];
-                foreach($values as $item){
+                foreach ($values as $item) {
                     $fieldNames = explode('==', $item);
                     $fieldNames[0] = $this->modx->lexicon($fieldNames[0]);
                     $fieldNames[1] = $this->modx->lexicon($fieldNames[1]);
@@ -359,7 +359,7 @@ class SendIt
     }
 
     /**
-     * @param modX $modx
+     * @param \modX $modx
      * @return void
      */
     public function loadCssJs(): void
@@ -390,11 +390,12 @@ class SendIt
         }
     }
 
+    /**
+     * @return void
+     */
     public function getWebConfig(): void
     {
-        $packageVersion = $this->getPackageVersion();
-        $scriptsVersion = $packageVersion ? '?v=' . md5($packageVersion) : '';
-        //$scriptsVersion = '?v=' . time();
+        $scriptsVersion = '?v=' . $this->getVersion($this->basePath . 'assets/components/sendit/js/web/');
 
         $this->webConfig = [
             'version' => $scriptsVersion,
@@ -409,17 +410,33 @@ class SendIt
         ]);
     }
 
-    private function getPackageVersion(): string
+    /**
+     * @param string $directory
+     * @return int
+     */
+    public function getVersion(string $directory): int
     {
-        $q = $this->modx->newQuery('transport.modTransportPackage');
-        $q->select('signature');
-        $q->sortby('installed', 'DESC');
-        $q->limit(1);
-        $q->prepare();
-        if (!$q->stmt->execute()) {
-            return '';
+        if (!is_dir($directory)) {
+            return 1;
         }
-        return $q->stmt->fetchColumn();
+
+        $latestTime = 1;
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $fileTime = $file->getMTime();
+                if ($fileTime > $latestTime) {
+                    $latestTime = $fileTime;
+                }
+            }
+        }
+
+        return $latestTime;
     }
 
     /**
@@ -437,7 +454,7 @@ class SendIt
             $_FILES[$fieldKey]['error'] = [];
             $_FILES[$fieldKey]['size'] = [];
             foreach ($fileList as $path) {
-                $fullpath = $this->uploaddir . session_id() . '/' . $path;
+                $fullpath = $this->uploaddir . $_COOKIE['siSession'] . '/' . $path;
                 $_FILES[$fieldKey]['name'][] = basename($path);
                 $_FILES[$fieldKey]['type'][] = filetype($fullpath);
                 $_FILES[$fieldKey]['tmp_name'][] = $fullpath;
@@ -858,7 +875,7 @@ class SendIt
 
         $totalCount = $this->modx->event->returnedValues['totalCount'] ?? $totalCount;
 
-        $uploaddir = $this->uploaddir . session_id() . '/';
+        $uploaddir = $this->uploaddir . $_COOKIE['siSession'] . '/';
         $allowExt = !empty($this->params['allowExt']) ? explode(',', $this->params['allowExt']) : [];
         $maxSize = !empty($this->params['maxSize']) ? (float)$this->params['maxSize'] * 1024 * 1024 : 1024 * 1024;
         $maxCount = !empty($this->params['maxCount']) ? (int)$this->params['maxCount'] : 1;
@@ -889,7 +906,7 @@ class SendIt
             }
 
             if (file_exists($uploaddir . $filename)) {
-                $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $filename;
+                $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . $_COOKIE['siSession'] . '/' . $filename;
                 $status = 'success';
             }
             $uploadedSize = $this->session['uploadedSize'][$filename] ?? 0;
@@ -953,7 +970,7 @@ class SendIt
      */
     public function uploadChunk(string $content, array $headers): array
     {
-        $uploaddir = $this->uploaddir . session_id() . '/';
+        $uploaddir = $this->uploaddir . $_COOKIE['siSession'] . '/';
         $filename = $uploaddir . $headers['x-content-name'];
         if (!is_dir($uploaddir)) {
             mkdir($uploaddir, 0777, true);
@@ -964,7 +981,7 @@ class SendIt
                 'filename' => $headers['x-content-name'],
                 'percent' => 100
             ]), [
-                'path' => str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $headers['x-content-name'],
+                'path' => str_replace($this->basePath, '', $this->uploaddir) . $_COOKIE['siSession'] . '/' . $headers['x-content-name'],
                 'percent' => "100%",
                 'filename' => $headers['x-content-name'],
                 'chunkId' => $headers['x-chunk-id'],
@@ -1025,7 +1042,7 @@ class SendIt
         SendIt::removeDir($dir, $this->modx);
 
         return $this->success($msg, [
-            'path' => str_replace($this->basePath, '', $this->uploaddir) . session_id() . '/' . $headers['x-content-name'],
+            'path' => str_replace($this->basePath, '', $this->uploaddir) . $_COOKIE['siSession'] . '/' . $headers['x-content-name'],
             'percent' => "$percent%",
             'filename' => $headers['x-content-name'],
             'chunkId' => $headers['x-chunk-id'],
@@ -1102,9 +1119,10 @@ class SendIt
 
     /**
      * @param string $dir
+     * @param \modX $modx
      * @return void
      */
-    public static function removeDir(string $dir, \Modx $modx): void
+    public static function removeDir(string $dir, \modX $modx): void
     {
         $allowDirs = $modx->getOption('si_allow_dirs', '', 'uploaded_files');
         $allowDirs = explode(',', $allowDirs);
@@ -1121,7 +1139,7 @@ class SendIt
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
                     if (is_dir($dir . $object) && !is_link($dir . $object)) {
-                        SendIt::removeDir($dir . $object);
+                        SendIt::removeDir($dir . $object, $modx);
                     } else {
                         if (file_exists($dir . $object)) {
                             unlink($dir . $object);
@@ -1237,7 +1255,7 @@ class SendIt
      * @param array $paramList
      * @return array
      */
-    private function unsetParams(array $paramList)
+    private function unsetParams(array $paramList): array
     {
         if (!empty($this->unsetParamsList)) {
             foreach ($this->unsetParamsList as $param) {
@@ -1248,7 +1266,7 @@ class SendIt
     }
 
     /**
-     * @param modX $modx
+     * @param \modX $modx
      * @param array|null $values
      * @param string|null $sessionId
      * @param string|null $className
@@ -1256,11 +1274,15 @@ class SendIt
      */
     public static function setSession(\modX $modx, ?array $values = [], ?string $sessionId = '', ?string $className = 'SendIt'): void
     {
+        if (!$sessionId = $sessionId ?: $_COOKIE['siSession']) {
+            return;
+        }
+
         if (!isset($modx->packages['sendit'])) {
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
-        }
-        $sessionId = $sessionId ?: session_id();
+        }       
+
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
             $session = $modx->newObject('siSession');
         }
@@ -1280,7 +1302,7 @@ class SendIt
     }
 
     /**
-     * @param modX $modx
+     * @param \modX $modx
      * @param string|null $sessionId
      * @param string|null $className
      * @return array
@@ -1291,7 +1313,7 @@ class SendIt
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
-        $sessionId = $sessionId ?: session_id();
+        $sessionId = $sessionId ?: $_COOKIE['siSession'];
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
             return [];
         }
@@ -1299,7 +1321,7 @@ class SendIt
     }
 
     /**
-     * @param modX $modx
+     * @param \modX $modx
      * @param string|null $className
      * @return void
      */
@@ -1309,7 +1331,7 @@ class SendIt
             $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
             $modx->addPackage('sendit', $corePath . 'components/sendit/model/');
         }
-        $assetsPath = $modx->getOption('core_path', null, MODX_ASSETS_PATH);
+        $assetsPath = $modx->getOption('assets_path', null, '');
         $uploaddir = $modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
         $uploaddir = str_replace('[[+asseetsUrl]]', $assetsPath, $uploaddir);
         $storageTime = $modx->getOption('si_storage_time', '', 86400);
@@ -1321,5 +1343,17 @@ class SendIt
             }
             $session->remove();
         }
+    }
+
+    /**
+     * @param \modX $modx
+     * @return string
+     */
+    public static function getSessionId(\modX $modx): string
+    {
+        if ($modx->getOption('si_use_custom_session_id', '', false)) {
+            return md5($_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . time());
+        }
+        return session_id();
     }
 }

@@ -1,5 +1,4 @@
 import {Base} from './base.js';
-import {UserBehaviorTracker} from './userbehaviortracker.js';
 
 export class Sending extends Base {
   initialize() {

@@ -31,6 +31,8 @@ $_lang['setting_si_default_admin'] = 'ID администратора по ум�
 $_lang['setting_si_default_admin_desc'] = 'ему будут отправляться письма если настройка si_default_email пуста';
 $_lang['setting_si_allow_dirs'] = 'Список имен папок из которых можно удалять другие папки.';
 $_lang['setting_si_allow_dirs_desc'] = 'указывается через запятую, по умолчанию - uploaded_files';
+$_lang['setting_si_use_custom_session_id'] = 'Использовать кастомный session_id.';
+$_lang['setting_si_use_custom_session_id_desc'] = '';
 
 $_lang['si_msg_loading'] = '[[+filename]]: загружено [[+percent]][[+unit]]';
 $_lang['si_msg_loading_bytes'] = '[[+filename]]: загружено [[+bytes]] [[+unit]] из [[+total]] [[+unit]]';

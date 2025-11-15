@@ -83,9 +83,9 @@ async function runEnhancedBotTest() {
   console.log('\n📊 Итоговый счет:', await getScore());
   const finalScore = await getScore();
 
-  if (finalScore > 70) {
+  if (finalScore > 50) {
     console.log('✅ Детектор успешно определил бота');
-  } else if (finalScore > 40) {
+  } else if (finalScore > 30) {
     console.log('⚠️  Детектор заподозрил бота, но недостаточно уверен');
   } else {
     console.log('❌ Детектор не смог определить бота');

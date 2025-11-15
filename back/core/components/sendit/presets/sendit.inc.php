@@ -76,7 +76,7 @@ return [
         'validate' => 'email:required,password:checkPassLength=^8^,password_confirm:passwordConfirm=^password^,politics:checkbox:required',
         'politics.vTextRequired' => 'Примите наши условия.',
         'password.vTextRequired' => 'Придумайте пароль.',
-        'password.checkPassLength' => 'Пароль должен быть не менее 8 символов.',
+        'password.vTextCheckPassLength' => 'Пароль должен быть не менее 8 символов.',
     ],
     'auth' => [
         'successMessage' => 'Вы успешно авторизованы и будете перенаправлены в личный кабинет.',

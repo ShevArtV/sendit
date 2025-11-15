@@ -172,7 +172,7 @@ async function simulateHumanBehavior() {
     if (finalScore < 30) {
       console.log('✅ Результат: ЧЕЛОВЕК');
       console.log('   Это поведение выглядит естественно и похоже на действия реального пользователя.');
-    } else if (finalScore < 70) {
+    } else if (finalScore < 50) {
       console.log('⚠️  Результат: НЕОПРЕДЕЛЕНО');
       console.log('   Есть некоторые подозрительные моменты, но в целом похоже на человека.');
     } else {

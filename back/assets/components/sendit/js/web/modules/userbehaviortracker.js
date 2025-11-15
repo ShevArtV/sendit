@@ -160,6 +160,7 @@ export class UserBehaviorTracker extends Base {
   analyzePatterns() {
     const now = Date.now();
     const timeSinceLastUpdate = now - (this.metrics.lastUpdateTime || now);
+    const cooldown = timeSinceLastUpdate / (this.config.cooldownTime * 60 * 1000) * 100;
     this.metrics.lastUpdateTime = now;
 
     this.scoreDetails = {
@@ -171,28 +172,43 @@ export class UserBehaviorTracker extends Base {
       patternScore: this.analyzeBehaviorPatterns() * this.config.weights.behaviorPatterns,
     };
 
-    const values = Object.values(this.scoreDetails);
+    let values = Object.values(this.scoreDetails);
     const sum = values.reduce((total, score) => total + score, 0);
-    let totalScore = Math.round(sum / values.length);
-    const cooldown = Math.min(100, Math.max(0, totalScore * this.config.cooldownMultiplier * (timeSinceLastUpdate / 1000)));
+    values = values.filter(value => value > 0);
+    let totalScore = sum >= this.config.maxSum ? 100 : Math.round(sum / (values.length || 1));
+    totalScore = Math.min(100, Math.max(0, totalScore - cooldown));
+    const recentBehavior = (this.calculateRecentBehaviorScore() * this.config.weights.recentBehavior) || totalScore;
+
     if (this.metrics.behaviorHistory.length > this.config.behavior.historySize) {
       this.metrics.behaviorHistory.shift();
     }
-
-    const recentBehavior = this.calculateRecentBehaviorScore();
-    this.suspicionScore = Math.min(100, Math.max(0, totalScore + recentBehavior * this.config.weights.recentBehavior - cooldown));
+    this.suspicionScore = Math.round((recentBehavior + totalScore) / 2);
     this.metrics.behaviorHistory.push({
       time: now, score: this.suspicionScore
     });
 
     if (this.config.debug) {
-      console.log(recentBehavior * this.config.weights.recentBehavior, cooldown, this.suspicionScore, totalScore, this.scoreDetails);
+      console.log({
+        values: values,
+        sum: sum,
+        cooldown: cooldown,
+        timeSinceLastUpdate: timeSinceLastUpdate,
+        suspicionScore: this.suspicionScore,
+        recentBehavior: recentBehavior,
+        totalScore: totalScore,
+        scoreDetails: this.scoreDetails
+      });
     }
   }
 
   calculateRecentBehaviorScore() {
     const recentWindow = this.metrics.behaviorHistory.slice(-this.config.behavior.recentWindow);
-    return recentWindow.reduce((sum, item, idx, arr) => sum + (item.score * (idx + 1) / arr.length), 0);
+    if(!recentWindow.length){
+      return 0;
+    }
+    let recentBehavior = recentWindow.reduce((total, item) => total + item.score , 0);
+    recentBehavior = Math.round(recentBehavior / recentWindow.length);
+    return recentBehavior;
   }
 
   analyzeMouseMovements() {
@@ -255,7 +271,7 @@ export class UserBehaviorTracker extends Base {
 
       if (i > 1) {
         const prevInterval = clicks[i - 1].time - clicks[i - 2].time;
-        if (Math.abs(interval - prevInterval) > 150) {
+        if (Math.abs(interval - prevInterval) > this.config.clicks.naturalVariationInterval) {
           naturalVariation++;
         }
       }
@@ -271,7 +287,6 @@ export class UserBehaviorTracker extends Base {
 
     if (intervals.length > 0) {
       const {avgInterval, stdDev} = this.calculateStats(intervals);
-
       if (stdDev < this.config.clicks.stdDevThreshold && avgInterval < this.config.clicks.avgIntervalThreshold) {
         checkup.intervals = 1;
       }
@@ -313,7 +328,7 @@ export class UserBehaviorTracker extends Base {
 
       if (i > 1) {
         const prevInterval = keystrokes[i - 1].time - keystrokes[i - 2].time;
-        if (Math.abs(interval - prevInterval) > 75) {
+        if (Math.abs(interval - prevInterval) > this.config.keystrokes.naturalVariationInterval) {
           naturalVariation++;
         }
       }
@@ -321,7 +336,6 @@ export class UserBehaviorTracker extends Base {
 
     if (intervals.length > 0) {
       const {avgInterval, stdDev} = this.calculateStats(intervals);
-
       if (stdDev < this.config.keystrokes.stdDevThreshold) {
         checkup.consistentTiming = 1;
         if (avgInterval < this.config.keystrokes.fastTypingThreshold) {
@@ -420,24 +434,26 @@ export class UserBehaviorTracker extends Base {
     const {mouseMovements, clicks, keystrokes} = this.metrics;
 
     // Анализ мышиных движений
-    if (mouseMovements.length > 5) {
+    if (mouseMovements.length >= this.config.mouse.minMovements) {
       const lastMovements = mouseMovements.slice(-5);
       const samePosition = lastMovements.every((m, i, arr) => i === 0 || (Math.abs(m.x - arr[i - 1].x) < 2 && Math.abs(m.y - arr[i - 1].y) < 2));
-      if (samePosition) checkup.click = 1;
+      if (samePosition) checkup.mouse = 1;
+    }else{
+      checkup.mouse = 1;
     }
 
     // Анализ кликов
-    if (clicks.length > 3) {
+    if (clicks.length >= this.config.clicks.minClicks) {
       const intervals = clicks.slice(1).map((click, i) => click.time - clicks[i].time);
       const {variance} = this.calculateStats(intervals);
-      if (variance < 100) checkup.mouse = 1;
+      if (variance < this.config.clicks.minVarianceThreshold) checkup.click = 1;
     }
 
     // Анализ нажатий клавиш
-    if (keystrokes.length > 10) {
+    if (keystrokes.length > this.config.keystrokes.minKeystrokes) {
       const intervals = keystrokes.slice(1).map((keystroke, i) => keystroke.time - keystrokes[i].time);
       const {variance} = this.calculateStats(intervals);
-      if (variance < 50) checkup.keystroke = 1;
+      if (variance < this.config.keystrokes.minVarianceThreshold) checkup.keystroke = 1;
     }
     if (this.config.debug) {
       console.log('patterns', checkup);
@@ -447,11 +463,11 @@ export class UserBehaviorTracker extends Base {
 
   // Вспомогательный метод для вычисления статистики
   calculateStats(values) {
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((sum, value) => sum + Math.pow(value - avg, 2), 0) / values.length;
+    const avgInterval = values.reduce((a, b) => a + b, 0) / values.length;
+    const variance = values.reduce((sum, value) => sum + Math.pow(value - avgInterval, 2), 0) / values.length;
     const stdDev = Math.sqrt(variance);
 
-    return {avg, variance, stdDev};
+    return {avgInterval, variance, stdDev};
   }
 
   calculateItemScore(checkup) {
