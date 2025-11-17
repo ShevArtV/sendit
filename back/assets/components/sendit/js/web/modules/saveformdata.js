@@ -36,32 +36,31 @@ export class SaveFormData extends Base {
     const savedData = localStorage.getItem(root.dataset[this.config.rootKey]) ? JSON.parse(localStorage.getItem(root.dataset[this.config.rootKey])) : {};
     let type = field.type;
     switch (field.tagName) {
-      case 'TEXTAREA':
-        type = 'text';
-        break;
-      case 'SELECT':
-        type = 'select';
-        break;
+    case 'TEXTAREA':
+      type = 'text';
+      break;
+    case 'SELECT':
+      type = 'select';
+      break;
     }
 
     switch (type) {
-      case 'password':
-      case 'file':
-        break;
-      case 'radio':
-      case 'checkbox':
-        savedData[field.name] = savedData[field.name] || [];
-        savedData[field.name].push({value: field.value, checked: field.checked});
-        break;
-      case 'select':
-        savedData[field.name] = [];
-        field.querySelectorAll('option').forEach(option => {
-          savedData[field.name].push({value: option.value, selected: option.selected});
-        });
-        break;
-      default:
-        savedData[field.name] = field.value;
-        break;
+    case 'password':
+    case 'file':
+      break;
+    case 'radio':
+    case 'checkbox':
+      savedData[field.name] = this.saveFieldGroupValues(field.name, root);
+      break;
+    case 'select':
+      savedData[field.name] = [];
+      field.querySelectorAll('option').forEach(option => {
+        savedData[field.name].push({value: option.value, selected: option.selected});
+      });
+      break;
+    default:
+      savedData[field.name] = field.value;
+      break;
     }
 
     if (!this.hub.dispatchEvent(this.events.save, {
@@ -78,6 +77,15 @@ export class SaveFormData extends Base {
     }
 
     localStorage.setItem(root.dataset[this.config.rootKey], JSON.stringify(savedData));
+  }
+
+  saveFieldGroupValues(name, root){
+    const fields = root.querySelectorAll(`input[name="${name}"]`);
+    const output = [];
+    fields.forEach(field => {
+      output.push({value: field.value, checked: field.checked});
+    });
+    return output;
   }
 
   setValues(root) {
@@ -101,41 +109,41 @@ export class SaveFormData extends Base {
     formFields.forEach(field => {
       let type = field.type;
       switch (field.tagName) {
-        case 'TEXTAREA':
-          type = 'text';
-          break;
-        case 'SELECT':
-          type = 'select';
-          break;
+      case 'TEXTAREA':
+        type = 'text';
+        break;
+      case 'SELECT':
+        type = 'select';
+        break;
       }
 
       switch (type) {
-        case 'password':
-        case 'file':
-          break;
-        case 'radio':
-        case 'checkbox':
-          savedData[field.name] = savedData[field.name] || [];
-          for (let i = 0; i < savedData[field.name].length; i++) {
-            if (savedData[field.name][i].value === field.value) {
-              field.checked = savedData[field.name][i].checked;
-            }
+      case 'password':
+      case 'file':
+        break;
+      case 'radio':
+      case 'checkbox':
+        savedData[field.name] = savedData[field.name] || [];
+        for (let i = 0; i < savedData[field.name].length; i++) {
+          if (savedData[field.name][i].value === field.value) {
+            field.checked = savedData[field.name][i].checked;
           }
-          break;
-        case 'select':
-          savedData[field.name] = savedData[field.name] || [];
-          for (let i = 0; i < savedData[field.name].length; i++) {
-            const option = Array.from(field.options).filter(el => el.value === savedData[field.name][i].value);
-            if (option[0]) {
-              option[0].selected = savedData[field.name][i].selected;
-            }
+        }
+        break;
+      case 'select':
+        savedData[field.name] = savedData[field.name] || [];
+        for (let i = 0; i < savedData[field.name].length; i++) {
+          const option = Array.from(field.options).filter(el => el.value === savedData[field.name][i].value);
+          if (option[0]) {
+            option[0].selected = savedData[field.name][i].selected;
           }
-          break;
-        default:
-          if (!field.value) {
-            field.value = savedData[field.name] || '';
-          }
-          break;
+        }
+        break;
+      default:
+        if (!field.value) {
+          field.value = savedData[field.name] || '';
+        }
+        break;
       }
 
       field.dispatchEvent(new CustomEvent(this.events.change, {

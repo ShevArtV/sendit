@@ -82,6 +82,9 @@ export class Sending extends Base {
   }
 
   sendRequest(root, preset = '', params = new FormData(), action = 'send') {
+    if(!preset){
+      return;
+    }
     if (root !== document) {
       if (root.tagName === 'FORM') {
         params = !params.keys().next().done ? params : new FormData(root);
