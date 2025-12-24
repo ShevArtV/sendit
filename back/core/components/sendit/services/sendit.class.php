@@ -1,6 +1,4 @@
 <?php
-
-
 /**
  *
  */
@@ -454,7 +452,7 @@ class SendIt
             $_FILES[$fieldKey]['error'] = [];
             $_FILES[$fieldKey]['size'] = [];
             foreach ($fileList as $path) {
-                $fullpath = $this->uploaddir . $_COOKIE['siSession'] . '/' . $path;
+                $fullpath = $this->uploaddir . $this->session['session_id'] . '/' . $path;
                 $_FILES[$fieldKey]['name'][] = basename($path);
                 $_FILES[$fieldKey]['type'][] = filetype($fullpath);
                 $_FILES[$fieldKey]['tmp_name'][] = $fullpath;
@@ -647,6 +645,7 @@ class SendIt
                 return $this->$status($result['message'], $result['data']);
             }
         }
+
         return $result;
     }
 
@@ -875,7 +874,7 @@ class SendIt
 
         $totalCount = $this->modx->event->returnedValues['totalCount'] ?? $totalCount;
 
-        $uploaddir = $this->uploaddir . $_COOKIE['siSession'] . '/';
+        $uploaddir = $this->uploaddir . $this->session['session_id'] . '/';
         $allowExt = !empty($this->params['allowExt']) ? explode(',', $this->params['allowExt']) : [];
         $maxSize = !empty($this->params['maxSize']) ? (float)$this->params['maxSize'] * 1024 * 1024 : 1024 * 1024;
         $maxCount = !empty($this->params['maxCount']) ? (int)$this->params['maxCount'] : 1;
@@ -906,7 +905,7 @@ class SendIt
             }
 
             if (file_exists($uploaddir . $filename)) {
-                $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . $_COOKIE['siSession'] . '/' . $filename;
+                $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $filename;
                 $status = 'success';
             }
             $uploadedSize = $this->session['uploadedSize'][$filename] ?? 0;
@@ -970,7 +969,7 @@ class SendIt
      */
     public function uploadChunk(string $content, array $headers): array
     {
-        $uploaddir = $this->uploaddir . $_COOKIE['siSession'] . '/';
+        $uploaddir = $this->uploaddir . $this->session['session_id'] . '/';
         $filename = $uploaddir . $headers['x-content-name'];
         if (!is_dir($uploaddir)) {
             mkdir($uploaddir, 0777, true);
@@ -981,7 +980,7 @@ class SendIt
                 'filename' => $headers['x-content-name'],
                 'percent' => 100
             ]), [
-                'path' => str_replace($this->basePath, '', $this->uploaddir) . $_COOKIE['siSession'] . '/' . $headers['x-content-name'],
+                'path' => str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $headers['x-content-name'],
                 'percent' => "100%",
                 'filename' => $headers['x-content-name'],
                 'chunkId' => $headers['x-chunk-id'],
@@ -1042,7 +1041,7 @@ class SendIt
         SendIt::removeDir($dir, $this->modx);
 
         return $this->success($msg, [
-            'path' => str_replace($this->basePath, '', $this->uploaddir) . $_COOKIE['siSession'] . '/' . $headers['x-content-name'],
+            'path' => str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $headers['x-content-name'],
             'percent' => "$percent%",
             'filename' => $headers['x-content-name'],
             'chunkId' => $headers['x-chunk-id'],
@@ -1168,7 +1167,7 @@ class SendIt
             'SendIt' => $this
         ]);
 
-        if (strpos($path, session_id()) === false && !$this->forceRemove) {
+        if (strpos($path, $this->session['session_id']) === false && !$this->forceRemove) {
             return $this->error('si_msg_file_remove_session_err', [], ['filename' => $filename]);
         } else {
             unset($this->session['uploadedSize'][$filename]);
@@ -1317,7 +1316,9 @@ class SendIt
         if (!$session = $modx->getObject('siSession', ['session_id' => $sessionId, 'class_name' => $className])) {
             return [];
         }
-        return $session->get('data') ? json_decode($session->get('data'), true) : [];
+        $sessionData = $session->get('data') ? json_decode($session->get('data'), true) : [];
+        $sessionData['session_id'] = $sessionId;
+        return $sessionData;
     }
 
     /**

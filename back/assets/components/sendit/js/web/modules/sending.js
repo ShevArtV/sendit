@@ -5,6 +5,7 @@ export class Sending extends Base {
     this.events = {
       before: 'si:send:before',
       reset: 'si:send:reset',
+      resetAfter: 'si:send:reset:after',
       after: 'si:send:after',
       success: 'si:send:success',
       error: 'si:send:error',
@@ -294,6 +295,15 @@ export class Sending extends Base {
     } else if (target.value) {
       target.value = '';
     }
+
+    this.hub.dispatchEvent(this.events.resetAfter, {
+      bubbles: true,
+      cancelable: true,
+      detail: {
+        target: target,
+        Sending: this
+      }
+    });
   }
 
   resetAllErrors(target) {
