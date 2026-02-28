@@ -17,6 +17,7 @@ switch ($modx->event->name) {
     case 'OnMODXInit':
         SendIt::clearSession($modx);
         break;
+    case 'OnManagerPageInit':
     case 'OnWebPageInit':
         $alias = !empty($_REQUEST['q']) ? explode('.', basename($_REQUEST['q'])) : [];
         if (isset($alias[1]) && $alias[1] !== 'html') {

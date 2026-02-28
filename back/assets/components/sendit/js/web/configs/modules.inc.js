@@ -181,5 +181,6 @@ export const ModulesConfig = {
     visabilityClass: 'v_hidden',
     disabledClass: 'disabled',
     sendEvent: 'si:send:finish',
+    nosaveAttr: 'data-si-nosave'
   },
 };

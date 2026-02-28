@@ -140,8 +140,8 @@ export class SaveFormData extends Base {
         }
         break;
       default:
-        if (!field.value) {
-          field.value = savedData[field.name] || '';
+        if (!field.value && typeof savedData[field.name] !== 'undefined') {
+          field.value = typeof savedData[field.name] !== 'object' ? savedData[field.name] : '';
         }
         break;
       }
