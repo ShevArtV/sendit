@@ -28,15 +28,23 @@ switch ($modx->event->name) {
         $jsConfigPath = $modx->getOption('si_js_config_path', '', './sendit.inc.js');
         $cookies = !empty($_COOKIE['SendIt']) ? json_decode($_COOKIE['SendIt'], 1) : [];
 
+        $powChallenge = bin2hex(random_bytes(16));
+        $behaviorKey = bin2hex(random_bytes(16));
+
         $data = [
             'simsgantispam' => $modx->lexicon('si_msg_trusted_err'),
             'sitoken' => md5($_SERVER['REMOTE_ADDR'] . time()),
             'sitrusted' => '0',
-            'sijsconfigpath' => $jsConfigPath
+            'sijsconfigpath' => $jsConfigPath,
+            'sipowchallenge' => $powChallenge,
+            'sibehaviorkey' => $behaviorKey,
         ];
         SendIt::setSession($modx, [
             'sitoken' => $data['sitoken'],
-            'sendingLimits' => []
+            'sendingLimits' => [],
+            'powChallenge' => $powChallenge,
+            'powTimestamp' => time(),
+            'behaviorKey' => $behaviorKey,
         ]);
 
         $data = array_merge($cookies, $data);

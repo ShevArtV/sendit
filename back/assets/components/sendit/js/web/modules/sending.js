@@ -109,11 +109,32 @@ export class Sending extends Base {
   }
 
   async fetch(target, url, headers, params, method = 'POST') {
-    if(!params.has('isBot')){
-      const userBehaviorAnalysisResult = this.hub?.UserBehaviorTracker?.requestAnalysis();
-      params.append('isBot', '0');
-      if(userBehaviorAnalysisResult){
-        params.set('isBot', userBehaviorAnalysisResult.isBot ? '1' : '0');
+    const preset = headers['X-SIPRESET'] || '';
+    const protection = window.siConfig?.protectionMap?.[preset] || {};
+
+    if (protection.sign) {
+      try {
+        const signature = await this.hub.BehaviorSign.createSignature();
+        params.append('_behavior_signature', signature);
+      } catch (e) {
+        console.error('BehaviorSign error:', e);
+      }
+    } else {
+      if(!params.has('isBot')){
+        const userBehaviorAnalysisResult = this.hub?.UserBehaviorTracker?.requestAnalysis();
+        params.append('isBot', '0');
+        if(userBehaviorAnalysisResult){
+          params.set('isBot', userBehaviorAnalysisResult.isBot ? '1' : '0');
+        }
+      }
+    }
+
+    if (protection.pow) {
+      try {
+        const nonce = await this.hub.ProofOfWork.solve(protection.powDifficulty || 18);
+        params.append('_pow_nonce', nonce);
+      } catch (e) {
+        console.error('ProofOfWork error:', e);
       }
     }
 
@@ -137,7 +158,7 @@ export class Sending extends Base {
       return;
     }
 
-    if(Number(this.fetchOptions.body.get('isBot')) === 1){
+    if(!protection.sign && Number(this.fetchOptions.body.get('isBot')) === 1){
       this.hub.Notify?.info(this.hub.getComponentCookie('simsgantispam'));
       return;
     }
@@ -147,6 +168,18 @@ export class Sending extends Base {
     const response = await fetch(url, this.fetchOptions);
 
     this.result = await response.json();
+
+    if (this.result.data?._newPowChallenge) {
+      this.hub.ProofOfWork && (this.hub.ProofOfWork.challenge = this.result.data._newPowChallenge);
+      this.hub.setComponentCookie('sipowchallenge', this.result.data._newPowChallenge);
+    }
+    if (this.result.data?._newBehaviorKey) {
+      if (this.hub.BehaviorSign) {
+        this.hub.BehaviorSign.keyHex = this.result.data._newBehaviorKey;
+        this.hub.BehaviorSign.encryptionKey = null;
+      }
+      this.hub.setComponentCookie('sibehaviorkey', this.result.data._newBehaviorKey);
+    }
 
     if (!this.hub.dispatchEvent(this.events.after, {
       bubbles: true,

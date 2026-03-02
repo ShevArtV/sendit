@@ -67,6 +67,16 @@ export const ModulesConfig = {
       minInteractionsPerSecondThreshold: 10,  // Мин. кол-во действий в секунду
     }
   },
+  ProofOfWork: {
+    className: 'ProofOfWork',
+    pathToScripts: '../modules/proofofwork.js',
+    forceLoad: true
+  },
+  BehaviorSign: {
+    className: 'BehaviorSign',
+    pathToScripts: '../modules/behaviorsign.js',
+    forceLoad: true
+  },
   Sending: {
     forceLoad: true,
     className: 'Sending',

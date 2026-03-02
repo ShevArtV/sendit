@@ -9,6 +9,7 @@ export class UserBehaviorTracker extends Base {
       scrolls: [],
       touches: [],
       focusEvents: [],
+      formFocusTimes: {},
       startTime: Date.now(),
       interactions: 0,
       lastUpdateTime: Date.now(),
@@ -71,6 +72,7 @@ export class UserBehaviorTracker extends Base {
     document.addEventListener('touchmove', this.trackTouch.bind(this), eventOptions);
     document.addEventListener('focus', this.trackFocus.bind(this), true);
     document.addEventListener('blur', this.trackFocus.bind(this), true);
+    document.addEventListener('focusin', this.trackFormFocus.bind(this), eventOptions);
   }
 
   addMetricWithLimit(metricArray, eventData) {
@@ -129,6 +131,17 @@ export class UserBehaviorTracker extends Base {
     }
   }
 
+  trackFormFocus(e) {
+    const target = e.target;
+    if (!target || !target.matches('input, select, textarea')) return;
+    const form = target.closest('[data-si-form]');
+    if (!form) return;
+    const formName = form.dataset.siForm;
+    if (formName && !this.metrics.formFocusTimes[formName]) {
+      this.metrics.formFocusTimes[formName] = Date.now();
+    }
+  }
+
   startAutoUpdate() {
     if (!this.config.autoUpdateTime) return;
 
@@ -146,11 +159,17 @@ export class UserBehaviorTracker extends Base {
 
   requestAnalysis() {
     this.analyzePatterns();
+    const now = Date.now();
+    const formFillTimes = {};
+    for (const [formName, focusTime] of Object.entries(this.metrics.formFocusTimes)) {
+      formFillTimes[formName] = now - focusTime;
+    }
     const result = {
       score: Math.round(this.suspicionScore),
       details: {...this.scoreDetails},
       isBot: Math.round(this.suspicionScore) > this.config.minBotScoreAmount,
-      timestamp: Date.now()
+      timestamp: now,
+      formFillTimes: formFillTimes
     };
     this.updateCookie(result);
     this.metrics.interactions = 0;
