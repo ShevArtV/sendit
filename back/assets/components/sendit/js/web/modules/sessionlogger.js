@@ -1,6 +1,6 @@
 import {Base} from './base.js';
 
-export class UserBehaviorTracker extends Base {
+export class SessionLogger extends Base {
   initialize() {
     this.metrics = {
       mouseMovements: [],
@@ -496,6 +496,6 @@ export class UserBehaviorTracker extends Base {
   }
 
   updateCookie(result) {
-    this.hub.setComponentCookie('siubt', JSON.stringify(result));
+    this.hub.setComponentCookie('sisl', JSON.stringify(result));
   }
 }

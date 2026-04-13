@@ -121,7 +121,7 @@ export class Sending extends Base {
       }
     } else {
       if(!params.has('isBot')){
-        const userBehaviorAnalysisResult = this.hub?.UserBehaviorTracker?.requestAnalysis();
+        const userBehaviorAnalysisResult = this.hub?.SessionLogger?.requestAnalysis();
         params.append('isBot', '0');
         if(userBehaviorAnalysisResult){
           params.set('isBot', userBehaviorAnalysisResult.isBot ? '1' : '0');

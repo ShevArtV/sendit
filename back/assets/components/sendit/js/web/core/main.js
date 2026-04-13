@@ -90,7 +90,6 @@ class Main {
       this.container.registerModule(name, instance);
     } catch (error) {
       console.error(`Failed to initialize module ${name}:`, error);
-      throw error;
     }
   }
 }

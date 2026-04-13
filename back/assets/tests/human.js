@@ -4,7 +4,7 @@ async function simulateHumanBehavior() {
 
   // Функция для получения текущего счета
   const getScore = () => {
-    const analysis = window.SendIt?.UserBehaviorTracker?.requestAnalysis();
+    const analysis = window.SendIt?.SessionLogger?.requestAnalysis();
     return analysis?.score || 0;
   };
 
@@ -162,7 +162,7 @@ async function simulateHumanBehavior() {
 
     // Получаем итоговый счет
     const finalScore = await getScore();
-    const analysis = window.SendIt?.UserBehaviorTracker?.requestAnalysis();
+    const analysis = window.SendIt?.SessionLogger?.requestAnalysis();
 
     // Выводим результат
     console.log('\n🎯 РЕЗУЛЬТАТ ТЕСТА');

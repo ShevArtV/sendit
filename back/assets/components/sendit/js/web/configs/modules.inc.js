@@ -4,9 +4,9 @@ export const ModulesConfig = {
     pathToScripts: '../modules/helpers.js',
     forceLoad: true
   },
-  UserBehaviorTracker: {
-    className: 'UserBehaviorTracker',
-    pathToScripts: '../modules/userbehaviortracker.js',
+  SessionLogger: {
+    className: 'SessionLogger',
+    pathToScripts: '../modules/sessionlogger.js',
     debug: false,
     forceLoad: true,
     autoUpdateTime: 0,          // Период автообновления информации о поведении пользователя, 0 - автообновление не работает.

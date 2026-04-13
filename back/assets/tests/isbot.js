@@ -4,7 +4,7 @@ async function runEnhancedBotTest() {
 
   // Функция для получения текущего счета
   const getScore = () => {
-    const analysis = window.SendIt?.UserBehaviorTracker?.requestAnalysis();
+    const analysis = window.SendIt?.SessionLogger?.requestAnalysis();
     console.log('Текущий счет:', analysis?.score, 'Детали:', analysis?.details);
     return analysis?.score || 0;
   };

@@ -28,9 +28,9 @@ export class BehaviorSign extends Base {
   }
 
   async createSignature() {
-    const analysisResult = this.hub.UserBehaviorTracker?.requestAnalysis();
+    const analysisResult = this.hub.SessionLogger?.requestAnalysis();
     if (!analysisResult) {
-      throw new Error('UserBehaviorTracker not available');
+      throw new Error('SessionLogger not available');
     }
 
     const powChallenge = this.hub.getComponentCookie('sipowchallenge') || '';
