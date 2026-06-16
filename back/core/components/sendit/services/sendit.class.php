@@ -2,6 +2,8 @@
 /**
  *
  */
+include_once dirname(__FILE__) . '/siLogger.class.php';
+
 class SendIt
 {
     /**
@@ -192,7 +194,7 @@ class SendIt
             'checkbox'
         ];
         if (empty($this->presets)) {
-            $this->modx->log(1, 'Путь к пресетам не задан или задан не корректно!');
+            (new siLogger($this->modx))->write('Путь к пресетам не задан или задан некорректно', [], 'error', 'preset');
         }
 
         $this->modx->lexicon->load('sendit:default');
@@ -1473,7 +1475,7 @@ class SendIt
             $session = $modx->newObject('siSession');
         }
         if (!$session) {
-            $modx->log(1, print_r('Table si_sessions not found', 1));
+            (new siLogger($modx))->write('Таблица si_sessions не найдена', [], 'error', 'session');
             return;
         }
         $item = $session->get('data') ? json_decode($session->get('data'), true) : [];

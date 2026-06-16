@@ -3,6 +3,8 @@
 /**
  *
  */
+include_once dirname(__FILE__) . '/siLogger.class.php';
+
 class Identification
 {
     /**
@@ -166,7 +168,7 @@ class Identification
         $user = $modx->getObject('modUser', $q);
 
         if (!$user) {
-            $modx->log(1, "[Sendit|Identification::loginWithoutPass] Пользователь $username не существует, не активирован или заблокирован.");
+            (new siLogger($modx))->write("Пользователь {$username} не существует, не активирован или заблокирован", ['username' => $username], 'warning', 'auth');
             return false;
         }
         $session_id = session_id();
@@ -205,7 +207,10 @@ class Identification
         $usernameField = !empty($this->config['usernameField']) ? $this->config['usernameField'] : 'username';
 
         if (!$this->values[$usernameField] || !$this->values[$passwordField]) {
-            $this->modx->log(1, print_r([$usernameField,$passwordField,$this->values], 1));
+            (new siLogger($this->modx))->write('Не заполнен логин или пароль при авторизации', [
+                'usernameField' => $usernameField,
+                'passwordField' => $passwordField,
+            ], 'debug', 'auth');
             $this->hook->addError($this->config['errorFieldName'], $this->modx->lexicon('si_msg_login_err'));
             return false;
         }

@@ -1,4 +1,8 @@
 <?php
+$_lang['setting_si_debug'] = 'Логирование';
+$_lang['setting_si_debug_desc'] = 'Логи пишутся в mxLogger (единственный приёмник). По умолчанию: Да (логирование включено).';
+$_lang['setting_si_log_level'] = 'Минимальный уровень логирования';
+$_lang['setting_si_log_level_desc'] = 'Записи ниже уровня не пишутся: debug, info, warning, error. По умолчанию: error. Требует mxLogger.';
 $_lang['setting_si_storage_time'] = 'Время хранения загруженных файлов во временной папке.';
 $_lang['setting_si_storage_time_desc'] = 'по умолчанию 86400 секунд';
 $_lang['setting_si_precision'] = 'Точность округления процентов загрузки файлов.';
