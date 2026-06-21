@@ -1,3 +1,10 @@
+2.8.3-pl
+==============
+- Исправил PHP warning "Undefined array key onestepform" в SendIt::getExtends() —
+  обращение к несуществующему пресету при extends теперь через `?? []`.
+- Исправил PHP warning "Undefined array key siSession" в плагине sendit (OnHandleRequest) —
+  чтение cookie заменено на `empty($_COOKIE['siSession'])`.
+
 2.8.2-pl
 ==============
 - Логирование переведено на mxLogger (единственный приёмник). Добавлен класс siLogger

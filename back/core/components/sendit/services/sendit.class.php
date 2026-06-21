@@ -330,7 +330,7 @@ class SendIt
             $preset[1] = $preset[0];
             $preset[0] = $this->presetKey;
         }
-        $presetData = $this->presets[$preset[0]][$preset[1]];
+        $presetData = $this->presets[$preset[0]][$preset[1]] ?? [];
         if ($presetData && is_array($presetData)) {
             $extends = array_merge($extends, $presetData);
             if (!empty($presetData['extends'])) {

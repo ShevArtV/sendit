@@ -8,7 +8,7 @@ require_once $corePath . 'components/sendit/services/sendit.class.php';
 
 switch ($modx->event->name) {
     case 'OnHandleRequest':
-        if(!$_COOKIE['siSession']){
+        if(empty($_COOKIE['siSession'])){
             $_COOKIE['siSession'] = SendIt::getSessionId($modx);
             $expires = time() + $modx->getOption('si_storage_time', '', 86400);
             setcookie('siSession', $_COOKIE['siSession'], $expires, '/', '', false, true);
