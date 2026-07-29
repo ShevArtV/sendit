@@ -46,6 +46,9 @@ $_lang['si_msg_file_extention_err'] = 'Файл имеет недопустим�
 $_lang['si_msg_files_count_err'] = 'Можно загрузить ещё [[+left]] [[+declension]].';
 $_lang['si_msg_files_maxcount_err'] = 'Можно загрузить максимум [[+left]] [[+declension]].';
 $_lang['si_msg_files_loaded_err'] = 'Добавлено максимальное количество файлов.';
+$_lang['si_msg_file_name_err'] = '[[+filename]]: недопустимое имя файла.';
+$_lang['si_msg_file_not_validated_err'] = '[[+filename]]: файл не прошёл проверку перед загрузкой.';
+$_lang['si_msg_file_upload_params_err'] = '[[+filename]]: некорректные параметры загрузки.';
 $_lang['si_msg_loaded'] = '[[+filename]]: файл загружен полностью.';
 $_lang['si_msg_queue'] = ' в очереди';
 

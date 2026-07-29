@@ -7,6 +7,25 @@ include_once dirname(__FILE__) . '/siLogger.class.php';
 class SendIt
 {
     /**
+     * Расширения, которые сервер способен выполнить сам.
+     */
+    private const BLOCKED_EXTENSIONS = [
+        'php', 'php3', 'php4', 'php5', 'php6', 'php7', 'php8', 'phps', 'pht', 'phtm', 'phtml', 'phar',
+        'shtml', 'shtm', 'cgi', 'pl', 'py', 'rb', 'sh', 'bash', 'exe', 'com', 'bat', 'cmd', 'msi',
+        'jsp', 'jspx', 'asp', 'aspx', 'asa', 'asax', 'cer', 'htaccess', 'htpasswd', 'user', 'ini', 'conf',
+    ];
+
+    /**
+     * Предел длины сегмента имени.
+     */
+    private const FILE_NAME_LIMIT = 100;
+
+    /**
+     * Предел длины имени вместе с относительным подпутём.
+     */
+    private const FILE_PATH_LIMIT = 255;
+
+    /**
      * @var modX
      */
     public modX $modx;
@@ -101,6 +120,13 @@ class SendIt
      * @var bool
      */
     public bool $forceRemove = false;
+
+    /**
+     * Защита от рекурсии, если плагин позовёт нормализацию из обработчика события.
+     *
+     * @var bool
+     */
+    private bool $inSanitizeFileName = false;
     /**
      * @var array
      */
@@ -508,9 +534,17 @@ class SendIt
             $_FILES[$fieldKey]['tmp_name'] = [];
             $_FILES[$fieldKey]['error'] = [];
             $_FILES[$fieldKey]['size'] = [];
+            $uploaddir = $this->getSessionUploadDir();
+            if ($uploaddir === '') {
+                return;
+            }
             foreach ($fileList as $path) {
-                $fullpath = $this->uploaddir . $this->session['session_id'] . '/' . $path;
-                $_FILES[$fieldKey]['name'][] = basename($path);
+                // список приходит из POST — путь наружу каталога сессии сюда попасть не должен
+                $fullpath = $this->resolveInsideDir($uploaddir, str_replace('\\', '/', trim($path)));
+                if ($fullpath === '' || !is_file($fullpath)) {
+                    continue;
+                }
+                $_FILES[$fieldKey]['name'][] = basename($fullpath);
                 $_FILES[$fieldKey]['type'][] = filetype($fullpath);
                 $_FILES[$fieldKey]['tmp_name'][] = $fullpath;
                 $_FILES[$fieldKey]['error'][] = 0;
@@ -1056,15 +1090,20 @@ class SendIt
 
         $totalCount = $this->modx->event->returnedValues['totalCount'] ?? $totalCount;
 
-        $uploaddir = $this->uploaddir . $this->session['session_id'] . '/';
+        $uploaddir = $this->getSessionUploadDir();
+        if ($uploaddir === '') {
+            return $this->error('si_msg_file_remove_session_err', [], ['filename' => '']);
+        }
         $allowExt = !empty($this->params['allowExt']) ? explode(',', $this->params['allowExt']) : [];
         $maxSize = !empty($this->params['maxSize']) ? (float)$this->params['maxSize'] * 1024 * 1024 : 1024 * 1024;
         $maxCount = !empty($this->params['maxCount']) ? (int)$this->params['maxCount'] : 1;
         $status = 'success';
         $data['fileNames'] = [];
         $data['errors'] = [];
+        $data['names'] = [];
         $data['portion'] = !empty($this->params['portion']) ? $this->params['portion'] : 0.1;
         $data['threadsQuantity'] = !empty($this->params['threadsQuantity']) ? $this->params['threadsQuantity'] : 1;
+        $validated = [];
 
         if ($maxCount < ($totalCount + count($filesData))) {
             $left = $maxCount - $totalCount;
@@ -1080,14 +1119,25 @@ class SendIt
         }
         foreach ($filesData as $filename => $filesize) {
             $data['aliases'][$filename] = $filename;
-            list($nameWithoutExt, $fileExt) = $this->getFileParts($filename);
+
+            $safeName = $this->sanitizeFileName((string)$filename, 'upload', $uploaddir);
+            $target = $safeName !== '' ? $this->resolveInsideDir($uploaddir, $safeName) : '';
+            if ($safeName === '' || $target === '') {
+                $data['errors'][$filename] = $this->modx->lexicon('si_msg_file_name_err');
+                $data['fileNames'][] = $filename;
+                $status = 'error';
+                continue;
+            }
+            $data['names'][$filename] = $safeName;
+
+            list($nameWithoutExt, $fileExt) = $this->splitFileName($safeName);
             $dir = $uploaddir . $nameWithoutExt . '/';
             if ($status === 'error') {
                 $data['fileNames'][] = $filename;
             }
 
-            if (file_exists($uploaddir . $filename)) {
-                $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $filename;
+            if (file_exists($target)) {
+                $data['loaded'][$filename] = str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $safeName;
                 $status = 'success';
             }
             $uploadedSize = $this->session['uploadedSize'][$filename] ?? 0;
@@ -1105,17 +1155,39 @@ class SendIt
                     ];
                 }
             }
+            $isValid = true;
             if ($maxSize <= $filesize) {
-                $data['errors'][$filename] .= $this->modx->lexicon('si_msg_file_size_err');
+                $data['errors'][$filename] = ($data['errors'][$filename] ?? '') . $this->modx->lexicon('si_msg_file_size_err');
                 $data['fileNames'][] = $filename;
                 $status = 'error';
+                $isValid = false;
             }
             if (!in_array($fileExt, $allowExt)) {
-                $data['errors'][$filename] .= $this->modx->lexicon('si_msg_file_extention_err');
+                $data['errors'][$filename] = ($data['errors'][$filename] ?? '') . $this->modx->lexicon('si_msg_file_extention_err');
                 $data['fileNames'][] = $filename;
                 $status = 'error';
+                $isValid = false;
+            }
+
+            if ($isValid) {
+                // uploadChunk принимает только то, что прошло эту проверку, и с теми же параметрами
+                $validated[$safeName] = [
+                    'client' => (string)$filename,
+                    'size' => (float)$filesize,
+                    'ext' => $fileExt,
+                    'preset' => $this->presetName,
+                    'portion' => (float)$data['portion'],
+                    'maxSize' => $maxSize,
+                ];
             }
         }
+
+        if ($validated) {
+            $uploadFiles = array_merge($this->session['uploadFiles'] ?? [], $validated);
+            SendIt::setSession($this->modx, ['uploadFiles' => $uploadFiles]);
+            $this->session['uploadFiles'] = $uploadFiles;
+        }
+
         $data['fileNames'] = array_unique($data['fileNames']);
         $data['queueMsg'] = $this->modx->lexicon('si_msg_queue');
         return $this->$status('', $data);
@@ -1151,57 +1223,94 @@ class SendIt
      */
     public function uploadChunk(string $content, array $headers): array
     {
-        $uploaddir = $this->uploaddir . $this->session['session_id'] . '/';
-        $filename = $uploaddir . $headers['x-content-name'];
+        $requestedName = (string)($headers['x-content-name'] ?? '');
+        $chunkId = $headers['x-chunk-id'] ?? '';
+        $totalLength = $headers['x-total-length'] ?? '';
+        $displayName = basename(str_replace('\\', '/', $requestedName));
+
+        // приём чанка разрешён только для файла, который уже прошёл серверную валидацию в этой сессии
+        list($safeName, $file) = $this->findValidatedFile($requestedName);
+        if (!$file) {
+            return $this->error('si_msg_file_not_validated_err', [], ['filename' => $displayName]);
+        }
+
+        if (!is_numeric($chunkId) || (int)$chunkId < 0 || !is_numeric($totalLength) || (float)$totalLength <= 0) {
+            return $this->error('si_msg_file_upload_params_err', [], ['filename' => $displayName]);
+        }
+
+        $chunkId = (int)$chunkId;
+        $totalLength = (float)$totalLength;
+        $portion = !empty($file['portion']) ? (float)$file['portion'] * 1024 * 1024 : 1024 * 1024;
+        $maxSize = !empty($file['maxSize']) ? (float)$file['maxSize'] : 0;
+        if ($totalLength > (float)$file['size'] || ($maxSize && $totalLength > $maxSize)) {
+            return $this->error('si_msg_file_size_err', [], ['filename' => $displayName]);
+        }
+        if (strlen($content) > $portion + 1024 || $chunkId > ceil((float)$file['size'] / $portion)) {
+            return $this->error('si_msg_file_upload_params_err', [], ['filename' => $displayName]);
+        }
+
+        $uploaddir = $this->getSessionUploadDir();
+        $filename = $uploaddir !== '' ? $this->resolveInsideDir($uploaddir, $safeName) : '';
+        if ($filename === '') {
+            return $this->error('si_msg_file_name_err', [], ['filename' => $displayName]);
+        }
+
+        $relativePath = str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $safeName;
+
         if (!is_dir($uploaddir)) {
             mkdir($uploaddir, 0777, true);
         }
 
-        if (file_exists($uploaddir . $filename)) {
+        if (file_exists($filename)) {
             return $this->success($this->modx->lexicon('si_msg_loading', [
-                'filename' => $headers['x-content-name'],
+                'filename' => $displayName,
                 'percent' => 100
             ]), [
-                'path' => str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $headers['x-content-name'],
+                'path' => $relativePath,
                 'percent' => "100%",
-                'filename' => $headers['x-content-name'],
-                'chunkId' => $headers['x-chunk-id'],
+                'filename' => $requestedName,
+                'savedName' => $safeName,
+                'chunkId' => $chunkId,
             ]);
         }
 
-        list($nameWithoutExt, $fileExt) = $this->getFileParts($headers['x-content-name']);
+        list($nameWithoutExt, $fileExt) = $this->splitFileName($safeName);
 
-        $dir = $uploaddir . $nameWithoutExt . '/';
-        $chunkName = $headers['x-chunk-id'] . '.' . $fileExt;
+        $dir = $this->resolveInsideDir($uploaddir, $nameWithoutExt . '/');
+        if ($dir === '') {
+            return $this->error('si_msg_file_name_err', [], ['filename' => $displayName]);
+        }
+        $dir .= '/';
+        $chunkName = $fileExt !== '' ? $chunkId . '.' . $fileExt : (string)$chunkId;
         $chunkPath = $dir . $chunkName;
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
 
-        if (!file_exists($chunkPath) || filesize($chunkPath) < $headers['content-length']) {
+        if (!file_exists($chunkPath) || filesize($chunkPath) < strlen($content)) {
             file_put_contents($chunkPath, $content);
         }
 
-        $portion = $this->params['portion'] * 1024 * 1024;
         $countChunks = count(scandir($dir)) - 2;
         $uploadedSize = $countChunks * $portion;
-        if ($uploadedSize > $headers['x-total-length']) {
-            $uploadedSize = $headers['x-total-length'];
+        if ($uploadedSize > $totalLength) {
+            $uploadedSize = $totalLength;
         }
-        $percent = $this->getPercent($uploadedSize, $headers['x-total-length']);
-        $msg = $this->getLoadingMsg($percent, $uploadedSize, $headers['x-total-length'], $headers['x-content-name']);
-        if ($uploadedSize < $headers['x-total-length']) {
+        $percent = $this->getPercent($uploadedSize, $totalLength);
+        $msg = $this->getLoadingMsg($percent, $uploadedSize, $totalLength, $displayName);
+        if ($uploadedSize < $totalLength) {
             return $this->success($msg, [
                 'percent' => "$percent%",
-                'bytes' => $this->session['uploadedSize'][$headers['x-content-name']] ?? 0,
-                'filename' => $headers['x-content-name'],
-                'chunkId' => $headers['x-chunk-id'],
+                'bytes' => $this->session['uploadedSize'][$safeName] ?? 0,
+                'filename' => $requestedName,
+                'savedName' => $safeName,
+                'chunkId' => $chunkId,
             ]);
         }
 
         $i = 0;
-        while (file_exists($dir . $i . '.' . $fileExt)) {
-            $name = $dir . $i . '.' . $fileExt;
+        while (file_exists($dir . ($fileExt !== '' ? $i . '.' . $fileExt : (string)$i))) {
+            $name = $dir . ($fileExt !== '' ? $i . '.' . $fileExt : (string)$i);
             if (!file_exists($filename)) {
                 $fout = fopen($filename, "wb");
             } else {
@@ -1223,10 +1332,11 @@ class SendIt
         SendIt::removeDir($dir, $this->modx);
 
         return $this->success($msg, [
-            'path' => str_replace($this->basePath, '', $this->uploaddir) . $this->session['session_id'] . '/' . $headers['x-content-name'],
+            'path' => $relativePath,
             'percent' => "$percent%",
-            'filename' => $headers['x-content-name'],
-            'chunkId' => $headers['x-chunk-id'],
+            'filename' => $requestedName,
+            'savedName' => $safeName,
+            'chunkId' => $chunkId,
         ]);
     }
 
@@ -1242,6 +1352,266 @@ class SendIt
         unset($nameParts[$lastIndex]);
         $nameWithoutExt = implode('.', $nameParts);
         return [$nameWithoutExt, $fileExt];
+    }
+
+    /**
+     * Приводит имя файла к правилам пакета, затем даёт проекту переопределить его
+     * событием siOnSanitizeFileName и в любом случае прогоняет результат через
+     * обязательный security-постфильтр.
+     *
+     * @param string $name имя, пришедшее от клиента
+     * @param string $context upload|remove
+     * @param string $directory каталог, в который планируется запись
+     * @return string безопасное имя (может содержать относительный подпуть) или '' при отказе
+     */
+    public function sanitizeFileName(string $name, ?string $context = 'upload', ?string $directory = ''): string
+    {
+        $sanitized = $this->hardenFileName($this->defaultFileName($name));
+        if ($this->inSanitizeFileName) {
+            return $sanitized;
+        }
+
+        $this->inSanitizeFileName = true;
+        list(, $extension) = $this->splitFileName($sanitized);
+        $this->modx->invokeEvent('siOnSanitizeFileName', [
+            'name' => $name,
+            'sanitized' => $sanitized,
+            'extension' => $extension,
+            'directory' => $directory,
+            'context' => $context ?: 'upload',
+            'formName' => $this->formName,
+            'presetName' => $this->presetName,
+            'SendIt' => $this,
+        ]);
+        $this->inSanitizeFileName = false;
+
+        $custom = '';
+        if (isset($this->modx->event->returnedValues['name'])) {
+            $custom = $this->modx->event->returnedValues['name'];
+            // иначе имя, возвращённое для одного файла, протечёт на все следующие в цикле
+            unset($this->modx->event->returnedValues['name']);
+        }
+
+        if (!is_string($custom) || trim($custom) === '') {
+            return $sanitized;
+        }
+
+        // всё, что вернул проект, обязано пройти постфильтр: событие задаёт стиль имени, но не безопасность
+        return $this->hardenFileName($custom);
+    }
+
+    /**
+     * Правила именования пакета по умолчанию. Совпадают с translitName() клиентского
+     * загрузчика, чтобы без плагина проекта имя на сервере и на клиенте не расходилось.
+     *
+     * @param string $name
+     * @return string
+     */
+    private function defaultFileName(string $name): string
+    {
+        list($base, $extension) = $this->splitFileName(basename(str_replace('\\', '/', $name)));
+        $base = $this->translitFileName($base);
+        $extension = $this->normalizeExtension($extension);
+
+        return $extension !== '' ? $base . '.' . $extension : $base;
+    }
+
+    /**
+     * Обязательный security-постфильтр: срезает путь наружу, управляющие символы,
+     * схлопывает точки и обезвреживает исполняемые расширения.
+     *
+     * @param string $name
+     * @return string
+     */
+    private function hardenFileName(string $name): string
+    {
+        $name = str_replace(["\0", '\\'], ['', '/'], $name);
+        $segments = explode('/', $name);
+        $filePart = (string)array_pop($segments);
+
+        $directories = [];
+        foreach ($segments as $segment) {
+            $segment = $this->translitFileName($segment);
+            if ($segment === '') {
+                continue;
+            }
+            $directories[] = mb_substr($segment, 0, self::FILE_NAME_LIMIT, 'UTF-8');
+        }
+
+        list($base, $extension) = $this->splitFileName($filePart);
+        $base = $this->translitFileName($base);
+        $extension = $this->normalizeExtension($extension);
+
+        if ($extension !== '' && in_array($extension, self::BLOCKED_EXTENSIONS, true)) {
+            // shell.php -> shell-php: исполняемое расширение уезжает в базу имени, а не остаётся хвостом
+            $base = $this->translitFileName($base . '-' . $extension);
+            $extension = '';
+        }
+
+        if ($base === '') {
+            return '';
+        }
+
+        $base = mb_substr($base, 0, self::FILE_NAME_LIMIT, 'UTF-8');
+        $filePart = $extension !== '' ? $base . '.' . $extension : $base;
+        $result = implode('/', array_merge($directories, [$filePart]));
+
+        return mb_strlen($result, 'UTF-8') > self::FILE_PATH_LIMIT ? '' : $result;
+    }
+
+    /**
+     * @param string $filename
+     * @return array [база имени, расширение]
+     */
+    private function splitFileName(string $filename): array
+    {
+        $position = strrpos($filename, '.');
+        if ($position === false) {
+            return [$filename, ''];
+        }
+
+        return [substr($filename, 0, $position), substr($filename, $position + 1)];
+    }
+
+    /**
+     * @param string $extension
+     * @return string
+     */
+    private function normalizeExtension(string $extension): string
+    {
+        return strtolower((string)preg_replace('/[^0-9a-zA-Z]/', '', $extension));
+    }
+
+    /**
+     * Транслитерация без ext-intl: результат обязан быть одинаковым на любом хостинге,
+     * иначе одно и то же имя даёт разные файлы на разных серверах.
+     *
+     * @param string $value
+     * @return string
+     */
+    private function translitFileName(string $value): string
+    {
+        $converter = [
+            'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd',
+            'е' => 'e', 'ё' => 'e', 'ж' => 'zh', 'з' => 'z', 'и' => 'i',
+            'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm', 'н' => 'n',
+            'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't',
+            'у' => 'u', 'ф' => 'f', 'х' => 'h', 'ц' => 'c', 'ч' => 'ch',
+            'ш' => 'sh', 'щ' => 'sch', 'ь' => '', 'ы' => 'y', 'ъ' => '',
+            'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
+        ];
+
+        $value = mb_strtolower($value, 'UTF-8');
+        $result = '';
+        $length = mb_strlen($value, 'UTF-8');
+        for ($i = 0; $i < $length; $i++) {
+            $char = mb_substr($value, $i, 1, 'UTF-8');
+            $result .= $converter[$char] ?? $char;
+        }
+
+        $result = (string)preg_replace('/[^0-9a-z]+/', '-', $result);
+
+        return trim($result, '-');
+    }
+
+    /**
+     * Резолвит относительный путь внутри каталога и гарантирует, что он оттуда не вышел.
+     *
+     * @param string $base каталог, за пределы которого выходить нельзя
+     * @param string $relative относительный путь
+     * @return string абсолютный путь или '' если путь небезопасен
+     */
+    private function resolveInsideDir(string $base, string $relative): string
+    {
+        if ($relative === '' || strpos($relative, "\0") !== false) {
+            return '';
+        }
+
+        $relative = str_replace('\\', '/', $relative);
+        if (strpos($relative, '/') === 0 || preg_match('/^[a-z]:/i', $relative)) {
+            return '';
+        }
+
+        $baseCanonical = $this->canonicalizePath($base);
+        $target = $this->canonicalizePath($baseCanonical . '/' . $relative);
+        if ($baseCanonical === '' || $target === '' || strpos($target, $baseCanonical . '/') !== 0) {
+            return '';
+        }
+
+        // существующий путь дополнительно проверяем по realpath — на случай симлинка внутри каталога
+        if (file_exists($target)) {
+            $realTarget = realpath($target);
+            $realBase = realpath($baseCanonical);
+            if (!$realTarget || !$realBase || strpos($realTarget . '/', rtrim($realBase, '/') . '/') !== 0) {
+                return '';
+            }
+        }
+
+        return $target;
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    private function canonicalizePath(string $path): string
+    {
+        $path = str_replace('\\', '/', $path);
+        $isAbsolute = strpos($path, '/') === 0;
+        $result = [];
+        foreach (explode('/', $path) as $part) {
+            if ($part === '' || $part === '.') {
+                continue;
+            }
+            if ($part === '..') {
+                array_pop($result);
+                continue;
+            }
+            $result[] = $part;
+        }
+
+        return ($isAbsolute ? '/' : '') . implode('/', $result);
+    }
+
+    /**
+     * @return string каталог загрузок текущей сессии или '' если сессии нет
+     */
+    private function getSessionUploadDir(): string
+    {
+        $sessionId = (string)($this->session['session_id'] ?? '');
+        // без session_id границей стал бы весь каталог загрузок, то есть файлы всех сессий
+        if ($sessionId === '' || $sessionId !== basename(str_replace('\\', '/', $sessionId)) || $sessionId === '.' || $sessionId === '..') {
+            return '';
+        }
+
+        return $this->uploaddir . $sessionId . '/';
+    }
+
+    /**
+     * Ищет файл в списке прошедших серверную валидацию: сначала по итоговому имени,
+     * затем по имени, под которым файл прислал клиент (совместимость со старым JS).
+     *
+     * @param string $name
+     * @return array [итоговое имя, запись] либо ['', []]
+     */
+    private function findValidatedFile(string $name): array
+    {
+        if ($name === '') {
+            return ['', []];
+        }
+
+        $files = $this->session['uploadFiles'] ?? [];
+        if (isset($files[$name])) {
+            return [$name, $files[$name]];
+        }
+
+        foreach ($files as $safeName => $file) {
+            if (isset($file['client']) && $file['client'] === $name) {
+                return [(string)$safeName, $file];
+            }
+        }
+
+        return ['', []];
     }
 
     /**
@@ -1341,39 +1711,89 @@ class SendIt
      */
     public function removeFile(string $path, ?bool $nomsg = false): array
     {
-        $filename = basename($path);
-        $dir = str_replace($filename, '', $path);
+        $filename = basename(str_replace('\\', '/', $path));
+        $uploaddir = $this->getSessionUploadDir();
+        if ($uploaddir === '' && !$this->forceRemove) {
+            return $this->error('si_msg_file_remove_session_err', [], ['filename' => $filename]);
+        }
+
+        if ($this->forceRemove) {
+            // внутренний вызов из кода проекта — путь считается доверенным
+            $target = $path;
+            $chunkDir = str_replace($filename, '', $path);
+        } else {
+            $relative = $this->getPathInsideUploadDir($path, $uploaddir);
+            $target = $relative !== '' ? $this->resolveInsideDir($uploaddir, $relative) : '';
+            if ($target === '') {
+                return $this->error('si_msg_file_remove_session_err', [], ['filename' => $filename]);
+            }
+            // файла может не быть, если загрузка оборвалась — тогда убираем каталог его чанков,
+            // а не каталог сессии целиком, как делала прежняя реализация
+            list($nameWithoutExt) = $this->splitFileName($relative);
+            $chunkDir = $nameWithoutExt !== '' ? $this->resolveInsideDir($uploaddir, $nameWithoutExt . '/') : '';
+        }
 
         $this->modx->invokeEvent('OnBeforeFileRemove', [
-            'path' => $path,
+            'path' => $target,
             'SendIt' => $this
         ]);
 
-        if (strpos($path, $this->session['session_id']) === false && !$this->forceRemove) {
-            return $this->error('si_msg_file_remove_session_err', [], ['filename' => $filename]);
-        } else {
-            unset($this->session['uploadedSize'][$filename]);
-            SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize'] ?? []]);
+        unset($this->session['uploadedSize'][$filename]);
+        SendIt::setSession($this->modx, ['uploadedSize' => $this->session['uploadedSize'] ?? []]);
 
-            if (file_exists($path)) {
-                unlink($path);
-            } else {
-                if (file_exists($dir)) {
-                    $this->removeDir($dir, $this->modx);
-                }
+        if (!empty($this->session['uploadFiles'])) {
+            $uploadFiles = $this->session['uploadFiles'];
+            list($safeName) = $this->findValidatedFile(ltrim(str_replace($uploaddir, '', $target), '/'));
+            if ($safeName !== '') {
+                unset($uploadFiles[$safeName]);
+                SendIt::setSession($this->modx, ['uploadFiles' => $uploadFiles]);
+                $this->session['uploadFiles'] = $uploadFiles;
             }
-
-            $msg = 'si_msg_file_remove_success';
-            if ($nomsg) {
-                $msg = '';
-            }
-
-            return $this->success($msg, [
-                'filename' => $filename,
-                'path' => str_replace($this->basePath, '', $path),
-                'nomsg' => $nomsg
-            ]);
         }
+
+        if (file_exists($target)) {
+            unlink($target);
+        } elseif ($chunkDir && file_exists($chunkDir)) {
+            $this->removeDir($chunkDir, $this->modx);
+        }
+
+        $msg = 'si_msg_file_remove_success';
+        if ($nomsg) {
+            $msg = '';
+        }
+
+        return $this->success($msg, [
+            'filename' => $filename,
+            'path' => str_replace($this->basePath, '', $path),
+            'nomsg' => $nomsg
+        ]);
+    }
+
+    /**
+     * Переводит присланный клиентом путь в путь относительно каталога загрузок сессии.
+     *
+     * @param string $path
+     * @param string $uploaddir
+     * @return string относительный путь или '' если путь ведёт наружу
+     */
+    private function getPathInsideUploadDir(string $path, string $uploaddir): string
+    {
+        $path = str_replace('\\', '/', $path);
+        if ($path === '' || strpos($path, "\0") !== false) {
+            return '';
+        }
+
+        $absolute = strpos($path, $this->basePath) === 0
+            ? $path
+            : rtrim($this->basePath, '/') . '/' . ltrim($path, '/');
+
+        $absolute = $this->canonicalizePath($absolute);
+        $base = $this->canonicalizePath($uploaddir);
+        if ($base === '' || strpos($absolute, $base . '/') !== 0) {
+            return '';
+        }
+
+        return substr($absolute, strlen($base) + 1);
     }
 
     /**

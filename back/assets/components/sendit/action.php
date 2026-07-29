@@ -47,8 +47,9 @@ switch ($action) {
         break;
 
     case 'removeFile':
-        $path = MODX_BASE_PATH . $_POST['path'];
-        $nomsg = (bool)$_POST['nomsg'];
+        // путь не склеиваем с базой: SendIt сам резолвит его внутри каталога загрузок сессии
+        $path = (string)($_POST['path'] ?? '');
+        $nomsg = (bool)($_POST['nomsg'] ?? false);
         $res = $sendit->removeFile($path, $nomsg);
         break;
 }

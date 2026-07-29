@@ -133,6 +133,7 @@ class FileUploader {
     this.chunksQueue = {};
     this.filesQueue = [];
     this.filesInQueue = new Map();
+    this.names = {};
     this.queueMsg = '';
     this.times = {};
     this.field.value = '';
@@ -153,6 +154,14 @@ class FileUploader {
     this.validateFiles(result.filesData);
   }
 
+  /**
+   * Итоговое имя файла на сервере. Пока сервер не ответил на validate_files,
+   * работаем по локальному правилу — оно совпадает с правилом пакета по умолчанию.
+   */
+  resolveName(filename) {
+    return this.names[filename] || this.translitName(filename);
+  }
+
   async sendEventHandler(detail) {
     const {result, action} = detail;
     const files = Array.from(this.field.files);
@@ -160,6 +169,8 @@ class FileUploader {
     switch (action) {
     case 'validate_files':
       this.queueMsg = result.data.queueMsg;
+      // имена, под которыми сервер сохранит файлы: их мог переопределить плагин проекта
+      this.names = Object.assign(this.names, result.data.names || {});
       if (result.success) {
         if (result.data.loaded) {
           this.addLoadFiles(result.data.loaded);
@@ -170,7 +181,7 @@ class FileUploader {
         this.prepareUpload(result.data, form);
       } else {
         if (result.data.fileNames && result.data.fileNames.length) {
-          const res = this.removeFromFileList(files, result.data.fileNames);
+          const res = this.removeFromFileList(files, result.data.fileNames, true);
           this.field.files = res.files;
           if (!this.field.files) return false;
           this.prepareUpload(result.data, form);
@@ -187,10 +198,11 @@ class FileUploader {
   addLoadFiles(loaded) {
     for (let filename in loaded) {
       const file = this.getFileByName(filename);
-      this.filesInQueue.set(filename, file);
-      this.filePath[filename] = loaded[filename];
-      this.renderPreview(filename);
-      this.addToList(filename);
+      const savedName = this.resolveName(filename);
+      this.filesInQueue.set(savedName, file);
+      this.filePath[savedName] = loaded[filename];
+      this.renderPreview(savedName);
+      this.addToList(savedName);
     }
   }
 
@@ -266,7 +278,7 @@ class FileUploader {
 
   addFileToQueue() {
     for (let i = 0; i < this.field.files.length; i++) {
-      const filename = this.translitName(this.field.files[i].name);
+      const filename = this.resolveName(this.field.files[i].name);
       if (this.filesInQueue.has(filename)) {
         continue;
       }
@@ -280,10 +292,10 @@ class FileUploader {
     let index = 0;
     if (el) {
       for (let i = 0; i < this.filesQueue.length; i++) {
-        if (el.dataset[this.config.progressIdKey] === this.filesQueue[i].name) {
+        if (el.dataset[this.config.progressIdKey] === this.resolveName(this.filesQueue[i].name)) {
           index = i;
           if (this.filesQueue[index]) {
-            const filename = this.translitName(this.filesQueue[index].name);
+            const filename = this.resolveName(this.filesQueue[index].name);
             this.removeProgressBar(filename, false);
             this.filesInQueue.delete(filename);
           }
@@ -300,7 +312,7 @@ class FileUploader {
       this.finishUpload();
       return;
     }
-    const filename = this.translitName(file.name);
+    const filename = this.resolveName(file.name);
     const parts = filename.split('.');
     const chunksQuantity = Math.ceil(file.size / this.portion);
     const totalChunks = new Array(chunksQuantity).fill().map((_, index) => index);
@@ -405,14 +417,15 @@ class FileUploader {
     }
   }
 
-  removeFromFileList(files, fileNameList) {
+  removeFromFileList(files, fileNameList, byOriginal = false) {
     const newFileList = new DataTransfer();
     const filesData = {};
     files.map(file => {
-      const filename = this.translitName(file.name);
+      const filename = byOriginal ? file.name : this.resolveName(file.name);
       if (!fileNameList.includes(filename)) {
         newFileList.items.add(file);
-        filesData[filename] = file.size;
+        // на сервер уходит исходное имя: правила именования применяет он, а не клиент
+        filesData[file.name] = file.size;
       }
     });
     return {filesData, files: newFileList.files};
