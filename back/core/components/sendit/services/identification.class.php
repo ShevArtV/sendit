@@ -290,6 +290,10 @@ class Identification
             $extended = !empty($this->values['extended']) ? str_replace('&quot;', '"', $this->values['extended']) : '';
             $extended = $extended ? json_decode($extended, 1) : [];
             $this->values['extended'] = array_merge($profileExtended, $extended);
+            // пароль сменили вручную — гасим ещё живую ссылку восстановления, иначе она откатит пароль
+            if (!empty($this->values['password'])) {
+                unset($this->values['extended']['activate_pass_before'], $this->values['extended']['temp_password']);
+            }
             $this->values['dob'] = !empty($this->values['dob']) ? strtotime($this->values['dob']) : $profile->get('dob');
             $userData = $user->toArray();
             unset($userData['password']);
@@ -348,7 +352,7 @@ class Identification
                 return false;
             }
             $extended = $profile->get('extended');
-            $extended['activate_pass_before'] = time() + $this->config['activationUrlTime'] ?: time() + 60 * 60 * 3; // срок жизни ссылки на активацию
+            $extended['activate_pass_before'] = time() + ($this->config['activationUrlTime'] ?: 60 * 60 * 3); // срок жизни ссылки на активацию
             $extended['temp_password'] = $this->generateCode($this->modx);
             if ($this->config['autoLogin']) {
                 $extended['autologin'] = [
@@ -541,7 +545,7 @@ class Identification
         $confirmParams['lu'] = $this->base64url_encode($this->modx->user->get('username'));
         $profile = $this->modx->user->getOne('Profile');
         $extended = $profile->get('extended');
-        $extended['activate_before'] = time() + $this->config['activationUrlTime'] ?? time() + 60 * 60 * 3;
+        $extended['activate_before'] = time() + ($this->config['activationUrlTime'] ?? 60 * 60 * 3);
         $profile->set('extended', $extended);
         $profile->save();
         return $this->modx->makeUrl($activationResourceId, '', $confirmParams, 'full');
@@ -621,17 +625,29 @@ class Identification
             $extended = $profile->get('extended');
             $password = $extended['temp_password'] ?? '';
             $activateBefore = $extended['activate_pass_before'] ?? 0;
-            unset($extended['activate_pass_before'], $extended['temp_password']);
-            $profile->set('extended', $extended);
-            $profile->save();
 
+            // срок ссылки истёк: временный пароль больше не нужен, чистим профиль
             if ($activateBefore - time() <= 0) {
+                if (isset($extended['activate_pass_before']) || isset($extended['temp_password'])) {
+                    unset($extended['activate_pass_before'], $extended['temp_password']);
+                    $profile->set('extended', $extended);
+                    $profile->save();
+                }
                 return [];
             }
-            if ($password) {
-                $user->set('password', $password);
-                $user->save();
+
+            if (!$password) {
+                return [];
             }
+
+            $user->set('password', $password);
+            // пароль не сохранён (например, событие OnUserBeforeSave) — ссылку не гасим, переход можно повторить
+            if (!$user->save()) {
+                return [];
+            }
+
+            // временный пароль остаётся в профиле до истечения срока ссылки:
+            // повторный переход (предпросмотр письма, антивирус почты) выставит тот же пароль
             $userData = array_merge($profile->toArray(), $user->toArray());
 
             if ($toPls && $userData) {
