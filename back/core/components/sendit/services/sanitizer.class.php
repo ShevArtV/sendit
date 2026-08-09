@@ -1,70 +1,65 @@
 <?php
 /**
- * Дополнительная санитизация строки перед использованием в SQL
- * ВАЖНО: Это НЕ заменяет подготовленные выражения!
+ * Нейтральная нормализация входных значений и защита от известных SQLi-последовательностей.
+ * SQL-безопасность потребляющего кода обеспечивают только prepared statements.
  */
 class Sanitizer
 {
-    private const EMAIL_REGEXP = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
-
-    private const DANGEROUS_PATTERNS = [
-        '/\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE|TRUNCATE|ALTER|CREATE|SHOW|DESCRIBE|GRANT|REVOKE|COMMIT|ROLLBACK|MERGE|CALL)\b/i',
-        '/;.*--/',
-        '/\/\*.*\*\//',
-        '/--\s+/',
-        '/#.*$/',
-        '/WAITFOR\s+DELAY/i',
-        '/XP_/i',
-        '/sp_/i',
-        '/@@/',
-        '/@\w+/',
-        '/CHAR\(\d+\)/',
-        '/0x[0-9A-Fa-f]+/',
-        '/BENCHMARK\(/i',
-        '/SLEEP\(/i',
-        '/LOAD_FILE\(/i',
-        '/INTO\s+(OUTFILE|DUMPFILE)/i',
-        '/CONCAT_WS\(/i',
-        '/GROUP_CONCAT\(/i',
-        '/INFORMATION_SCHEMA/i',
-        '/sys\./i',
-        '/pg_/i'
+    private const SQL_INJECTION_PATTERNS = [
+        '/[\'"`)\]]\s*(?:OR|AND)\s*(?:[\'"`][^\'"`]*[\'"`]|\d+|TRUE|FALSE|NULL)\s*(?:=|!=|<>|<=|>=|LIKE|REGEXP)\s*(?:[\'"`][^\'"`]*[\'"`]?|\d+|TRUE|FALSE|NULL)/i',
+        '/\bUNION\s+(?:ALL\s+)?SELECT\b/i',
+        '/;\s*(?:SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC(?:UTE)?|CALL)\b/i',
+        '/[\'"`]\s*(?:--|#|\/\*)/',
+        '/\b(?:SLEEP|BENCHMARK|LOAD_FILE|UPDATEXML|EXTRACTVALUE)\s*\(/i',
+        '/\b(?:INTO\s+(?:OUTFILE|DUMPFILE)|INFORMATION_SCHEMA)\b/i'
     ];
 
     /**
-     * Дополнительная санитизация строки
+     * Нормализует значение, не меняя его SQL-экранированием.
      */
     public static function process($input)
     {
         if ($input === null || $input === '') {
             return $input;
         }
-        if(is_array($input)){
+        if (is_array($input)) {
             foreach ($input as $key => $value) {
                 $input[$key] = self::process($value);
             }
             return $input;
         }
 
-        if(preg_match(self::EMAIL_REGEXP, $input)){
-            return $input;
-        }
-
-        // Удаляем нулевые байты
+        // Нулевые байты не должны доходить до хранилищ и файловых API.
         $input = str_replace("\0", '', $input);
 
-        // Удаляем опасные SQL паттерны
-        foreach (self::DANGEROUS_PATTERNS as $pattern) {
-            $input = preg_replace($pattern, '', $input);
+        return trim($input);
+    }
+
+    /**
+     * Отсекает известные SQLi-последовательности до вызова snippet-а.
+     * Это defence in depth, а не замена параметризованных запросов.
+     */
+    public static function isSqlInjection($input): bool
+    {
+        if (is_array($input)) {
+            foreach ($input as $value) {
+                if (self::isSqlInjection($value)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        // Экранируем специальные символы (дополнительная мера)
-        $input = addslashes($input);
+        if (!is_string($input) && !is_numeric($input)) {
+            return false;
+        }
 
-        // Удаляем избыточные экранирования
-        $input = str_replace(['\\\\', "\\'", '\\"'], ['\\', "'", '"'], $input);
+        foreach (self::SQL_INJECTION_PATTERNS as $pattern) {
+            if (preg_match($pattern, (string)$input)) {
+                return true;
+            }
+        }
 
-        // Обрезаем пробелы
-        return trim($input);
+        return false;
     }
 }

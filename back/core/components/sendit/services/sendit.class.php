@@ -133,6 +133,11 @@ class SendIt
     private array $unsetParamsList;
 
     /**
+     * @var array<string, bool>
+     */
+    private array $sqlInjectionFields = [];
+
+    /**
      * @var array
      */
     public array $webConfig = [];
@@ -623,6 +628,9 @@ class SendIt
             return;
         }
         if (!is_array($value)) {
+            if ($this->sanitizer->isSqlInjection($value)) {
+                $this->sqlInjectionFields[$key] = true;
+            }
             $this->newValue = $this->sanitizer->process($value);
             $this->modx->invokeEvent('senditOnSetValue', [
                 'key' => $key,
@@ -695,6 +703,10 @@ class SendIt
      */
     public function process()
     {
+        if (!empty($this->sqlInjectionFields)) {
+            return $this->error('si_msg_sql_injection_err');
+        }
+
         $originalPowChallenge = $this->session['powChallenge'] ?? '';
 
         if (!empty($this->params['usePoW'])) {

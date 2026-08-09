@@ -64,5 +64,6 @@ $_lang['si_msg_login_err'] = 'Не указан логин или пароль.'
 $_lang['si_msg_username_err'] = 'Не найден username.';
 $_lang['si_msg_pow_err'] = 'Проверка не пройдена. Обновите страницу и попробуйте снова.';
 $_lang['si_msg_behavior_err'] = 'Не удалось подтвердить подлинность запроса.';
+$_lang['si_msg_sql_injection_err'] = 'Запрос отклонён по соображениям безопасности.';
 $_lang['si_default_formname'] = 'Форма по умолчанию.';
 $_lang['si_default_subject'] = 'Письмо с сайта [[+host]]';
