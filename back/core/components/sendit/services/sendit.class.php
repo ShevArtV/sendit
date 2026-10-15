@@ -1079,6 +1079,9 @@ class SendIt
                 $redirectUrl = $this->modx->makeUrl($this->params['redirectTo'], '', '', 'full');
                 $data['redirectUrl'] = $redirectUrl;
             }
+            if (!$data['redirectUrl'] && !empty($this->params['reloadPage'])) {
+                $data['redirectUrl'] = $_SERVER['HTTP_REFERER'] ?? '';
+            }
         }
 
         return ['success' => $success, 'message' => $message, 'data' => $data];

@@ -15,7 +15,7 @@ class siUserOrders extends siCabinet
      * Оплата доступна только способу с обработчиком (msPayment.class): у «наличных» онлайн-оплаты нет.
      * @param \modX $modx
      * @param array $order поля msOrder; payment_class можно передать, чтобы не читать способ оплаты из БД
-     * @return array ['tocart' => bool, 'repeat' => bool, 'pay' => bool, 'cancel' => bool]
+     * @return array ['tocart' => bool, 'repeat' => bool, 'pay' => bool, 'cancel' => bool, 'return' => bool]
      */
     public static function getOrderActions(\modX $modx, array $order): array
     {
@@ -32,7 +32,21 @@ class siUserOrders extends siCabinet
                 && in_array($status, self::getIdsOption($modx, 'si_cabinet_pay_statuses', '1'), true),
             'cancel' => in_array('cancel', $enabled, true)
                 && in_array($status, self::getIdsOption($modx, 'si_cabinet_cancel_statuses', '1'), true),
+            'return' => in_array('return', $enabled, true)
+                && in_array($status, self::getIdsOption($modx, 'si_cabinet_return_statuses', '3'), true)
+                && self::inReturnPeriod($modx, (string)($order['createdon'] ?? '')),
         ];
+    }
+
+    /**
+     * @param \modX $modx
+     * @param string $createdon
+     * @return bool
+     */
+    protected static function inReturnPeriod(\modX $modx, string $createdon): bool
+    {
+        $days = (int)$modx->getOption('si_cabinet_return_days', null, 14);
+        return !$days || strtotime($createdon) >= time() - $days * 86400;
     }
 
     /**

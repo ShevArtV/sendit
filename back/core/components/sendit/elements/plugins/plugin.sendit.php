@@ -64,6 +64,19 @@ switch ($modx->event->name) {
         break;
     case 'msOnCreateOrder':
         require_once $corePath . 'components/sendit/services/minishop/orderfields.class.php';
+        require_once $corePath . 'components/sendit/services/minishop/savedcart.class.php';
         siOrderFields::clear($modx);
+        siSavedCart::clear($modx, is_object($msOrder ?? null) ? (int)$msOrder->get('user_id') : 0);
+        break;
+    case 'msOnAddToCart':
+    case 'msOnChangeInCart':
+    case 'msOnRemoveFromCart':
+    case 'msOnEmptyCart':
+        require_once $corePath . 'components/sendit/services/minishop/savedcart.class.php';
+        siSavedCart::save($modx, $cart ?? null);
+        break;
+    case 'OnWebLogin':
+        require_once $corePath . 'components/sendit/services/minishop/savedcart.class.php';
+        siSavedCart::restore($modx, $user ?? null);
         break;
 }

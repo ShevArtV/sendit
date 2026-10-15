@@ -19,6 +19,8 @@ $events = array(
     'siOnSanitizeFileName',
     'siOnBeforeUserCabinetAction',
     'siOnUserCabinetAction',
+    'siOnBeforeSendCode',
+    'siOnCodeLogin',
 );
 
 foreach ($events as $name) {

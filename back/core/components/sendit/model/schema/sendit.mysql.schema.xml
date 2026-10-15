@@ -26,4 +26,13 @@
 			<column key="user_id" length="" collation="A" null="false" />
 		</index>
 	</object>
+	<object class="siUserCart" table="si_user_carts" extends="xPDOSimpleObject">
+		<field key="user_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false" default="0" index="unique" />
+		<field key="data" dbtype="text" phptype="string" null="true" />
+		<field key="updatedon" dbtype="datetime" phptype="datetime" null="true" />
+
+		<index alias="user_id" name="user_id" primary="false" unique="true" type="BTREE" >
+			<column key="user_id" length="" collation="A" null="false" />
+		</index>
+	</object>
 </model>

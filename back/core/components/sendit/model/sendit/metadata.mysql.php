@@ -5,5 +5,6 @@ $xpdo_meta_map = array (
   array (
     0 => 'siSession',
     1 => 'siUserAddress',
+    2 => 'siUserCart',
   ),
 );

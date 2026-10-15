@@ -1,3 +1,24 @@
+2.10.0-pl
+==============
+- Добавил вход и регистрацию по одноразовому коду (только MODX 2): сниппет siSendCode, валидатор
+  siCheckCode, хук siCodeIdentification, пресеты code_send, code_send_register, code_auth,
+  code_register, пример формы siExampleCodeAuthForm. Код хранится HMAC-хэшем под ключом получателя,
+  а не сессии; лимиты codeTtl, codeResendDelay, codeAttempts, codeHourlyLimit, codeLength задаются
+  в пресете. Телефон ищется по цифрам, без учёта маски в профиле.
+- Доставку кода пакет не реализует: проект пишет класс с интерфейсом siCodeSender (SMS, Telegram,
+  почта) и подключает его настройками si_code_sender, si_code_sender_path или параметрами пресета
+  codeSender, codeSenderPath.
+- Добавил события siOnBeforeSendCode (подменить код или запретить отправку) и siOnCodeLogin.
+- Добавил сохранённую корзину покупателя (таблица si_user_carts, действие savecart): корзина
+  сохраняется на событиях корзины miniShop2 и возвращается при входе с другого устройства;
+  совпавшая позиция получает большее количество, а не сумму. Работает при ms2_tmp_storage=session.
+- Добавил заявку на возврат из кабинета (действие return, пресет order_return): выбор позиций
+  и количества, причина, комментарий. Настройки si_cabinet_return_statuses и
+  si_cabinet_return_days. Что делать с заявкой, решает проект на siOnUserCabinetAction
+  (method requestReturn).
+- Параметр пресета reloadPage работает для любых пресетов, а не только кабинета.
+- Чанки кабинета и примеры форм свёрстаны в стиле остальных примеров пакета.
+
 2.9.0-pl
 ==============
 - Добавил работу покупателя с заказами miniShop2 (только MODX 2): список заказов с составом

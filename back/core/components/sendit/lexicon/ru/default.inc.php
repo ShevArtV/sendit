@@ -69,7 +69,7 @@ $_lang['si_default_formname'] = 'Форма по умолчанию.';
 $_lang['si_default_subject'] = 'Письмо с сайта [[+host]]';
 
 $_lang['setting_si_cabinet_actions'] = 'Действия в кабинете покупателя';
-$_lang['setting_si_cabinet_actions_desc'] = 'Через запятую: tocart — товары заказа в корзину, repeat — повторить заказ, pay — оплатить заказ, cancel — отменить заказ, addresses — адреса доставки. Пустое значение выключает все действия. По умолчанию: tocart,repeat,pay,cancel,addresses.';
+$_lang['setting_si_cabinet_actions_desc'] = 'Через запятую: tocart — товары заказа в корзину, repeat — повторить заказ, pay — оплатить заказ, cancel — отменить заказ, return — заявка на возврат, addresses — адреса доставки, savecart — сохранять корзину покупателя между входами (только при ms2_tmp_storage = session). Пустое значение выключает все действия. По умолчанию: tocart,repeat,pay,cancel,return,addresses,savecart.';
 $_lang['setting_si_cabinet_checkout_id'] = 'Страница оформления заказа';
 $_lang['setting_si_cabinet_checkout_id_desc'] = 'ID ресурса, на который ведёт повтор заказа. Параметр пресета redirectTo важнее. По умолчанию: 0 (без перехода).';
 $_lang['setting_si_cabinet_cancel_statuses'] = 'Статусы, из которых покупатель может отменить заказ';
@@ -95,3 +95,27 @@ $_lang['si_msg_cabinet_address_saved'] = 'Адрес сохранён.';
 $_lang['si_msg_cabinet_address_removed'] = 'Адрес удалён.';
 $_lang['si_msg_cabinet_address_default'] = 'Адрес выбран основным.';
 $_lang['si_msg_cabinet_address_applied'] = 'Адрес подставлен в заказ.';
+$_lang['setting_si_cabinet_return_statuses'] = 'Статусы, в которых покупатель может оформить возврат';
+$_lang['setting_si_cabinet_return_statuses_desc'] = 'ID статусов miniShop2 через запятую. Саму заявку обрабатывает проект на событии siOnUserCabinetAction (method requestReturn). По умолчанию: 3 (Отправлен).';
+$_lang['setting_si_cabinet_return_days'] = 'Срок для возврата, дней';
+$_lang['setting_si_cabinet_return_days_desc'] = 'Сколько дней с даты заказа доступна заявка на возврат. 0 — без ограничения. По умолчанию: 14.';
+$_lang['setting_si_code_sender'] = 'Класс отправки кода входа';
+$_lang['setting_si_code_sender_desc'] = 'Класс проекта, реализующий интерфейс siCodeSender (SMS, Telegram, почта). Параметр пресета codeSender важнее.';
+$_lang['setting_si_code_sender_path'] = 'Файл класса отправки кода';
+$_lang['setting_si_code_sender_path_desc'] = 'Путь к файлу класса, плейсхолдеры {core_path} и {base_path}. Например: {core_path}elements/classes/smscodesender.class.php. Параметр пресета codeSenderPath важнее.';
+
+$_lang['si_msg_cabinet_return_err'] = 'По этому заказу возврат недоступен.';
+$_lang['si_msg_cabinet_return_empty'] = 'Укажите количество товаров к возврату.';
+$_lang['si_msg_cabinet_return_count_err'] = 'Количество к возврату больше, чем в заказе: [[+name]].';
+$_lang['si_msg_cabinet_return_success'] = 'Заявка на возврат отправлена.';
+
+$_lang['si_msg_code_sent'] = 'Код отправлен.';
+$_lang['si_msg_code_recipient_err'] = 'Укажите, куда отправить код.';
+$_lang['si_msg_code_delay_err'] = 'Повторно запросить код можно через [[+seconds]] сек.';
+$_lang['si_msg_code_limit_err'] = 'Слишком много запросов кода. Попробуйте позже.';
+$_lang['si_msg_code_sender_err'] = 'Отправка кода не настроена.';
+$_lang['si_msg_code_send_err'] = 'Не удалось отправить код. Попробуйте позже.';
+$_lang['si_msg_code_wrong_err'] = 'Неверный код.';
+$_lang['si_msg_code_expired_err'] = 'Код устарел, запросите новый.';
+$_lang['si_msg_code_user_exists_err'] = 'Пользователь уже зарегистрирован, войдите по коду.';
+$_lang['si_msg_code_user_nf'] = 'Пользователь не найден, зарегистрируйтесь.';

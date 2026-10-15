@@ -9,7 +9,7 @@ include_once dirname(__DIR__) . '/siLogger.class.php';
  */
 abstract class siCabinet
 {
-    public const ACTIONS = ['tocart', 'repeat', 'pay', 'cancel', 'addresses'];
+    public const ACTIONS = ['tocart', 'repeat', 'pay', 'cancel', 'return', 'addresses', 'savecart'];
     /** Публичные методы-действия класса => действие из si_cabinet_actions */
     protected const METHODS = [];
 

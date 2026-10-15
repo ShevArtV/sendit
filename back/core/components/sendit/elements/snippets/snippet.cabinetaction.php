@@ -1,7 +1,7 @@
 <?php
 /**
  * Действия кабинета покупателя для пресетов SendIt: 'snippet' => 'siCabinetAction', 'method' => '...'.
- * Заказы: toCart, repeat, pay, cancel. Адреса: save, remove, setDefault, apply.
+ * Заказы: toCart, repeat, pay, cancel. Возврат: requestReturn. Адреса: save, remove, setDefault, apply.
  *
  * @var \modX $modx
  * @var array $scriptProperties
@@ -13,10 +13,11 @@ if (!$SendIt instanceof SendIt) {
 $corePath = $modx->getOption('core_path', null, MODX_CORE_PATH);
 require_once $corePath . 'components/sendit/services/minishop/orders.class.php';
 require_once $corePath . 'components/sendit/services/minishop/addresses.class.php';
+require_once $corePath . 'components/sendit/services/minishop/orderreturn.class.php';
 
 $method = (string)($scriptProperties['method'] ?? '');
 unset($scriptProperties['SendIt']);
-foreach (['siUserOrders', 'siUserAddresses'] as $class) {
+foreach (['siUserOrders', 'siUserOrderReturn', 'siUserAddresses'] as $class) {
     if ($class::handles($method)) {
         return (new $class($modx, $SendIt, $scriptProperties))->run($method);
     }
