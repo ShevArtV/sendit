@@ -17,6 +17,8 @@ $modx->getService('error', 'error.modError');
 $groupName = 'SendIt';
 $events = array(
     'siOnSanitizeFileName',
+    'siOnBeforeUserCabinetAction',
+    'siOnUserCabinetAction',
 );
 
 foreach ($events as $name) {

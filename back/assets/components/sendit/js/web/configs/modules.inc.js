@@ -193,4 +193,10 @@ export const ModulesConfig = {
     sendEvent: 'si:send:finish',
     nosaveAttr: 'data-si-nosave'
   },
+  OrderFields: {
+    className: 'OrderFields',
+    pathToScripts: '../modules/orderfields.js',
+    rootSelector: '#msOrder',
+    successEvent: 'si:send:success'
+  },
 };

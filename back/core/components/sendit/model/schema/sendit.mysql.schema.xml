@@ -14,4 +14,16 @@
 			<column key="createdon" length="" collation="A" null="false" />
 		</index>
 	</object>
+	<object class="siUserAddress" table="si_user_addresses" extends="xPDOSimpleObject">
+		<field key="user_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false" default="0" index="index" />
+		<field key="name" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
+		<field key="is_default" dbtype="tinyint" precision="1" attributes="unsigned" phptype="boolean" null="false" default="0" />
+		<field key="data" dbtype="text" phptype="string" null="true" />
+		<field key="createdon" dbtype="datetime" phptype="datetime" null="true" />
+		<field key="updatedon" dbtype="datetime" phptype="datetime" null="true" />
+
+		<index alias="user_id" name="user_id" primary="false" unique="false" type="BTREE" >
+			<column key="user_id" length="" collation="A" null="false" />
+		</index>
+	</object>
 </model>

@@ -1,3 +1,22 @@
+2.9.0-pl
+==============
+- Добавил работу покупателя с заказами miniShop2 (только MODX 2): список заказов с составом
+  (сниппет siUserOrders, render пресета user_orders с пагинацией), перенос позиций в корзину,
+  повтор с переходом на страницу оформления, оплата существующего заказа через его способ
+  оплаты, отмена. Пресеты order_tocart, order_repeat, order_pay, order_cancel.
+- Добавил адреса доставки покупателя (таблица si_user_addresses, сниппет siUserAddresses):
+  сохранение, удаление, адрес по умолчанию и быстрый выбор на странице оформления. Пресеты
+  address_save, address_remove, address_default, address_apply. JS-модуль OrderFields
+  заполняет форму #msOrder выбранным адресом.
+- Выбранные в кабинете поля держатся в сессии SendIt и подставляются на msOnBeforeAddToOrder,
+  пока покупатель не поправит поле сам; без выбора подставляется адрес по умолчанию.
+- Набор действий кабинета настраивается в системных настройках: si_cabinet_actions,
+  si_cabinet_checkout_id, si_cabinet_cancel_statuses, si_cabinet_pay_statuses.
+- Добавил события siOnBeforeUserCabinetAction (поправить данные действия или запретить его)
+  и siOnUserCabinetAction (после выполнения).
+- Работа идёт через контракт miniShop2 (cart->add, order->add, changeOrderStatus,
+  msPayment::send), без привязки к конкретным обработчикам корзины и заказа.
+
 2.8.6-pl
 ==============
 - SECURITY: известные SQLi-последовательности в полях SendIt отклоняются до запуска

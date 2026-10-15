@@ -55,4 +55,15 @@ switch ($modx->event->name) {
         $SendIt = new SendIt($modx);
         $SendIt->loadCssJs();
         break;
+    case 'msOnBeforeAddToOrder':
+        require_once $corePath . 'components/sendit/services/minishop/orderfields.class.php';
+        $cabinetValue = siOrderFields::onBeforeAddToOrder($modx, (string)$key, $value);
+        if ($cabinetValue !== null) {
+            $modx->event->returnedValues['value'] = $cabinetValue;
+        }
+        break;
+    case 'msOnCreateOrder':
+        require_once $corePath . 'components/sendit/services/minishop/orderfields.class.php';
+        siOrderFields::clear($modx);
+        break;
 }
