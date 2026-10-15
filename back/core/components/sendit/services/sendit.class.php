@@ -3,6 +3,7 @@
  *
  */
 include_once dirname(__FILE__) . '/siLogger.class.php';
+include_once dirname(__FILE__) . '/redirect.class.php';
 
 class SendIt
 {
@@ -1074,11 +1075,7 @@ class SendIt
             $success = true;
 
             $data['redirectTimeout'] = $this->params['redirectTimeout'] ?? 2000;
-            $data['redirectUrl'] = $this->params['redirectTo'] ?? '';
-            if (!empty($this->params['redirectTo']) && (int)$this->params['redirectTo']) {
-                $redirectUrl = $this->modx->makeUrl($this->params['redirectTo'], '', '', 'full');
-                $data['redirectUrl'] = $redirectUrl;
-            }
+            $data['redirectUrl'] = siRedirect::url($this->modx, $this->params['redirectTo'] ?? '');
             if (!$data['redirectUrl'] && !empty($this->params['reloadPage'])) {
                 $data['redirectUrl'] = $_SERVER['HTTP_REFERER'] ?? '';
             }

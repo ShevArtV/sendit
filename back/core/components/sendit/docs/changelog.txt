@@ -17,6 +17,10 @@
   si_cabinet_return_days. Что делать с заявкой, решает проект на siOnUserCabinetAction
   (method requestReturn).
 - Параметр пресета reloadPage работает для любых пресетов, а не только кабинета.
+- Добавил настройку si_cabinet_page_id — страница кабинета. Пресеты входа и регистрации (auth,
+  sms_auth, sms_register, code_auth, code_register, afterLoginRedirectId в register) ведут на неё
+  значением redirectTo = cabinet, менять пресеты под проект не нужно. По умолчанию 5, как было
+  зашито в пресетах; 0 — без перехода. ID или URL в пресете по-прежнему важнее настройки.
 - Чанки кабинета и примеры форм свёрстаны в стиле остальных примеров пакета.
 
 2.9.0-pl

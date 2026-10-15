@@ -75,7 +75,7 @@ return [
         'activation' => 1,
         'rememberme' => 1,
         'authenticateContexts' => 'web',
-        'afterLoginRedirectId' => 5,
+        'afterLoginRedirectId' => 'cabinet',
         'autoLogin' => 1,
         'redirectTo' => '',
         'passwordField' => '',
@@ -97,7 +97,7 @@ return [
 
         'method' => 'login',
 
-        'redirectTo' => 5,
+        'redirectTo' => 'cabinet',
         'redirectTimeout' => 3000,
         'usernameField' => 'email',
 
@@ -149,7 +149,7 @@ return [
 
         'rememberme' => 1,
         'authenticateContexts' => 'web',
-        'afterLoginRedirectId' => 5,
+        'afterLoginRedirectId' => 'cabinet',
         'autoLogin' => 1,
 
         'activationResourceId' => 1,
@@ -179,7 +179,7 @@ return [
         'successMessage' => 'Вы успешно авторизованы.',
         'hooks' => 'SetUserFields,Identification',
         'method' => 'login',
-        'redirectTo' => 5,
+        'redirectTo' => 'cabinet',
         'user_exist' => 1,
         'redirectTimeout' => 3000,
         'clearFieldsOnSuccess' => 1,
@@ -190,7 +190,7 @@ return [
         'successMessage' => 'Вы успешно зарегистрированы.',
         'activation' => 0,
         'autoLogin' => 1,
-        'redirectTo' => 5,
+        'redirectTo' => 'cabinet',
         'redirectTimeout' => 3000,
         'usergroups' => 2,
         'validate' => 'fullname:required,phone:required,code:CheckCode',
@@ -216,6 +216,7 @@ return [
         'validate' => 'phone:required,code:required:siCheckCode',
         'phone.vTextRequired' => 'Укажите телефон.',
         'code.vTextRequired' => 'Введите код.',
+        'redirectTo' => 'cabinet',
         'reloadPage' => 1,
         'redirectTimeout' => 1000,
         'clearFieldsOnSuccess' => 1,
@@ -232,6 +233,7 @@ return [
         'fullname.vTextRequired' => 'Укажите ваше имя.',
         'phone.vTextRequired' => 'Укажите телефон.',
         'code.vTextRequired' => 'Введите код.',
+        'redirectTo' => 'cabinet',
         'reloadPage' => 1,
         'redirectTimeout' => 1000,
         'clearFieldsOnSuccess' => 1,

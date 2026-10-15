@@ -70,6 +70,8 @@ $_lang['si_default_subject'] = 'Письмо с сайта [[+host]]';
 
 $_lang['setting_si_cabinet_actions'] = 'Действия в кабинете покупателя';
 $_lang['setting_si_cabinet_actions_desc'] = 'Через запятую: tocart — товары заказа в корзину, repeat — повторить заказ, pay — оплатить заказ, cancel — отменить заказ, return — заявка на возврат, addresses — адреса доставки, savecart — сохранять корзину покупателя между входами (только при ms2_tmp_storage = session). Пустое значение выключает все действия. По умолчанию: tocart,repeat,pay,cancel,return,addresses,savecart.';
+$_lang['setting_si_cabinet_page_id'] = 'Страница кабинета';
+$_lang['setting_si_cabinet_page_id_desc'] = 'ID ресурса, на который ведут вход и регистрация (пресеты с redirectTo или afterLoginRedirectId = cabinet). 0 — без перехода. Параметр пресета с ID или URL важнее.';
 $_lang['setting_si_cabinet_checkout_id'] = 'Страница оформления заказа';
 $_lang['setting_si_cabinet_checkout_id_desc'] = 'ID ресурса, на который ведёт повтор заказа. Параметр пресета redirectTo важнее. По умолчанию: 0 (без перехода).';
 $_lang['setting_si_cabinet_cancel_statuses'] = 'Статусы, из которых покупатель может отменить заказ';
