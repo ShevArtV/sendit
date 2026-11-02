@@ -30,22 +30,25 @@ switch ($modx->event->name) {
 
         $powChallenge = bin2hex(random_bytes(16));
         $behaviorKey = bin2hex(random_bytes(16));
+        // Токен живёт si_token_ttl, а не одну страницу: новый на каждой странице ломал фоновые
+        // запросы, отправленные одновременно с другой загрузкой страницы той же сессии.
+        require_once $corePath . 'components/sendit/services/sitokenttl.class.php';
+        $token = SiTokenTtl::issue($modx, SendIt::getSession($modx));
 
         $data = [
             'simsgantispam' => $modx->lexicon('si_msg_trusted_err'),
-            'sitoken' => md5($_SERVER['REMOTE_ADDR'] . time()),
+            'sitoken' => $token['sitoken'],
             'sitrusted' => '0',
             'sijsconfigpath' => $jsConfigPath,
             'sipowchallenge' => $powChallenge,
             'sibehaviorkey' => $behaviorKey,
         ];
-        SendIt::setSession($modx, [
-            'sitoken' => $data['sitoken'],
+        SendIt::setSession($modx, array_merge($token, [
             'sendingLimits' => [],
             'powChallenge' => $powChallenge,
             'powTimestamp' => time(),
             'behaviorKey' => $behaviorKey,
-        ]);
+        ]));
 
         $data = array_merge($cookies, $data);
         setcookie('SendIt', json_encode($data), 0, '/');

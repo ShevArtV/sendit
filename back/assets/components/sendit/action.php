@@ -4,6 +4,7 @@ $time_start = microtime(true);
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 4) . '/index.php';
 require_once MODX_CORE_PATH . 'components/sendit/services/sendit.class.php';
+require_once MODX_CORE_PATH . 'components/sendit/services/sitokenttl.class.php';
 
 $modx->getService('error', 'error.modError');
 $modx->setLogLevel(modX::LOG_LEVEL_ERROR);
@@ -26,7 +27,7 @@ $res = [
 
 $session = SendIt::getSession($modx);
 
-if (!isset($session['sitoken']) || !$token || $token !== $session['sitoken']) {
+if (!SiTokenTtl::isValid($modx, $session, (string)$token)) {
     die(json_encode($sendit->error('si_msg_token_err')));
 }
 
