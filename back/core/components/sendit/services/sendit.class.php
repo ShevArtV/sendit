@@ -708,6 +708,13 @@ class SendIt
             return $this->error('si_msg_sql_injection_err');
         }
 
+        /* Пресет не найден ни в файлах, ни в сессии, ни от плагина (OnGetFormParams):
+         * без этой проверки отправка шла по дефолтам с хуком email на адрес админа —
+         * любой POST с выдуманным именем пресета слал письмо (2.10.2 / 3.1.8). */
+        if (empty($this->preset) && empty($this->pluginParams)) {
+            return $this->error('si_msg_preset_err');
+        }
+
         $originalPowChallenge = $this->session['powChallenge'] ?? '';
 
         if (!empty($this->params['usePoW'])) {
